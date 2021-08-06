@@ -9,14 +9,9 @@ body{
 	text-align: center;
 	font-size: 16px;
 }
-@media screen and (max-width: 600px) {
-  #container {
-    visibility: hidden;
-    clear: both;
-    float: left;
-    margin: 10px auto 5px 20px;
-    width: 28%;
-    display: none;
+@media screen and (max-width: 500px) {
+  #body {
+    display: ;
   }
 }
 #container{
