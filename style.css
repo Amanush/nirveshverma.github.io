@@ -1,0 +1,194 @@
+html{
+scroll-behavior: smooth;
+}
+body{
+	margin: 0;
+	background-color: #000;
+	font-family: Roboto,sans-serif;
+	color: white;
+	text-align: center;
+	font-size: 16px;
+}
+#container{
+	display: flex;
+	justify-content:center;
+	flex-flow: row wrap;
+}
+.innerContainer{
+	height: 100vh;
+}
+nav{
+	width: 70vw;
+	height: 0;
+	position: relative;
+}
+nav .logo{
+	position: absolute;
+	float: left;
+	left: 0;
+	top: 40%; 
+	font-weight: bold;
+	font-size: .7rem;
+	letter-spacing: 0.2rem;
+	padding-left:0.5rem;
+}
+nav .mail{
+	position: relative;
+	float: right;
+	right:  0;
+	top: 35%; 
+	padding-right: 1rem;
+}
+section{
+	position: relative;
+}
+.sectionText{
+	position: absolute;
+	width: 55%;
+	padding-top: 20%;
+	display: flex;
+	flex-flow:row wrap;
+	
+}
+section .sectionText>span{
+	display: flex;
+	flex-flow:row wrap;
+	font-family: serif;
+	font-weight: bold;
+	font-size: 4rem;
+	letter-spacing: -5px;
+}
+section .title{
+	padding-left: 1rem;
+	color: #fcb321;
+	font-weight: bold;
+	font-size: 1rem;
+	letter-spacing: 0.1rem;
+	width: 100%;
+	text-align: left;
+}
+section .designation{
+	padding: 0.3rem 0 0 1rem;
+	margin-top: 0.3rem;
+	color: white;
+	font-weight: bold;
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1rem;
+	border-top: 1px solid red;
+	width: 100%;
+	text-align: left;
+}
+.contactLinks{
+	margin-top: 3rem;	
+	font-weight: bold;
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1rem;
+	width: 100%;
+	text-align: left;
+	display: flex;
+	flex-flow:row wrap;
+}	
+.contactLinks p{
+	padding: 0.5rem 0 0 1.2rem;
+}
+.contactLinks a{
+	text-decoration: none;
+	color:#fcb321;
+	letter-spacing: 0.2;
+	opacity: 0.5;
+  	transition: 0.5s;
+}
+.contactLinks a:hover{
+	text-decoration: none;
+	color:#fcb321;
+	letter-spacing: 0.3;
+	opacity: 1;
+}
+.sectionImage{
+	width:60%;
+	position: absolute;
+	float: right;
+	right: -20%;
+	background-image: url(image.jpg);
+	background-size: cover;
+	height: 100vh;
+}
+.skillTag{
+	font-size: 0.8rem;
+}
+.skillTag a{
+	text-decoration:none;
+	color:#fff;
+	margin-left:1rem;
+	font-weight:bold;
+	letter-spacing:0.1rem;
+	text-transform:uppercase;
+	opacity: 0.4;
+	transition: 0.7s;
+}
+.skillTag a:hover{
+	opacity: 1;
+	text-decoration: underline;
+}
+#skills{	
+	width: 100%;
+	min-height: 100vh;
+	display: flex;
+	flex-flow:row wrap;
+	justify-content:center;
+	overflow: hidden;
+}
+.skillSection{
+	width: 70%;
+	background-color: rgb(100,120,120,0.3);
+	transition: 0.3s;
+	cursor: pointer;
+	margin: 5px 0 5px 0;
+	display: flex;
+	flex-flow:row wrap;
+	justify-content:center;
+	align-items: center;
+	height: 7rem;
+	border-radius: 3px;
+	border-right: 2px solid red;
+}
+.skillSection:hover{
+	background-color: rgb(90,120,120,0.7);
+}
+.skillItem{
+	width: 50%;
+	display: flex;
+	justify-content:center;
+	align-items: center;
+	font-weight: bold;
+	letter-spacing: 0.1rem;
+}
+#exp{
+	width: 100%;
+	min-height: 100vh;
+	display: flex;
+	flex-flow:row wrap;
+	justify-content:center;
+	overflow: hidden;
+}
+
+.expInnerContainer{
+	width: 70%;
+	min-height: 100vh;
+	display: flex;
+	flex-flow: row wrap;
+}
+.expItem{
+	min-height: 100px;
+	padding: 2rem;
+	margin-left: 1rem;
+}
+
+
+
+
+
+
+
