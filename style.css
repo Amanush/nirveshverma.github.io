@@ -13,8 +13,8 @@ body{
   body {
     display:none ;
   }
-	body::after{content:"Please enable desktop mode to view this site for now ! Apologies for inconvinience"}	
- #container{
+	body::after{content:"Please enable desktop mode to view this site for now ! Apologies for inconvinience";}	
+ #container::after{content:"Please enable desktop mode to view this site for now ! Apologies for inconvinience";}	{
 	 display:none;
 	}
 }
