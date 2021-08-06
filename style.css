@@ -9,11 +9,11 @@ body{
 	text-align: center;
 	font-size: 16px;
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 500px) {
   body {
     display:none ;
   }
-	
+	body::after{content:"Please enable desktop mode to view this site for now ! Apologies for inconvinience"}	
  #container{
 	 display:none;
 	}
