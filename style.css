@@ -159,7 +159,7 @@ section .designation{
 	flex-flow:row wrap;
 	justify-content:center;
 	align-items: center;
-	height: 7rem;
+	padding: 1rem;
 	border-radius: 3px;
 	border-right: 2px solid red;
 }
