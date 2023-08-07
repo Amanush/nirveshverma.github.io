@@ -102,8 +102,8 @@
     }
 
 .thumbnail {
-  width: 512px;
-  height: 512px;
+  width: auto;
+  min-height: 120px ;
   background: linear-gradient(45deg, #FFD700, #FF6347);
   display: flex;
   justify-content: center;
