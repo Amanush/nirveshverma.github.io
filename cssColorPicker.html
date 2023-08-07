@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Picker</title>
+  <!-- Include Tailwind CSS from a CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+ 
+</head>
+<body class="bg-gray-200 min-h-screen ">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark"  id="navbar">
+    <div class="container" >
+      <a class="navbar-brand text-uppercase font-weight-bold" href="index.html">Nirvesh Verma</a>
+      
+    </div>
+
+  </nav>
+
+  <div class="flex justify-center align-center items-center h-screen">
+  <div class="w-64 bg-white rounded-lg shadow-lg p-4">
+    <input type="color" id="colorPicker" class="w-full h-8 mb-4 rounded-lg border" />
+    <div class="flex items-center justify-between">
+      <button id="cancelBtn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">Cancel</button>
+      <button id="applyBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Apply</button>
+    </div>
+    <span class="flex justify-center mt-3 text-lg" id="colorValue"></span>
+  </div>
+     
+</div>
+
+  <script>
+    // Event listeners for cancel and apply buttons
+    document.getElementById("cancelBtn").addEventListener("click", () => {
+      // Handle cancel button click here
+      console.log("Color selection cancelled");
+    });
+
+    document.getElementById("applyBtn").addEventListener("click", () => {
+      // Handle apply button click here
+      const color = document.getElementById("colorPicker").value;
+      const colorValue = document.getElementById('colorValue')
+        colorValue.innerText = color
+      console.log("Selected color:", color);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Signup Form</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+ 
+</head>
+
+<body class="bg-gray-200 min-h-screen ">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"  id="navbar">
+        <div class="container" >
+          <a class="navbar-brand text-uppercase font-weight-bold" href="index.html">Nirvesh Verma</a>
+          
+        </div>
+      </nav>
+
+    <div class="flex justify-center items-center h-screen">
+        <div class="bg-white shadow-md rounded-md p-8 max-w-sm w-full">
+            <h2 class="text-2xl font-semibold mb-4">Welcome!</h2>
+            <div class="mb-8">
+                <ul class="flex border-b">
+                    <li class="-mb-px mr-1">
+                        <a id="loginTab" href="#" class="bg-white inline-block py-2 px-4 text-blue-500 font-semibold border-b-2 border-blue-500">Login</a>
+                    </li>
+                    <li class="mr-1">
+                        <a id="signupTab" href="#" class="bg-white inline-block py-2 px-4 text-gray-500 font-semibold hover:text-blue-500">Signup</a>
+                    </li>
+                </ul>
+            </div>
+            <div id="loginForm">
+                <form>
+                    <div class="mb-4">
+                        <label for="loginEmail" class="block text-gray-700">Email:</label>
+                        <input type="email" id="loginEmail" class="w-full mt-2 px-4 py-2 rounded-lg border focus:outline-none focus:border-blue-500" placeholder="Your Email" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="loginPassword" class="block text-gray-700">Password:</label>
+                        <input type="password" id="loginPassword" class="w-full mt-2 px-4 py-2 rounded-lg border focus:outline-none focus:border-blue-500" placeholder="Your Password" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Login</button>
+                </form>
+            </div>
+            <div id="signupForm" style="display: none;">
+                <form>
+                    <div class="mb-4">
+                        <label for="signupName" class="block text-gray-700">Name:</label>
+                        <input type="text" id="signupName" class="w-full mt-2 px-4 py-2 rounded-lg border focus:outline-none focus:border-blue-500" placeholder="Your Name" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="signupEmail" class="block text-gray-700">Email:</label>
+                        <input type="email" id="signupEmail" class="w-full mt-2 px-4 py-2 rounded-lg border focus:outline-none focus:border-blue-500" placeholder="Your Email" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="signupPassword" class="block text-gray-700">Password:</label>
+                        <input type="password" id="signupPassword" class="w-full mt-2 px-4 py-2 rounded-lg border focus:outline-none focus:border-blue-500" placeholder="Your Password" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">Signup</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+
+        loginTab.addEventListener('click', function (e) {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            loginTab.classList.add('border-b-2', 'border-blue-500');
+            loginTab.classList.remove('text-gray-500', 'hover:text-blue-500');
+            signupTab.classList.remove('border-b-2', 'border-blue-500');
+            signupTab.classList.add('text-gray-500', 'hover:text-blue-500');
+        });
+
+        signupTab.addEventListener('click', function (e) {
+            e.preventDefault();
+            signupForm.style.display = 'block';
+            loginForm.style.display = 'none';
+            signupTab.classList.add('border-b-2', 'border-blue-500');
+            signupTab.classList.remove('text-gray-500', 'hover:text-blue-500');
+            loginTab.classList.remove('border-b-2', 'border-blue-500');
+            loginTab.classList.add('text-gray-500', 'hover:text-blue-500');
+        });
+    </script>
+</body>
+
+</html>
