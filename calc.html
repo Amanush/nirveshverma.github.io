@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+  <div class="bg-white p-4 rounded shadow-md w-72">
+    <input type="text" id="display" class="text-right mb-2 px-2 py-1 rounded border focus:outline-none" readonly>
+    <div class="grid grid-cols-4 gap-2">
+      <button class="col-span-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded" onclick="clearDisplay()">C</button>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded" onclick="deleteLastChar()">&larr;</button>
+      <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded" onclick="performOperation('/')">/</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('7')">7</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('8')">8</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('9')">9</button>
+      <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded" onclick="performOperation('*')">*</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('4')">4</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('5')">5</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('6')">6</button>
+      <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded" onclick="performOperation('-')">-</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('1')">1</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('2')">2</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('3')">3</button>
+      <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded" onclick="performOperation('+')">+</button>
+      <button class="col-span-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('0')">0</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="appendCharacter('.')">.</button>
+      <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    let currentExpression = '';
+
+    function appendCharacter(char) {
+      currentExpression += char;
+      document.getElementById('display').value = currentExpression;
+    }
+
+    function clearDisplay() {
+      currentExpression = '';
+      document.getElementById('display').value = currentExpression;
+    }
+
+    function deleteLastChar() {
+      currentExpression = currentExpression.slice(0, -1);
+      document.getElementById('display').value = currentExpression;
+    }
+
+    function performOperation(operator) {
+      currentExpression += operator;
+      document.getElementById('display').value = currentExpression;
+    }
+
+    function calculate() {
+      try {
+        currentExpression = eval(currentExpression).toString();
+        document.getElementById('display').value = currentExpression;
+      } catch (error) {
+        currentExpression = '';
+        document.getElementById('display').value = 'Error';
+      }
+    }
+  </script>
+</body>
+
+</html>
