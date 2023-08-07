@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<title>CSS Animation Examples</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .animation-container {
+    width: 150px;
+    height: 150px;
+    background-color: #3498db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px;
+    border-radius: 10px;
+    animation-duration: 2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  .animation-text {
+    text-align: center;
+    font-size: 14px;
+    color: white;
+  }
+  
+  /* Animation Styles */
+  
+  .animation-rotate {
+    animation-name: rotate;
+  }
+  
+
+  @keyframes rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animation-color-change {
+    animation-name: colorChange;
+  }
+
+  @keyframes colorChange {
+    0% {
+      background-color: #3498db;
+    }
+    100% {
+      background-color: #e74c3c;
+    }
+  }
+
+  .animation-slide {
+    animation-name: slide;
+  }
+
+  @keyframes slide {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(50px);
+    }
+  }
+
+  .animation-fade {
+    animation-name: fade;
+  }
+
+  @keyframes fade {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
+    }
+  }
+
+  .animation-spin {
+    animation: spin 2s infinite linear;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animation-shake {
+    animation: shake 0.5s infinite;
+  }
+
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+      transform: translateX(5px);
+    }
+  }
+
+  .animation-flip {
+    animation: flip 1s infinite;
+  }
+
+  @keyframes flip {
+    0%, 100% {
+      transform: perspective(400px) rotateY(0deg);
+    }
+    50% {
+      transform: perspective(400px) rotateY(180deg);
+    }
+  }
+
+  .animation-zoom {
+    animation: zoom 1s infinite alternate;
+  }
+
+  @keyframes zoom {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.1);
+    }
+  }
+
+  .animation-stretch {
+    animation: stretch 2s infinite alternate;
+  }
+
+  @keyframes stretch {
+    0% {
+      transform: scaleX(1);
+    }
+    100% {
+      transform: scaleX(1.2);
+    }
+  }
+
+  .animation-swing {
+    animation: swing 2s infinite alternate;
+    transform-origin: top center;
+  }
+
+  @keyframes swing {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(15deg);
+    }
+  }
+
+  .animation-slide-up {
+    animation: slideUp 1s infinite alternate;
+  }
+
+  @keyframes slideUp {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .animation-jelly {
+    animation: jelly 0.5s infinite alternate;
+  }
+
+  @keyframes jelly {
+    0%, 100% {
+      transform: scaleX(1);
+    }
+    50% {
+      transform: scaleX(1.2);
+    }
+  }
+
+  .animation-heartbeat {
+    animation: heartbeat 1s infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+  }
+
+  .animation-spin-grow {
+    animation: spinGrow 1.5s infinite alternate;
+  }
+
+  @keyframes spinGrow {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    100% {
+      transform: rotate(360deg) scale(1.2);
+    }
+  }
+  .animation-column {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    flex-wrap: wrap;
+  }
+</style>
+</head>
+<body >
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" style="width: 100vw;"  id="navbar">
+        <div class="container" >
+          <a class="navbar-brand text-uppercase font-weight-bold" href="index.html">Nirvesh Verma</a>
+          
+        </div>
+      </nav>
+    <div class=" align-center items-center h-screen">
+<h1 style="text-align: center;">CSS Animation Examples</h1>
+<p style="text-align: center;">A collection of CSS animations for demonstration purposes.</p>
+
+<div class="animation-column ">
+  <div class="animation-container animation-rotate ">
+    <div class="animation-text">Rotate</div>
+  </div>
+  <div class="animation-container animation-color-change">
+    <div class="animation-text">Color Change</div>
+  </div>
+  <div class="animation-container animation-slide">
+    <div class="animation-text">Slide</div>
+  </div>
+  <div class="animation-container animation-fade">
+    <div class="animation-text">Fade</div>
+  </div>
+</div>
+
+<div class="animation-column" style="max-width: 576px;">
+    <div class="animation-container animation-spin">
+        <div class="animation-text">Animation Spin</div>
+      </div>
+      
+      <div class="animation-container animation-shake">
+        <div class="animation-text">Animation shake</div>
+      </div>
+      
+      <div class="animation-container animation-flip">
+        <div class="animation-text">Animation Flip/div>
+      </div>
+      
+      <div class="animation-container animation-zoom">
+        <div class="animation-text">Animation Zoom</div>
+      </div>
+      
+</div>
+
+<div class="animation-column">
+
+    <div class="animation-container animation-stretch">
+        <div class="animation-text">Animation Stretch</div>
+      </div>
+      
+      <div class="animation-container animation-swing">
+        <div class="animation-text">Animation Swing</div>
+      </div>
+      
+      <div class="animation-container animation-slide-up">
+        <div class="animation-text">Animation Slide Up/div>
+      </div>
+      
+      <div class="animation-container animation-jelly">
+        <div class="animation-text">AnimationJelly</div>
+      </div>
+      
+      
+</div>
+
+<div class="animation-column">
+    <div class="animation-container animation-heartbeat">
+        <div class="animation-text">Animation HeartBeat</div>
+      </div>
+      
+      <div class="animation-container animation-spin-grow">
+        <div class="animation-text">Animation Spin-Grow</div>
+      </div>
+</div>
+</div>
+
+
+</body>
+</html>
