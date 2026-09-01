@@ -1,1 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MP PEB Practice</title>
+<style>
+  :root {
+    --black: #111;
+    --gray-1: #444;
+    --gray-2: #888;
+    --gray-3: #ccc;
+    --gray-4: #eee;
+    --white: #fff;
+    --green: #1a7a1a;
+    --red: #b31212;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--white);
+    color: var(--black);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  #app { max-width: 720px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; }
 
+  header {
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--black);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header .title { font-size: 18px; font-weight: 700; letter-spacing: 0.3px; }
+  header button {
+    background: none; border: 1.5px solid var(--black); color: var(--black);
+    padding: 6px 12px; font-size: 14px; font-weight: 600; border-radius: 4px;
+    cursor: pointer;
+  }
+  header button:active { background: var(--gray-4); }
+
+  main { flex: 1; padding: 16px; }
+
+  /* ---------- HOME / SOURCE LIST ---------- */
+  .section-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--gray-2); margin: 18px 0 8px;
+  }
+  .card-list { display: flex; flex-direction: column; gap: 10px; }
+  .card-btn {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; text-align: left;
+    padding: 14px 16px; border: 1.5px solid var(--black); border-radius: 6px;
+    background: var(--white); font-size: 16px; font-weight: 600;
+    cursor: pointer; color: var(--black);
+  }
+  .card-btn:active { background: var(--gray-4); }
+  .card-btn .count { font-size: 13px; font-weight: 400; color: var(--gray-2); }
+
+  .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .subject-btn {
+    padding: 16px 12px; border: 1.5px solid var(--black); border-radius: 6px;
+    background: var(--white); font-size: 15px; font-weight: 600; text-align: center;
+    cursor: pointer; color: var(--black);
+  }
+  .subject-btn:active { background: var(--gray-4); }
+  .subject-btn .count { display: block; font-size: 12px; font-weight: 400; color: var(--gray-2); margin-top: 4px; }
+
+  /* ---------- PRACTICE VIEW ---------- */
+  .progress-bar {
+    font-size: 13px; color: var(--gray-2); margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .progress-track {
+    height: 4px; background: var(--gray-4); border-radius: 2px; margin-bottom: 18px; overflow: hidden;
+  }
+  .progress-fill { height: 100%; background: var(--black); }
+
+  .question-box {
+    font-size: 19px; line-height: 1.5; font-weight: 600; margin-bottom: 20px;
+  }
+
+  .option {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 12px 14px; border: 1.5px solid var(--gray-3); border-radius: 6px;
+    margin-bottom: 10px; font-size: 16px; line-height: 1.4;
+    cursor: pointer; background: var(--white); color: var(--black);
+  }
+  .option:active { background: var(--gray-4); }
+  .option .opt-letter {
+    font-weight: 700; flex-shrink: 0; width: 20px;
+  }
+  .option.correct {
+    border-color: var(--green); background: #eefaee; color: var(--green); font-weight: 700;
+  }
+  .option.correct .opt-letter { color: var(--green); }
+  .option.wrong {
+    border-color: var(--red); background: #fbeaea; color: var(--red); font-weight: 700;
+  }
+  .option.wrong .opt-letter { color: var(--red); }
+  .option.locked { cursor: default; }
+  .option.locked:active { background: inherit; }
+  .result-line {
+    font-size: 15px; font-weight: 700; margin: -4px 0 14px; min-height: 20px;
+  }
+  .result-line.correct-txt { color: var(--green); }
+  .result-line.wrong-txt { color: var(--red); }
+  .score-tag { font-size: 13px; color: var(--gray-2); font-weight: 400; }
+
+  .show-answer-btn {
+    width: 100%; padding: 14px; margin-top: 6px; margin-bottom: 22px;
+    background: var(--black); color: var(--white); border: none; border-radius: 6px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  .show-answer-btn:active { background: var(--gray-1); }
+  .show-answer-btn.revealed {
+    background: var(--white); color: var(--black); border: 1.5px solid var(--black);
+  }
+
+  .nav-row {
+    display: flex; gap: 10px; margin-top: auto; padding-top: 10px;
+  }
+  .nav-btn {
+    flex: 1; padding: 14px 8px; border: 1.5px solid var(--black); border-radius: 6px;
+    background: var(--white); font-size: 15px; font-weight: 700; cursor: pointer; color: var(--black);
+  }
+  .nav-btn:active { background: var(--gray-4); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .nav-btn.primary { background: var(--black); color: var(--white); }
+  .nav-btn.primary:active { background: var(--gray-1); }
+
+  .jump-row { display:flex; gap:8px; margin-top:10px; }
+  .jump-row button {
+    flex:1; padding:10px; border:1px solid var(--gray-3); border-radius:6px;
+    background:var(--white); font-size:13px; font-weight:600; color: var(--gray-1); cursor:pointer;
+  }
+  .jump-row button:active { background: var(--gray-4); }
+
+  .hidden { display: none !important; }
+  footer { text-align: center; padding: 10px; font-size: 11px; color: var(--gray-3); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title" id="headerTitle">MP PEB Practice</div>
+    <button id="homeBtn" class="hidden">Home</button>
+  </header>
+  <main id="main"></main>
+  <footer>Local question bank &middot; no internet required</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+const main = document.getElementById('main');
+const headerTitle = document.getElementById('headerTitle');
+const homeBtn = document.getElementById('homeBtn');
+
+let state = { source: null, subject: null, list: [], idx: 0, selected: null, correctCount: 0, attemptedCount: 0 };
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderHome() {
+  headerTitle.textContent = 'MP PEB Practice';
+  homeBtn.classList.add('hidden');
+  let html = '<div class="section-label">Choose Exam Source</div><div class="card-list">';
+  for (const key in QUESTION_DB) {
+    const src = QUESTION_DB[key];
+    const total = Object.values(src.subjects).reduce((s, arr) => s + arr.length, 0);
+    html += `<button class="card-btn" onclick="renderSubjects('${key}')">
+      <span>${src.label}</span><span class="count">${total} Qs</span>
+    </button>`;
+  }
+  html += '</div>';
+  main.innerHTML = html;
+}
+
+function renderSubjects(sourceKey) {
+  state.source = sourceKey;
+  const src = QUESTION_DB[sourceKey];
+  headerTitle.textContent = src.label;
+  homeBtn.classList.remove('hidden');
+  let html = '<div class="section-label">Choose Subject</div><div class="subject-grid">';
+  for (const subj in src.subjects) {
+    const n = src.subjects[subj].length;
+    html += `<button class="subject-btn" onclick="startPractice('${sourceKey}','${subj.replace(/'/g,"\\'")}')">
+      ${subj}<span class="count">${n} Qs</span>
+    </button>`;
+  }
+  html += '</div>';
+  main.innerHTML = html;
+}
+
+function startPractice(sourceKey, subject) {
+  state.source = sourceKey;
+  state.subject = subject;
+  state.list = shuffle(QUESTION_DB[sourceKey].subjects[subject]);
+  state.idx = 0;
+  state.selected = null;
+  state.correctCount = 0;
+  state.attemptedCount = 0;
+  headerTitle.textContent = subject;
+  homeBtn.classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = state.list[state.idx];
+  const total = state.list.length;
+  const pct = Math.round(((state.idx + 1) / total) * 100);
+  const letters = ['A', 'B', 'C', 'D'];
+  const answered = state.selected !== null;
+
+  let optsHtml = '';
+  for (const L of letters) {
+    let cls = 'option';
+    if (answered) {
+      cls += ' locked';
+      if (L === q.ans) cls += ' correct';
+      else if (L === state.selected) cls += ' wrong';
+    }
+    optsHtml += `<div class="${cls}" onclick="selectOption('${L}')">
+        <span class="opt-letter">${L}</span><span>${escapeHtml(q.opts[L])}</span>
+      </div>`;
+  }
+
+  let resultHtml = '<div class="result-line"></div>';
+  if (answered) {
+    if (state.selected === q.ans) {
+      resultHtml = `<div class="result-line correct-txt">&#10003; Correct</div>`;
+    } else {
+      resultHtml = `<div class="result-line wrong-txt">&#10007; Wrong &mdash; correct answer is ${q.ans}</div>`;
+    }
+  }
+
+  main.innerHTML = `
+    <div class="progress-bar">
+      <span>Question ${state.idx + 1} / ${total}</span>
+      <span class="score-tag">Score: ${state.correctCount}/${state.attemptedCount}</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="question-box">${escapeHtml(q.q)}</div>
+    <div id="optsWrap">${optsHtml}</div>
+    ${resultHtml}
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" onclick="prevQ()" ${state.idx === 0 ? 'disabled' : ''}>&larr; Previous</button>
+      <button class="nav-btn primary" id="nextBtn" onclick="nextQ()" ${state.idx === total - 1 ? 'disabled' : ''}>Next &rarr;</button>
+    </div>
+    <div class="jump-row">
+      <button onclick="shuffleAgain()">Shuffle</button>
+      <button onclick="restartQ()">Restart Set</button>
+    </div>
+  `;
+}
+
+function selectOption(letter) {
+  if (state.selected !== null) return; // already answered, locked
+  state.selected = letter;
+  state.attemptedCount++;
+  const q = state.list[state.idx];
+  if (letter === q.ans) state.correctCount++;
+  renderQuestion();
+}
+
+function nextQ() {
+  if (state.idx < state.list.length - 1) {
+    state.idx++;
+    state.selected = null;
+    renderQuestion();
+  }
+}
+
+function prevQ() {
+  if (state.idx > 0) {
+    state.idx--;
+    state.selected = null;
+    renderQuestion();
+  }
+}
+
+function shuffleAgain() {
+  state.list = shuffle(state.list);
+  state.idx = 0;
+  state.selected = null;
+  state.correctCount = 0;
+  state.attemptedCount = 0;
+  renderQuestion();
+}
+
+function restartQ() {
+  state.idx = 0;
+  state.selected = null;
+  state.correctCount = 0;
+  state.attemptedCount = 0;
+  renderQuestion();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+homeBtn.addEventListener('click', renderHome);
+
+// keyboard support (tablet w/ keyboard, or desktop preview)
+document.addEventListener('keydown', (e) => {
+  if (!state.list.length) return;
+  if (e.key === 'ArrowRight') nextQ();
+  if (e.key === 'ArrowLeft') prevQ();
+  if (['1','2','3','4'].includes(e.key)) {
+    selectOption(['A','B','C','D'][parseInt(e.key) - 1]);
+  }
+});
+
+renderHome();
+</script>
+</body>
+</html>
