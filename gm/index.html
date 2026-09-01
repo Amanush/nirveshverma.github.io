@@ -1,1 +1,228 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>General Management — Glossary</title>
+<style>
+  :root {
+    --black:#111; --gray-1:#444; --gray-2:#888; --gray-3:#ccc; --gray-4:#f0f0f0; --white:#fff;
+    --link:#0b5cd6; --mnemonic-bg:#fff7d6; --mnemonic-border:#e0c34a;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; padding:0; background:var(--white); color:var(--black);
+    font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+  #app { max-width:760px; margin:0 auto; min-height:100vh; }
+
+  header { padding:14px 16px; border-bottom:2px solid var(--black); position:sticky; top:0; background:var(--white); z-index:5; }
+  header .title { font-size:18px; font-weight:700; margin-bottom:10px; }
+  #searchBox {
+    width:100%; padding:11px 12px; border:1.5px solid var(--black); border-radius:6px;
+    font-size:15px; outline:none;
+  }
+
+  main { padding:14px 16px 40px; }
+
+  .unit-block { margin-bottom:26px; }
+  .unit-title {
+    font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--gray-1); border-bottom:1px solid var(--gray-3); padding-bottom:6px; margin-bottom:10px;
+  }
+  .topic-list { display:flex; flex-direction:column; gap:8px; }
+  .topic-btn {
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    width:100%; text-align:left; padding:13px 14px; border:1.5px solid var(--black); border-radius:6px;
+    background:var(--white); font-size:15.5px; font-weight:600; cursor:pointer; color:var(--black);
+  }
+  .topic-btn:active { background:var(--gray-4); }
+  .topic-btn .mnemonic-tag {
+    font-size:11px; font-weight:700; color:#8a6d00; background:var(--mnemonic-bg);
+    border:1px solid var(--mnemonic-border); border-radius:4px; padding:2px 6px; flex-shrink:0;
+  }
+
+  /* modal */
+  .overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none;
+    align-items:flex-end; justify-content:center; z-index:50;
+  }
+  .overlay.show { display:flex; }
+  .modal {
+    background:var(--white); width:100%; max-width:760px; max-height:85vh; overflow-y:auto;
+    border-radius:14px 14px 0 0; padding:20px 18px 28px; animation:slideup .18s ease-out;
+  }
+  @keyframes slideup { from { transform:translateY(24px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  .modal-header { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
+  .modal-title { font-size:19px; font-weight:700; line-height:1.3; }
+  .modal-close {
+    flex-shrink:0; background:var(--black); color:var(--white); border:none; border-radius:50%;
+    width:30px; height:30px; font-size:16px; cursor:pointer; line-height:1;
+  }
+  .modal-mnemonic {
+    display:inline-block; font-size:12px; font-weight:700; color:#8a6d00; background:var(--mnemonic-bg);
+    border:1px solid var(--mnemonic-border); border-radius:5px; padding:3px 8px; margin-bottom:12px;
+  }
+  .bullet-list { list-style:none; margin:0; padding:0; }
+  .bullet-list li {
+    padding:9px 0 9px 18px; border-bottom:1px solid #f0f0f0; font-size:15px; line-height:1.5; position:relative;
+  }
+  .bullet-list li:before { content:"•"; position:absolute; left:0; font-weight:700; }
+  .bullet-list li:last-child { border-bottom:none; }
+  .related-row { margin-top:16px; padding-top:12px; border-top:1.5px solid var(--gray-3); }
+  .related-label { font-size:12px; text-transform:uppercase; color:var(--gray-2); font-weight:700; margin-bottom:8px; }
+  .related-chip {
+    display:inline-block; margin:0 6px 6px 0; padding:7px 12px; border:1.5px solid var(--link);
+    color:var(--link); border-radius:16px; font-size:13.5px; font-weight:600; cursor:pointer; background:var(--white);
+  }
+  .related-chip:active { background:#eaf1fd; }
+
+  .wiki-loading { font-size:14px; color:var(--gray-2); padding:14px 0; }
+  .wiki-thumb { width:100%; max-width:320px; border-radius:8px; margin:10px 0; display:block; }
+  .wiki-extract { font-size:15px; line-height:1.6; margin-top:8px; }
+  .wiki-source { font-size:12px; color:var(--gray-2); margin-top:10px; }
+  .wiki-source a { color:var(--link); }
+
+  .no-results { color:var(--gray-2); font-size:14px; padding:20px 0; text-align:center; }
+  footer { text-align:center; padding:14px; font-size:11px; color:var(--gray-3); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title">General Management — Glossary</div>
+    <input id="searchBox" type="text" placeholder="Search a term..." oninput="renderList()">
+  </header>
+  <main id="main"></main>
+  <footer>Local glossary &middot; unknown terms fetched live from Wikipedia</footer>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const main = document.getElementById('main');
+const overlay = document.getElementById('overlay');
+const modalBody = document.getElementById('modalBody');
+
+// flat index: id -> {topic, unitTitle}
+const INDEX = {};
+TOPIC_DB.units.forEach(u => {
+  u.topics.forEach(t => { INDEX[t.id] = { topic: t, unitTitle: u.title }; });
+});
+
+function renderList() {
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  let html = '';
+  let anyMatch = false;
+  TOPIC_DB.units.forEach(u => {
+    const matches = u.topics.filter(t => !q || t.term.toLowerCase().includes(q));
+    if (!matches.length) return;
+    anyMatch = true;
+    html += `<div class="unit-block"><div class="unit-title">${escapeHtml(u.title)}</div><div class="topic-list">`;
+    matches.forEach(t => {
+      html += `<button class="topic-btn" onclick="openTopic('${t.id}')">
+        <span>${escapeHtml(t.term)}</span>
+        ${t.mnemonic ? `<span class="mnemonic-tag">${escapeHtml(t.mnemonic)}</span>` : ''}
+      </button>`;
+    });
+    html += `</div></div>`;
+  });
+  if (!anyMatch) html = `<div class="no-results">No local topic matches "${escapeHtml(q)}". Tap search again or try the exact term.</div>`;
+  main.innerHTML = html;
+}
+
+function openTopic(id) {
+  const entry = INDEX[id];
+  if (!entry) return;
+  const t = entry.topic;
+  let html = `
+    <div class="modal-header">
+      <div class="modal-title">${escapeHtml(t.term)}</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    ${t.mnemonic ? `<div class="modal-mnemonic">Mnemonic: ${escapeHtml(t.mnemonic)}</div>` : ''}
+    <ul class="bullet-list">
+      ${t.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+    </ul>
+  `;
+  if (t.links && t.links.length) {
+    html += `<div class="related-row"><div class="related-label">Related</div>`;
+    t.links.forEach(linkId => {
+      const rel = INDEX[linkId];
+      if (rel) html += `<span class="related-chip" onclick="openTopic('${linkId}')">${escapeHtml(rel.topic.term)}</span>`;
+    });
+    html += `</div>`;
+  }
+  modalBody.innerHTML = html;
+  overlay.classList.add('show');
+}
+
+// For a term typed in search that isn't in local DB, tapping this option triggers Wikipedia fetch
+async function openWiki(term) {
+  modalBody.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">${escapeHtml(term)}</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="wiki-loading">Fetching from Wikipedia...</div>
+  `;
+  overlay.classList.add('show');
+  try {
+    const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(term));
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    let html = `
+      <div class="modal-header">
+        <div class="modal-title">${escapeHtml(data.title || term)}</div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+    `;
+    if (data.thumbnail && data.thumbnail.source) {
+      html += `<img class="wiki-thumb" src="${data.thumbnail.source}" alt="">`;
+    }
+    html += `<div class="wiki-extract">${escapeHtml(data.extract || 'No summary available.')}</div>`;
+    if (data.content_urls && data.content_urls.desktop) {
+      html += `<div class="wiki-source">Source: <a href="${data.content_urls.desktop.page}" target="_blank" rel="noopener">Wikipedia</a></div>`;
+    }
+    modalBody.innerHTML = html;
+  } catch (e) {
+    modalBody.innerHTML = `
+      <div class="modal-header">
+        <div class="modal-title">${escapeHtml(term)}</div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="wiki-loading">No Wikipedia entry found for this exact term. Try a shorter/simpler search phrase.</div>
+    `;
+  }
+}
+
+function closeModal() {
+  overlay.classList.remove('show');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.getElementById('searchBox').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const q = e.target.value.trim();
+    if (!q) return;
+    const qLower = q.toLowerCase();
+    const localHit = Object.values(INDEX).find(x => x.topic.term.toLowerCase().includes(qLower));
+    if (localHit) {
+      openTopic(localHit.topic.id);
+    } else {
+      openWiki(q);
+    }
+  }
+});
+
+renderList();
+</script>
+</body>
+</html>
