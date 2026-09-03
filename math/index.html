@@ -1,1 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MP Vyapam Maths — Revision</title>
+<style>
+  :root{
+    --bg:#fff; --fg:#111; --line:#111; --muted:#666; --panel:#f4f4f4;
+    --accent:#111; --wrong:#111; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--fg); -webkit-tap-highlight-color:transparent;
+  }
+  header{
+    position:sticky; top:0; background:#fff; border-bottom:2px solid var(--line);
+    padding:12px 16px; display:flex; align-items:center; justify-content:space-between; z-index:10;
+  }
+  header .title{font-weight:700; font-size:15px; letter-spacing:.2px;}
+  header .sub{font-size:11px; color:var(--muted);}
+  .home-btn{
+    border:1.5px solid var(--line); background:#fff; color:var(--fg);
+    padding:6px 12px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:600;
+  }
+  .home-btn:active{background:#eee;}
+  main{max-width:680px; margin:0 auto; padding:16px;}
 
+  /* HOME / CHAPTER LIST */
+  .chapter-list{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .chapter-item{
+    border:1.5px solid var(--line); border-radius:var(--radius); padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+    background:#fff;
+  }
+  .chapter-item:active{background:#f0f0f0;}
+  .chapter-item.disabled{color:#aaa; border-color:#ccc; cursor:default;}
+  .chapter-item .cname{font-size:14.5px; font-weight:600;}
+  .chapter-item .ccount{font-size:12px; color:var(--muted);}
+  .chapter-item.disabled .ccount{color:#bbb;}
+
+  /* QUESTION VIEW */
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px; color:var(--muted);}
+  .progress-bar{height:4px; background:#eee; border-radius:2px; overflow:hidden; margin-bottom:16px;}
+  .progress-fill{height:100%; background:var(--fg);}
+  .qcard{border:1.5px solid var(--line); border-radius:var(--radius); padding:18px; min-height:180px;}
+  .qtext{font-size:16px; line-height:1.5; margin-bottom:16px; white-space:pre-wrap;}
+  .opt{
+    display:flex; gap:10px; align-items:flex-start; border:1px solid #ccc; border-radius:8px;
+    padding:10px 12px; margin-bottom:8px; font-size:14.5px; cursor:pointer;
+  }
+  .opt:active{background:#f5f5f5;}
+  .opt .lab{font-weight:700; min-width:18px;}
+  .opt.correct{border-color:var(--fg); background:#eee; font-weight:600;}
+  .opt.selected-wrong{border-color:var(--fg); text-decoration:line-through; color:var(--muted);}
+
+  .actions{display:flex; gap:8px; margin-top:14px;}
+  .actions button{
+    flex:1; padding:11px 8px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .actions button.primary{background:var(--fg); color:#fff;}
+  .actions button:active{opacity:.75;}
+
+  .navbar{display:flex; gap:8px; margin-top:16px;}
+  .navbar button{
+    flex:1; padding:13px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; font-size:14px; font-weight:700; cursor:pointer;
+  }
+  .navbar button:disabled{opacity:.3;}
+  .navbar button:active:not(:disabled){background:#eee;}
+
+  /* MODAL */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.55); display:none;
+    align-items:flex-end; justify-content:center; z-index:100;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:#fff; width:100%; max-width:680px; border-radius:16px 16px 0 0;
+    padding:20px; max-height:75vh; overflow-y:auto; border-top:2px solid var(--line);
+  }
+  .modal h3{margin:0 0 10px; font-size:15px; letter-spacing:.3px;}
+  .modal .ans-line{font-size:14px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #ddd;}
+  .modal .sol-text{font-size:14.5px; line-height:1.55; white-space:pre-wrap;}
+  .modal-close{
+    display:block; width:100%; margin-top:16px; padding:12px; border-radius:8px;
+    border:1.5px solid var(--line); background:var(--fg); color:#fff; font-weight:700; font-size:14px;
+  }
+  .flag{display:inline-block; font-size:11px; border:1px solid var(--muted); color:var(--muted); border-radius:6px; padding:1px 6px; margin-left:6px;}
+
+  .jumpbar{display:flex; gap:6px; overflow-x:auto; padding:4px 0 14px; -webkit-overflow-scrolling:touch;}
+  .jumpbar button{
+    flex:0 0 auto; width:34px; height:34px; border-radius:8px; border:1px solid #ccc; background:#fff;
+    font-size:12px; font-weight:600; cursor:pointer;
+  }
+  .jumpbar button.active{background:var(--fg); color:#fff; border-color:var(--fg);}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="title" id="headerTitle">MP Vyapam Maths</div>
+    <div class="sub" id="headerSub">Revision — tap to answer</div>
+  </div>
+  <button class="home-btn" id="homeBtn">⌂ Home</button>
+</header>
+
+<main id="app"></main>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Solution</h3>
+    <div class="ans-line" id="modalAnswer"></div>
+    <div class="sol-text" id="modalSol"></div>
+    <button class="modal-close" id="modalCloseBtn">Close</button>
+  </div>
+</div>
+
+<script>
+const CHAPTERS = [
+  {id:"ch01", name:"01 · Ratio & Proportion", file:"ch01.json"},
+  {id:"ch02", name:"02 · Mixtures & Alligation", file:"ch02.json"},
+  {id:"ch03", name:"03 · Chain Rule", file:null},
+  {id:"ch04", name:"04 · Time & Work", file:null},
+  {id:"ch05", name:"05 · Time, Speed & Distance", file:null},
+  {id:"ch06", name:"06 · Train", file:null},
+  {id:"ch07", name:"07 · Boat & Stream", file:null},
+  {id:"ch08", name:"08 · Race", file:null},
+  {id:"ch09", name:"09 · Ages", file:null},
+  {id:"ch10", name:"10 · Percentage", file:null},
+  {id:"ch11", name:"11 · Profit & Loss", file:null},
+  {id:"ch12", name:"12 · Discount", file:null},
+  {id:"ch13", name:"13 · Simple Interest", file:null},
+  {id:"ch14", name:"14 · Compound Interest", file:null},
+  {id:"ch15", name:"15 · Average", file:null},
+  {id:"ch16", name:"16 · Arithmetic Progression", file:null},
+  {id:"ch17", name:"17 · Simplification", file:null},
+  {id:"ch18", name:"18 · Algebra", file:null},
+  {id:"ch19", name:"19 · Equations", file:null},
+  {id:"ch20", name:"20 · Number System", file:null},
+  {id:"ch21", name:"21 · LCM & HCF", file:null},
+  {id:"ch22", name:"22 · Geometry", file:null},
+  {id:"ch23", name:"23 · Mensuration I", file:null},
+  {id:"ch24", name:"24 · Mensuration II", file:null},
+  {id:"ch25", name:"25 · Trigonometry", file:null},
+  {id:"ch26", name:"26 · Permutation & Combination", file:null},
+  {id:"ch27", name:"27 · Probability", file:null},
+  {id:"ch28", name:"28 · Statistics", file:null},
+];
+
+let state = { view:"home", chapter:null, qIndex:0, questions:[], selected:{} };
+const app = document.getElementById("app");
+const headerTitle = document.getElementById("headerTitle");
+const headerSub = document.getElementById("headerSub");
+
+document.getElementById("homeBtn").onclick = () => { state.view="home"; render(); };
+document.getElementById("modalCloseBtn").onclick = closeModal;
+document.getElementById("modalOverlay").onclick = (e)=>{ if(e.target.id==="modalOverlay") closeModal(); };
+
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("show"); }
+function openModal(title, ansHtml, solText){
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalAnswer").innerHTML = ansHtml;
+  document.getElementById("modalSol").textContent = solText;
+  document.getElementById("modalOverlay").classList.add("show");
+}
+
+async function openChapter(ch){
+  if(!ch.file){ return; }
+  if(!ch._data){
+    try{
+      const res = await fetch(ch.file);
+      ch._data = await res.json();
+    }catch(e){
+      alert("Could not load chapter data.");
+      return;
+    }
+  }
+  state.view="quiz";
+  state.chapter=ch;
+  state.qIndex=0;
+  state.questions=ch._data;
+  state.selected={};
+  render();
+}
+
+function renderHome(){
+  headerTitle.textContent = "MP Vyapam Maths";
+  headerSub.textContent = "28 chapters · tap a topic";
+  let html = '<div class="chapter-list">';
+  CHAPTERS.forEach((ch,i)=>{
+    if(ch.file){
+      html += `<div class="chapter-item" data-idx="${i}"><span class="cname">${ch.name}</span><span class="ccount">open →</span></div>`;
+    }else{
+      html += `<div class="chapter-item disabled"><span class="cname">${ch.name}</span><span class="ccount">coming soon</span></div>`;
+    }
+  });
+  html += '</div>';
+  app.innerHTML = html;
+  app.querySelectorAll(".chapter-item[data-idx]").forEach(el=>{
+    el.onclick = ()=> openChapter(CHAPTERS[+el.dataset.idx]);
+  });
+}
+
+function renderQuiz(){
+  const ch = state.chapter;
+  const qs = state.questions;
+  const i = state.qIndex;
+  const q = qs[i];
+  headerTitle.textContent = ch.name;
+  headerSub.textContent = `Question ${i+1} of ${qs.length}`;
+
+  const pct = Math.round(((i+1)/qs.length)*100);
+  const sel = state.selected[q.id];
+
+  let optsHtml = "";
+  q.opts.forEach((opt,idx)=>{
+    if(!opt || opt==="–"){ return; }
+    let cls="opt";
+    if(sel!==undefined){
+      if(idx===q.ans) cls+=" correct";
+      else if(idx===sel) cls+=" selected-wrong";
+    }
+    optsHtml += `<div class="${cls}" data-idx="${idx}"><span class="lab">${String.fromCharCode(65+idx)}.</span><span>${opt}</span></div>`;
+  });
+
+  let jump = '<div class="jumpbar">';
+  qs.forEach((qq,idx)=>{
+    jump += `<button class="${idx===i?'active':''}" data-jump="${idx}">${idx+1}</button>`;
+  });
+  jump += '</div>';
+
+  app.innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    ${jump}
+    <div class="qcard">
+      <div class="qtext">${q.q}</div>
+      ${optsHtml}
+    </div>
+    <div class="actions">
+      <button id="showAnsBtn">Show Answer</button>
+      <button id="showSolBtn" class="primary">Show Solution</button>
+    </div>
+    <div class="navbar">
+      <button id="prevBtn" ${i===0?"disabled":""}>‹ Prev</button>
+      <button id="nextBtn" ${i===qs.length-1?"disabled":""}>Next ›</button>
+    </div>
+  `;
+
+  app.querySelectorAll(".opt[data-idx]").forEach(el=>{
+    el.onclick = ()=>{
+      state.selected[q.id] = +el.dataset.idx;
+      renderQuiz();
+    };
+  });
+  app.querySelectorAll("[data-jump]").forEach(el=>{
+    el.onclick = ()=>{ state.qIndex = +el.dataset.jump; renderQuiz(); };
+  });
+  document.getElementById("prevBtn").onclick = ()=>{ if(state.qIndex>0){ state.qIndex--; renderQuiz(); } };
+  document.getElementById("nextBtn").onclick = ()=>{ if(state.qIndex<qs.length-1){ state.qIndex++; renderQuiz(); } };
+  document.getElementById("showAnsBtn").onclick = ()=>{
+    const letter = String.fromCharCode(65+q.ans);
+    openModal(`Answer — Q${i+1}`, `<b>Correct: (${letter}) ${q.opts[q.ans]}</b>`, "Tap 'Show Solution' for the fast method.");
+  };
+  document.getElementById("showSolBtn").onclick = ()=>{
+    const letter = String.fromCharCode(65+q.ans);
+    openModal(`Solution — Q${i+1}`, `<b>Answer: (${letter}) ${q.opts[q.ans]}</b>`, q.sol || "Solution not available.");
+  };
+}
+
+function render(){
+  if(state.view==="home") renderHome();
+  else renderQuiz();
+  window.scrollTo(0,0);
+}
+
+render();
+</script>
+</body>
+</html>
