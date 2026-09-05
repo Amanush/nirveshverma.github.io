@@ -155,7 +155,7 @@ function renderQ() {
   document.getElementById('topicTag').textContent = q.topic;
   document.getElementById('qText').textContent = q.q;
   document.getElementById('theoryBox').innerHTML = '<b>THEORY · संक्षिप्त नियम</b><br>' + q.theory;
-  document.getElementById('ansBox').style.display = 'none';
+  document.getElementById('ansBox').style.display = 'block';
   document.getElementById('showAnsBtn').style.display = 'block';
   document.getElementById('ansText').textContent = q.a;
   document.getElementById('prevBtn').disabled = idx === 0;
