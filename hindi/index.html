@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hindi Practice — MP PEB</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, Segoe UI, Arial, sans-serif;
+    background: #fff; color: #000; min-height: 100vh;
+  }
+  header {
+    border-bottom: 2px solid #000; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: #fff; z-index: 10;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  #homeBtn {
+    border: 1px solid #000; background: #fff; color: #000;
+    padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 4px;
+  }
+  #homeBtn:active { background: #000; color: #fff; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
 
+  /* HOME / TOPIC SELECTION */
+  #homeScreen .subtitle { font-size: 13px; color: #444; margin-bottom: 14px; }
+  .topic-grid { display: flex; flex-direction: column; gap: 8px; }
+  .topic-btn {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1.5px solid #000; border-radius: 6px; padding: 12px 14px;
+    background: #fff; cursor: pointer; font-size: 15px; text-align: left;
+  }
+  .topic-btn:active { background: #000; color: #fff; }
+  .topic-btn .count {
+    font-size: 12px; border: 1px solid #000; border-radius: 10px;
+    padding: 2px 8px; min-width: 34px; text-align: center;
+  }
+  .topic-btn:active .count { border-color: #fff; }
+  .topic-btn.all { background: #000; color: #fff; font-weight: 700; }
+  .topic-btn.all .count { border-color: #fff; }
+
+  /* QUESTION SCREEN */
+  #quizScreen { display: none; }
+  .progress { font-size: 12px; color: #555; margin-bottom: 6px; }
+  .topic-tag {
+    display: inline-block; font-size: 11px; border: 1px solid #000;
+    border-radius: 10px; padding: 2px 9px; margin-bottom: 12px;
+  }
+  .qcard {
+    border: 2px solid #000; border-radius: 8px; padding: 18px;
+    font-size: 17px; line-height: 1.55; min-height: 90px; margin-bottom: 14px;
+  }
+  .theory-box {
+    border: 1px dashed #000; border-radius: 6px; padding: 12px 14px;
+    font-size: 13.5px; line-height: 1.5; color: #222; margin-bottom: 14px;
+    background: #fafafa;
+  }
+  .theory-box b { font-size: 11px; letter-spacing: 0.5px; }
+  .answer-area { margin-bottom: 18px; }
+  #showAnsBtn {
+    width: 100%; padding: 12px; font-size: 15px; border: 2px solid #000;
+    border-radius: 6px; background: #000; color: #fff; cursor: pointer;
+  }
+  .ans-revealed {
+    border: 2px solid #000; border-radius: 8px; padding: 14px;
+    font-size: 16px; background: #f0f0f0; display: none;
+  }
+  .ans-revealed b { display: block; font-size: 11px; margin-bottom: 4px; color: #555; }
+  .nav-row { display: flex; gap: 10px; }
+  .nav-btn {
+    flex: 1; padding: 13px; font-size: 15px; border: 1.5px solid #000;
+    border-radius: 6px; background: #fff; color: #000; cursor: pointer;
+  }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:active:not(:disabled) { background: #000; color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>हिंदी अभ्यास · Hindi Practice</h1>
+  <button id="homeBtn" onclick="goHome()">Home</button>
+</header>
+
+<main>
+  <div id="homeScreen">
+    <div class="subtitle">कुल 1264 प्रश्न — किसी भी topic पर tap करें / Select a topic to practice</div>
+    <div class="topic-grid" id="topicGrid"></div>
+  </div>
+
+  <div id="quizScreen">
+    <div class="progress" id="progressLabel"></div>
+    <div class="topic-tag" id="topicTag"></div>
+    <div class="qcard" id="qText"></div>
+    <div class="theory-box" id="theoryBox"></div>
+    <div class="answer-area">
+      <button id="showAnsBtn" onclick="revealAnswer()">उत्तर देखें · Show Answer</button>
+      <div class="ans-revealed" id="ansBox"><b>ANSWER</b><span id="ansText"></span></div>
+    </div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" onclick="prevQ()">← Previous</button>
+      <button class="nav-btn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+</main>
+
+<script>
+let DATA = null;
+let currentSet = [];
+let idx = 0;
+
+fetch('hindi_questions.json')
+  .then(r => r.json())
+  .then(json => { DATA = json; buildHome(); })
+  .catch(err => {
+    document.getElementById('topicGrid').innerHTML =
+      '<div style="color:red;font-size:13px;">JSON load failed — serve this folder via a local/web server (not double-click file open). Error: ' + err + '</div>';
+  });
+
+function buildHome() {
+  const grid = document.getElementById('topicGrid');
+  grid.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'topic-btn all';
+  allBtn.innerHTML = '<span>सभी प्रश्न · All Questions</span><span class="count">' + DATA.meta.total + '</span>';
+  allBtn.onclick = () => startTopic(null);
+  grid.appendChild(allBtn);
+
+  DATA.topics.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn';
+    btn.innerHTML = '<span>' + t.name + '</span><span class="count">' + t.count + '</span>';
+    btn.onclick = () => startTopic(t.name);
+    grid.appendChild(btn);
+  });
+}
+
+function startTopic(topicName) {
+  currentSet = topicName ? DATA.questions.filter(q => q.topic === topicName) : DATA.questions;
+  idx = 0;
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  renderQ();
+}
+
+function goHome() {
+  document.getElementById('homeScreen').style.display = 'block';
+  document.getElementById('quizScreen').style.display = 'none';
+}
+
+function renderQ() {
+  const q = currentSet[idx];
+  document.getElementById('progressLabel').textContent = (idx + 1) + ' / ' + currentSet.length;
+  document.getElementById('topicTag').textContent = q.topic;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('theoryBox').innerHTML = '<b>THEORY · संक्षिप्त नियम</b><br>' + q.theory;
+  document.getElementById('ansBox').style.display = 'none';
+  document.getElementById('showAnsBtn').style.display = 'block';
+  document.getElementById('ansText').textContent = q.a;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === currentSet.length - 1;
+  window.scrollTo(0, 0);
+}
+
+function revealAnswer() {
+  document.getElementById('ansBox').style.display = 'block';
+  document.getElementById('showAnsBtn').style.display = 'none';
+}
+
+function nextQ() {
+  if (idx < currentSet.length - 1) { idx++; renderQ(); }
+}
+function prevQ() {
+  if (idx > 0) { idx--; renderQ(); }
+}
+</script>
+
+</body>
+</html>
