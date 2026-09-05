@@ -1,1 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Practice — MP PEB</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, Segoe UI, Arial, sans-serif;
+    background: #fff; color: #000; min-height: 100vh;
+  }
+  header {
+    border-bottom: 2px solid #000; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: #fff; z-index: 10;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 700; }
+  #homeBtn {
+    border: 1px solid #000; background: #fff; color: #000;
+    padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 4px;
+  }
+  #homeBtn:active { background: #000; color: #fff; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
 
+  #homeScreen .subtitle { font-size: 13px; color: #444; margin-bottom: 14px; }
+  .topic-grid { display: flex; flex-direction: column; gap: 8px; }
+  .topic-btn {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1.5px solid #000; border-radius: 6px; padding: 12px 14px;
+    background: #fff; cursor: pointer; font-size: 15px; text-align: left;
+  }
+  .topic-btn:active { background: #000; color: #fff; }
+  .topic-btn .count {
+    font-size: 12px; border: 1px solid #000; border-radius: 10px;
+    padding: 2px 8px; min-width: 34px; text-align: center;
+  }
+  .topic-btn:active .count { border-color: #fff; }
+  .topic-btn.all { background: #000; color: #fff; font-weight: 700; }
+  .topic-btn.all .count { border-color: #fff; }
+
+  .load-more-box {
+    border: 1.5px dashed #000; border-radius: 6px; padding: 12px 14px;
+    margin-top: 18px; font-size: 13px;
+  }
+  .load-more-box input[type=file] { margin-top: 8px; font-size: 12px; }
+  #loadStatus { font-size: 12px; margin-top: 6px; color: #444; }
+
+  #quizScreen { display: none; }
+  .progress { font-size: 12px; color: #555; margin-bottom: 6px; }
+  .topic-tag {
+    display: inline-block; font-size: 11px; border: 1px solid #000;
+    border-radius: 10px; padding: 2px 9px; margin-bottom: 12px;
+  }
+  .qcard {
+    border: 2px solid #000; border-radius: 8px; padding: 18px;
+    font-size: 17px; line-height: 1.55; min-height: 70px; margin-bottom: 14px;
+  }
+  .theory-box {
+    border: 1px dashed #000; border-radius: 6px; padding: 12px 14px;
+    font-size: 13.5px; line-height: 1.55; color: #222; margin-bottom: 18px;
+    background: #fafafa;
+  }
+  .theory-box b { font-size: 11px; letter-spacing: 0.5px; }
+  .nav-row { display: flex; gap: 10px; }
+  .nav-btn {
+    flex: 1; padding: 13px; font-size: 15px; border: 1.5px solid #000;
+    border-radius: 6px; background: #fff; color: #000; cursor: pointer;
+  }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:active:not(:disabled) { background: #000; color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Computer Practice — MP PEB</h1>
+  <button id="homeBtn" onclick="goHome()">Home</button>
+</header>
+
+<main>
+  <div id="homeScreen">
+    <div class="subtitle" id="subtitleLine">Loading question bank…</div>
+    <div class="topic-grid" id="topicGrid"></div>
+
+    <div class="load-more-box">
+      <b>+ Load another batch (JSON)</b><br>
+      Add more question files as they're generated — they merge into this session automatically.
+      <div><input type="file" id="fileInput" accept="application/json" multiple onchange="loadMoreFiles(event)"></div>
+      <div id="loadStatus"></div>
+    </div>
+  </div>
+
+  <div id="quizScreen">
+    <div class="progress" id="progressLabel"></div>
+    <div class="topic-tag" id="topicTag"></div>
+    <div class="qcard" id="qText"></div>
+    <div class="theory-box" id="theoryBox"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" onclick="prevQ()">← Previous</button>
+      <button class="nav-btn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+</main>
+
+<script>
+let ALL_QUESTIONS = [];
+let currentSet = [];
+let idx = 0;
+let loadedBatches = 0;
+
+// Try to auto-load the default first batch (works when served over http/https)
+fetch('computer_questions_batch1.json')
+  .then(r => r.json())
+  .then(json => {
+    ingestBatch(json);
+  })
+  .catch(err => {
+    document.getElementById('subtitleLine').innerHTML =
+      'Auto-load failed (open via a local/web server, not double-click). You can still load JSON batches manually below.';
+  });
+
+function ingestBatch(json) {
+  const existingIds = new Set(ALL_QUESTIONS.map(q => q.q)); // dedupe by question text
+  let added = 0;
+  (json.questions || []).forEach(q => {
+    if (!existingIds.has(q.q)) {
+      ALL_QUESTIONS.push(q);
+      existingIds.add(q.q);
+      added++;
+    }
+  });
+  loadedBatches++;
+  buildHome();
+  return added;
+}
+
+function loadMoreFiles(event) {
+  const files = event.target.files;
+  const statusEl = document.getElementById('loadStatus');
+  statusEl.textContent = 'Loading ' + files.length + ' file(s)…';
+  let filesDone = 0, totalAdded = 0;
+  [...files].forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const json = JSON.parse(e.target.result);
+        totalAdded += ingestBatch(json);
+      } catch (err) {
+        statusEl.textContent = 'Error parsing ' + file.name + ': ' + err;
+      }
+      filesDone++;
+      if (filesDone === files.length) {
+        statusEl.textContent = 'Added ' + totalAdded + ' new question(s). Total now: ' + ALL_QUESTIONS.length;
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function buildHome() {
+  document.getElementById('subtitleLine').textContent =
+    'कुल ' + ALL_QUESTIONS.length + ' questions (' + loadedBatches + ' batch' + (loadedBatches>1?'es':'') + ' loaded) — tap a topic to practice';
+
+  const counts = {};
+  ALL_QUESTIONS.forEach(q => { counts[q.topic] = (counts[q.topic] || 0) + 1; });
+  const topicsSorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+
+  const grid = document.getElementById('topicGrid');
+  grid.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'topic-btn all';
+  allBtn.innerHTML = '<span>All Questions</span><span class="count">' + ALL_QUESTIONS.length + '</span>';
+  allBtn.onclick = () => startTopic(null);
+  grid.appendChild(allBtn);
+
+  topicsSorted.forEach(([name, count]) => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn';
+    btn.innerHTML = '<span>' + name + '</span><span class="count">' + count + '</span>';
+    btn.onclick = () => startTopic(name);
+    grid.appendChild(btn);
+  });
+}
+
+function startTopic(topicName) {
+  currentSet = topicName ? ALL_QUESTIONS.filter(q => q.topic === topicName) : ALL_QUESTIONS;
+  idx = 0;
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  renderQ();
+}
+
+function goHome() {
+  document.getElementById('homeScreen').style.display = 'block';
+  document.getElementById('quizScreen').style.display = 'none';
+}
+
+function renderQ() {
+  const q = currentSet[idx];
+  document.getElementById('progressLabel').textContent = (idx + 1) + ' / ' + currentSet.length;
+  document.getElementById('topicTag').textContent = q.topic;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('theoryBox').innerHTML = '<b>KEY FACTS</b><br>' + q.theory;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === currentSet.length - 1;
+  window.scrollTo(0, 0);
+}
+
+function nextQ() {
+  if (idx < currentSet.length - 1) { idx++; renderQ(); }
+}
+function prevQ() {
+  if (idx > 0) { idx--; renderQ(); }
+}
+</script>
+
+</body>
+</html>
