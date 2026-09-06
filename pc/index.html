@@ -62,6 +62,11 @@
     background: #fafafa;
   }
   .theory-box b { font-size: 11px; letter-spacing: 0.5px; }
+  .ans-box {
+    border: 2px solid #000; border-radius: 8px; padding: 12px 14px;
+    font-size: 15px; background: #f0f0f0; margin-bottom: 14px;
+  }
+  .ans-box b { display: block; font-size: 11px; margin-bottom: 4px; color: #555; }
   .nav-row { display: flex; gap: 10px; }
   .nav-btn {
     flex: 1; padding: 13px; font-size: 15px; border: 1.5px solid #000;
@@ -95,6 +100,7 @@
     <div class="progress" id="progressLabel"></div>
     <div class="topic-tag" id="topicTag"></div>
     <div class="qcard" id="qText"></div>
+    <div class="ans-box" id="ansBox" style="display:none;"><b>VERIFIED ANSWER</b><span id="ansText"></span></div>
     <div class="theory-box" id="theoryBox"></div>
     <div class="nav-row">
       <button class="nav-btn" id="prevBtn" onclick="prevQ()">← Previous</button>
@@ -109,16 +115,28 @@ let currentSet = [];
 let idx = 0;
 let loadedBatches = 0;
 
-// Try to auto-load the default first batch (works when served over http/https)
-fetch('computer_questions_batch1.json')
-  .then(r => r.json())
-  .then(json => {
-    ingestBatch(json);
-  })
-  .catch(err => {
+// Auto-discover and load sequential batch files: computer_questions_batch1.json, batch2.json, ...
+// Stops at the first missing batch. Keeps bandwidth low by fetching one small file at a time
+// instead of one large combined file.
+async function autoLoadBatches() {
+  let n = 1;
+  while (true) {
+    try {
+      const res = await fetch(`computer_questions_batch${n}.json`);
+      if (!res.ok) break;
+      const json = await res.json();
+      ingestBatch(json);
+      n++;
+    } catch (err) {
+      break;
+    }
+  }
+  if (loadedBatches === 0) {
     document.getElementById('subtitleLine').innerHTML =
       'Auto-load failed (open via a local/web server, not double-click). You can still load JSON batches manually below.';
-  });
+  }
+}
+autoLoadBatches();
 
 function ingestBatch(json) {
   const existingIds = new Set(ALL_QUESTIONS.map(q => q.q)); // dedupe by question text
@@ -201,6 +219,12 @@ function renderQ() {
   document.getElementById('progressLabel').textContent = (idx + 1) + ' / ' + currentSet.length;
   document.getElementById('topicTag').textContent = q.topic;
   document.getElementById('qText').textContent = q.q;
+  if (q.a && q.a.trim()) {
+    document.getElementById('ansBox').style.display = 'block';
+    document.getElementById('ansText').textContent = q.a;
+  } else {
+    document.getElementById('ansBox').style.display = 'none';
+  }
   document.getElementById('theoryBox').innerHTML = '<b>KEY FACTS</b><br>' + q.theory;
   document.getElementById('prevBtn').disabled = idx === 0;
   document.getElementById('nextBtn').disabled = idx === currentSet.length - 1;
