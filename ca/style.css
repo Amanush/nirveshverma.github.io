@@ -1,0 +1,215 @@
+:root {
+  --ink: #111;
+  --sub: #555;
+  --faint: #888;
+  --line: #ddd;
+  --bg: #fff;
+  --card-bg: #fff;
+  --accent: #111;
+  --danger: #b00020;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.45;
+}
+
+header.topbar {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  z-index: 10;
+  padding: 10px 16px;
+}
+
+.topbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  margin-right: auto;
+  cursor: pointer;
+}
+
+button, select {
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid #333;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover, select:hover { background: #f2f2f2; }
+button:disabled { opacity: 0.35; cursor: default; }
+button:disabled:hover { background: var(--bg); }
+
+button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+button.primary:hover { background: #333; }
+
+.nav-cluster { display: flex; gap: 4px; align-items: center; }
+.month-label { font-weight: 600; min-width: 108px; text-align: center; }
+
+.cat-tabs {
+  display: flex;
+  gap: 6px;
+  max-width: 900px;
+  margin: 8px auto 0;
+  flex-wrap: wrap;
+}
+
+.cat-tabs button { border-radius: 999px; padding: 5px 12px; }
+.cat-tabs button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.search-row {
+  max-width: 900px;
+  margin: 8px auto 0;
+}
+.search-row input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--sub);
+  font-size: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hidden-note { color: var(--faint); }
+.hidden-note a { color: var(--ink); text-decoration: underline; cursor: pointer; }
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: var(--card-bg);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 15.5px;
+  line-height: 1.3;
+}
+
+.card .intro {
+  color: #333;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+}
+
+.card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.card li {
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--sub);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1px 6px;
+  margin-bottom: 6px;
+}
+
+.del-btn {
+  border: none;
+  background: none;
+  color: var(--faint);
+  font-size: 16px;
+  padding: 2px 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.del-btn:hover { color: var(--danger); background: none; }
+
+.empty-state {
+  color: var(--faint);
+  text-align: center;
+  padding: 40px 10px;
+  font-size: 14px;
+}
+
+/* Home / dashboard */
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.home-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px;
+  cursor: pointer;
+}
+.home-card:hover { border-color: #333; }
+.home-card .m-label { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.home-card .m-counts { color: var(--sub); font-size: 12.5px; }
+
+.section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sub);
+  margin: 4px 0 10px;
+}
+
+footer.toolbar {
+  max-width: 900px;
+  margin: 4px auto 40px;
+  padding: 0 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .month-label { min-width: 80px; font-size: 13px; }
+  .brand { font-size: 14px; }
+}
