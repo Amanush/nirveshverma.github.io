@@ -120,6 +120,17 @@
 </div>
 
 <script>
+const TRICKS = {
+  ch01: ["a:b, b:c chain → multiply straight across, cancel common term to bridge ratios.", "Componendo-dividendo: (a+b)/(a-b)=(c+d)/(c-d) ⇒ a/b=c/d after cross-mult.", "Mean proportional of x,y = √(xy). Third proportional to a,b = b²/a. Fourth proportional to a,b,c = bc/a."],
+  ch02: ["Alligation cross rule: cheap:dear = (dear−mean):(mean−cheap). Draw the X, cross-subtract.", "CP of mixture = SP/(1+profit%). Then alligate against known rates.", "For 2 vessels mixed to a target ratio: alligate on the FRACTION (not the ratio) of the key ingredient."],
+  ch03: ["Man-days constant: M1×D1×H1/W1 = M2×D2×H2/W2 — plug and cross-multiply, always.", "'Double men, half work' chain: time × (men ratio inverse) × (work ratio).", "A:B efficiency from times: if A takes p days, B takes q days, efficiency ratio A:B = q:p (inverse of time)."],
+  ch04: ["Combined time formula: pq/(p+q) for two workers p,q days each.", "Wages split exactly by rate-contribution, not by days worked — find each person's rate first.", "Pipe+drain: net rate = fill rate − drain rate. Negative net = tank empties, not fills.", "3-unknown work systems (A+B, B+C, C+A given): SUM all three, divide by 2, then subtract each pair to isolate one variable."],
+  ch05: ["Speed unit flip: km/hr → m/s = ×5/18. m/s → km/hr = ×18/5. Memorize once, never recompute.", "Late/early arrival: D×(s2−s1)/(s1×s2) = time difference (in hours) — one formula covers every 'late by X, early by Y' variant.", "Same distance, two speeds → Avg speed = 2s1s2/(s1+s2) (harmonic mean, NOT arithmetic average)."],
+  ch06: ["Crossing a POLE → train covers only its own length. Crossing a PLATFORM/BRIDGE → train covers (length+platform).", "Same direction → relative speed = difference. Opposite direction → relative speed = sum. Always convert to m/s first.", "Two unknowns (train length + speed): set up 2 equations from 2 crossing scenarios, subtract to eliminate speed or length."],
+  ch07: ["Downstream = boat+stream. Upstream = boat−stream. Boat speed = avg of the two. Stream speed = half the difference.", "If only times/distances given (no speeds), form 2 equations in x=1/downstream, y=1/upstream — solve as linear system.", "Boat vs plane-with-wind are the SAME problem: wind=stream, still-air speed=boat speed."],
+  ch08: ["Head-start race: 'A beats B by Xm in a race of L' means B covers only (L−X) while A covers L — build the ratio from there.", "Chain multiple races (A vs B, B vs C) by combining ratios through the shared runner, just like ratio-chaining in Ch.1.", "Circular meeting time = LCM of individual lap times. Opposite-direction crossings use combined speed; same-direction 'meet again' uses LCM of lap times directly."],
+};
+
 const CHAPTERS = [
   {id:"ch01", name:"01 · Ratio & Proportion", file:"ch01.json"},
   {id:"ch02", name:"02 · Mixtures & Alligation", file:"ch02.json"},
@@ -128,7 +139,7 @@ const CHAPTERS = [
   {id:"ch05", name:"05 · Time, Speed & Distance", file:"ch05.json"},
   {id:"ch06", name:"06 · Train", file:"ch06.json"},
   {id:"ch07", name:"07 · Boat & Stream", file:"ch07.json"},
-  {id:"ch08", name:"08 · Race", file:null},
+  {id:"ch08", name:"08 · Race", file:"ch08.json"},
   {id:"ch09", name:"09 · Ages", file:null},
   {id:"ch10", name:"10 · Percentage", file:null},
   {id:"ch11", name:"11 · Profit & Loss", file:null},
@@ -244,6 +255,7 @@ function renderQuiz(){
       <button id="showAnsBtn">Show Answer</button>
       <button id="showSolBtn" class="primary">Show Solution</button>
     </div>
+    ${TRICKS[ch.id] ? '<div class="actions" style="margin-top:8px;"><button id="showTricksBtn">💡 Chapter Tricks</button></div>' : ''}
     <div class="navbar">
       <button id="prevBtn" ${i===0?"disabled":""}>‹ Prev</button>
       <button id="nextBtn" ${i===qs.length-1?"disabled":""}>Next ›</button>
@@ -269,6 +281,14 @@ function renderQuiz(){
     const letter = String.fromCharCode(65+q.ans);
     openModal(`Solution — Q${i+1}`, `<b>Answer: (${letter}) ${q.opts[q.ans]}</b>`, q.sol || "Solution not available.");
   };
+  const tricksBtn = document.getElementById("showTricksBtn");
+  if(tricksBtn){
+    tricksBtn.onclick = ()=>{
+      const tips = TRICKS[ch.id] || [];
+      const html = tips.map((t,idx)=>`${idx+1}. ${t}`).join("\n\n");
+      openModal(`${ch.name} — Shortcuts`, "", html);
+    };
+  }
 }
 
 function render(){
