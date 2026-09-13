@@ -1,0 +1,20 @@
+[
+{"id":1,"q":"The ratio of principal to 1-year simple interest is 50:1. Find the rate of interest.","opts":["2%","3%","4%","5%"],"ans":0,"sol":"P/SI=100/R=50 → R=2%"},
+{"id":2,"q":"The ratio of principal to 5-year simple interest is 10:7. Find the rate.","opts":["14%","15%","10%","20%"],"ans":0,"sol":"P/SI=100/(5R)=10/7 → R=14%"},
+{"id":3,"q":"Shiv borrows money for 5 years; the ratio of principal to total interest is 5:2. Find the ratio of principal to rate.","opts":["2:25","10:1","5:2","25:2"],"ans":3,"sol":"SI/P=2/5=5R/100 → R=8. Taking P=100 (standard base), P:R=100:8=25:2"},
+{"id":4,"q":"At 6% SI, in how many years will money:interest ratio become 10:3?","opts":["7 yr","4 yr","5 yr","3 yr"],"ans":2,"sol":"3/10=6t/100 → t=5 years"},
+{"id":5,"q":"At 8% p.a. SI, in how many years will the interest equal 2/5 of the principal?","opts":["7 yr","5 yr","5 yr","6 yr"],"ans":1,"sol":"2/5=8t/100 → t=5 years"},
+{"id":6,"q":"SI on a sum is 36% of the principal, and the rate% equals the number of years. Find the rate.","opts":["4.5%","6%","5%","8%"],"ans":1,"sol":"R²/100=0.36 → R²=36 → R=6%"},
+{"id":7,"q":"A sum becomes 10× itself at SI. If the time (years) numerically equals the rate, find the rate.","opts":["30%","90%","20%","25%"],"ans":0,"sol":"SI=9P. R²/100=9 → R²=900 → R=30%"},
+{"id":8,"q":"At what SI rate will a sum increase by 30% in 2 years?","opts":["10½%","12½%","15%","10%"],"ans":2,"sol":"R=0.3×100/2=15%"},
+{"id":9,"q":"A sum doubles in 7 years at SI. In how many years will it become 5×?","opts":["30","35","28","21"],"ans":2,"sol":"SI=P in 7yr (rate=100/7). For 5×: SI=4P → t=28 years"},
+{"id":10,"q":"In how many years will a sum become 16× itself at 30% SI p.a.?","opts":["40","25","30","50"],"ans":3,"sol":"SI=15P. t=15×100/30=50 years"},
+{"id":11,"q":"A sum becomes 7/5× itself in 3 years at SI. Find the rate.","opts":["12⅔%","12¾%","13⅓%","13½%"],"ans":2,"sol":"SI=2P/5 over 3yrs. R=(2/5)×100/3=13⅓%"},
+{"id":12,"q":"A sum doubles in 15 years at SI. Find the rate.","opts":["6⅔%","8⅓%","8⅔%","6⅓%"],"ans":0,"sol":"R=100/15=6⅔%"},
+{"id":13,"q":"A sum triples in 4 years at SI. In how many years will it become 5× itself?","opts":["8 yr","6 yr","5 yr","3 yr"],"ans":0,"sol":"SI=2P over 4yrs. For 5×: SI=4P → t=4×4/2=8 years"},
+{"id":14,"q":"In how many years will a sum double at 15% p.a. SI?","opts":["6 yr","6¼ yr","6½ yr","6⅔ yr"],"ans":3,"sol":"t=100/15=6⅔ years"},
+{"id":15,"q":"A sum triples at approximately 7.69% p.a. SI. Find the required time.","opts":["26 yr","39 yr","6.5 yr","13 yr"],"ans":0,"sol":"SI=2P. t=2×100/7.69≈26 years"},
+{"id":16,"q":"At what SI rate will a sum become 6× itself in 10 years?","opts":["50%","40%","30%","60%"],"ans":0,"sol":"SI=5P. R=5×100/10=50%"},
+{"id":17,"q":"Find the SI rate at which a sum doubles itself in 16⅔ years.","opts":["12%","6%","8%","9%"],"ans":1,"sol":"R=100/(50/3)=6%"},
+{"id":18,"q":"A fixed sum becomes 7× itself in 4 years at SI. In how many years will it become 19× itself?","opts":["12 yr","10 yr","6 yr","9 yr"],"ans":0,"sol":"SI=6P over 4yrs. For 19×: SI=18P → t=18×4/6=12 years"}
+]

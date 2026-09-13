@@ -1,0 +1,23 @@
+[
+{"id":1,"q":"If Chanchal earns 35% more than Laxman, find by what % Laxman earns less than Chanchal.","opts":["28.85%","29.75%","25.92%","29.92%"],"ans":2,"sol":"Laxman=100,Chanchal=135. % less=(35/135)×100=25.92%"},
+{"id":2,"q":"If x is 80% of y, find y as a percentage of 2x.","opts":["64.5%","62.5%","63.5%","65.5%"],"ans":1,"sol":"y=1.25x. y as %of 2x = 1.25x/2x=62.5%"},
+{"id":3,"q":"A's height is 40% less than B's. Find by what % B's height is more than A's.","opts":["86.66%","66.66%","76.66%","96.66%"],"ans":1,"sol":"A=60,B=100. % more=(40/60)×100=66.66%"},
+{"id":4,"q":"A's income is 20% more than B's. B's income is 25% less than C's. Find by what % A's income is less than C's.","opts":["8%","10%","7%","12.5%"],"ans":1,"sol":"B=0.75C. A=1.2×0.75C=0.9C → A is 10% less than C"},
+{"id":5,"q":"Amit's salary is 20% less than Bhanu's, and Bhanu's is 25% more than Chandan's. Chandan earns ₹20000. Find Amit's salary.","opts":["₹10000","₹18000","₹20000","₹25000"],"ans":2,"sol":"Bhanu=1.25×20000=25000. Amit=0.8×25000=20000"},
+{"id":6,"q":"Numbers A,B satisfy: 5% of A + 4% of B = (2/3)×(6% of A + 8% of B). Find A:B.","opts":["2:3","4:3","3:4","1:1"],"ans":1,"sol":"0.15A+0.12B=0.12A+0.16B → A:B=4:3"},
+{"id":7,"q":"If 16% of a = 8% of b, find 40% of a in terms of b.","opts":["80% of b","16% of b","10% of b","20% of b"],"ans":3,"sol":"a=0.5b. 40%a=0.2b=20% of b"},
+{"id":8,"q":"60% of a number, added to 60, gives the number itself. Find the number.","opts":["120","150","100","180"],"ans":1,"sol":"0.6N+60=N → N=150"},
+{"id":9,"q":"40% of a larger number equals 60% of a smaller number. Their sum is 150. Find the larger number.","opts":["95","90","85","80"],"ans":1,"sol":"L=1.5S, L+S=150 → S=60,L=90"},
+{"id":10,"q":"Reducing 120 by x% equals increasing 40 by x%. Find by what % 210's (x%) is less than 180's (x+20)%.","opts":["33⅓%","18⅔%","16⅔%","20%"],"ans":2,"sol":"x=50. 210×50%=105, 180×70%=126. %diff=(126-105)/126=16⅔%"},
+{"id":11,"q":"30% of (B−A) = 18% of (A+B). Find A:B.","opts":["4:1","5:3","1:4","5:2"],"ans":2,"sol":"0.3B-0.3A=0.18A+0.18B → B=4A → A:B=1:4"},
+{"id":12,"q":"If c=a²/b, and both a,b increase by 20%, find the % change in c.","opts":["15%","20%","25%","30%"],"ans":1,"sol":"New c=(1.2a)²/(1.2b)=1.2×(a²/b) → 20% increase"},
+{"id":13,"q":"A fraction's numerator² decreases by 20% and denominator² increases by 25%, giving a resultant fraction of 9/16. Find the numerator as a % of the denominator.","opts":["87.5%","91.25%","93.75%","83.33%"],"ans":2,"sol":"n²/d²=9/16×1.25/0.8=225/256 → n/d=15/16=93.75%"},
+{"id":14,"q":"A student multiplied a number by 3/5 instead of 5/3. Find the % error in the calculation.","opts":["74%","84%","64%","54%"],"ans":2,"sol":"Error=(5/3-3/5)/(5/3)×100=64%"},
+{"id":15,"q":"Priya's weight=120% of Pranjal's. Shreya's weight=80% of Purva's. Purva's weight=2× Pranjal's. Find x, where Priya's weight=x% of Shreya's.","opts":["75","90","7⅛","82"],"ans":0,"sol":"Pranjal=100,Priya=120,Purva=200,Shreya=160. x=120/160×100=75"},
+{"id":16,"q":"A,B,C,D buy a flat for ₹56 lakh. (B+C+D)=460% of A. (A+C+D)=366⅔% of B. C=40% of (A+B+D). Find D's share.","opts":["15 lakh","20 lakh","16 lakh","18 lakh"],"ans":3,"sol":"Solve sequentially: A=10,B=12,C=16,D=56-10-12-16=18 lakh"},
+{"id":17,"q":"A,B,C,D buy land for ₹44.5 lakh. (B+C+D)=345% of A. (A+C+D)=150% of B. C=25% of (A+B+D). Find C's payment.","opts":["₹900000","₹890000","₹632000","₹1000000"],"ans":1,"sol":"A=10,B=17.8. Solve: C=8.9 lakh=₹890000"},
+{"id":18,"q":"A fridge's price decreases 25%, causing sales to increase 40%. Find the % change in revenue.","opts":["6%","5%","15%","10%"],"ans":1,"sol":"Revenue factor=0.75×1.4=1.05 → 5% increase"},
+{"id":19,"q":"A batsman's average increases by 7.5%, then further by 16%. Find the overall % increase.","opts":["12.7%","23.5%","23.7%","24.7%"],"ans":3,"sol":"1.075×1.16=1.247 → 24.7% increase"},
+{"id":20,"q":"A number is increased by 22%, then by 18%, then decreased by 30%. Find the net % change (nearest whole number).","opts":["1% increase","2% decrease","1% decrease","No change"],"ans":0,"sol":"1.22×1.18×0.7=1.0081 → ≈1% net increase"},
+{"id":21,"q":"A number x is 10% less than another number y, where y is 10% more than 125. Find 2x.","opts":["286","285.5","247.5","300"],"ans":2,"sol":"y=137.5. x=0.9×137.5=123.75. 2x=247.5"}
+]
