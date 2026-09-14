@@ -137,6 +137,7 @@ const TRICKS = {
   ch14: ["'Becomes n× itself at CI in t years' → (1+r/100)^t = n. Take the nth root or recognize perfect powers (1.2²=1.44, 1.2³=1.728) instantly.", "Semi-annual/quarterly compounding: divide rate by periods-per-year, multiply time by periods-per-year — then treat it as a normal CI problem.", "SI given, CI asked (or vice-versa) at SAME rate/time: extract the rate from SI first (R=100×SI/(P×T)), THEN compute CI fresh — never guess a shortcut ratio between them for 3+ years.", "CI - SI relationship for 2 years only: CI-SI = P×(R/100)². This shortcut does NOT extend cleanly to 3 years — recompute directly instead."],
   ch15: ["Average of consecutive numbers (AP) = middle term (odd count) or average of the two middle terms (even count) — never sum-and-divide by hand.", "Average of numbers divisible by k in a range = (first + last)/2 — first and last are the nearest multiples of k inside the range.", "When one group's average and a merged group's average are both given, use: unknown = (merged sum) - (known sum) — set up the sum equations, not the averages, to solve."],
   ch16: ["AP: nth term=a+(n-1)d. Sum=n/2×(2a+(n-1)d)=n/2×(first+last). Know both forms cold.", "GP: nth term=ar^(n-1). Product of first n terms=(ar^((n-1)/2))^n — or just multiply out for small n.", "HP: convert to the RECIPROCAL sequence (which is an AP), solve there, then flip back at the end. Never manipulate HP terms directly."],
+  ch17: ["Cyclic-exponent identities [(x^a/x^b)^(a+b)×...] almost always collapse to 1 — expand the exponent sum symbolically before crunching numbers.", "Nested infinite radical √(x+k√(x+k√...))=x → solve x=√(x+kx), square both sides, factor.", "Telescoping series 1/(n(n+d)): split into (1/d)[1/n - 1/(n+d)], sum collapses to just first-minus-last term.", "Surd rationalization: multiply by the conjugate FIRST, always — don't try to simplify nested surds by inspection."],
 };
 
 const CHAPTERS = [
@@ -156,7 +157,7 @@ const CHAPTERS = [
   {id:"ch14", name:"14 · Compound Interest", file:"ch14.json"},
   {id:"ch15", name:"15 · Average", file:"ch15.json"},
   {id:"ch16", name:"16 · AP, GP & HP", file:"ch16.json"},
-  {id:"ch17", name:"17 · Simplification", file:null},
+  {id:"ch17", name:"17 · Simplification", file:"ch17.json"},
   {id:"ch18", name:"18 · Algebra", file:null},
   {id:"ch19", name:"19 · Equations", file:null},
   {id:"ch20", name:"20 · Number System", file:null},
