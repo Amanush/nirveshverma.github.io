@@ -1,0 +1,23 @@
+[
+{"id":1,"q":"Find the average of all primes and composites from 2 to 100 (i.e., all integers 2-100).","opts":["51","50","49.5","50.5"],"ans":0,"sol":"Sum(2 to 100)=5049, count=99. Avg=5049/99=51"},
+{"id":2,"q":"Find the average of all prime numbers between 30 and 50.","opts":["37","37.8","39","39.8"],"ans":3,"sol":"Primes: 31,37,41,43,47. Sum=199. Avg=199/5=39.8"},
+{"id":3,"q":"The average of 7 consecutive numbers is 20. Find the largest number.","opts":["21","22","23","24"],"ans":2,"sol":"Middle(4th)=20. Largest(7th)=20+3=23"},
+{"id":4,"q":"The average of 4 consecutive numbers is 8.5. Find the smallest number.","opts":["8","7","7","10"],"ans":1,"sol":"n+1.5=8.5 → n=7"},
+{"id":5,"q":"The average of 7 consecutive even numbers is 36. Find the difference between the highest and lowest.","opts":["2","5","12","15"],"ans":2,"sol":"Diff=2×6=12 (7 terms, step 2)"},
+{"id":6,"q":"Find the arithmetic mean of the first 20 multiples of 7 and the first 30 multiples of 4 (combined average of all 50 numbers).","opts":["52","66.6","33.30","23.6"],"ans":1,"sol":"Sum=1470+1860=3330. Count=50. Avg=66.6"},
+{"id":7,"q":"Find the difference between the average of even numbers 12-50 and the average of odd numbers 48-84.","opts":["31","35","33","37"],"ans":1,"sol":"Even avg=31, Odd avg=66. Diff=35"},
+{"id":8,"q":"The average of 7 consecutive positive numbers is 96. Find the product of the 4th and 5th numbers.","opts":["9508","9312","9408","9400"],"ans":1,"sol":"4th=96,5th=97. Product=9312"},
+{"id":9,"q":"Find the average of all numbers between 100 and 523 that are divisible by 18.","opts":["296","315","335","319"],"ans":1,"sol":"First=108,Last=522. Avg=(108+522)/2=315"},
+{"id":10,"q":"Find the average of numbers between 8 and 45 that are divisible by 6.","opts":["45","61","35","27"],"ans":3,"sol":"First=12,Last=42. Avg=27"},
+{"id":11,"q":"How many numbers between 340 and 1267 are divisible by 3,4, and 5, but not by 7?","opts":["13","14","12","11"],"ans":0,"sol":"Div by 60: 16 numbers. Also div by 420: 3 numbers. 16-3=13"},
+{"id":12,"q":"The average of 3,8,6,x is 8, and the average of 17,2,15,x,y is 13. Find y.","opts":["15","19","17","16"],"ans":3,"sol":"x=15 (from first). Then 49+y=65 → y=16"},
+{"id":13,"q":"The average of 25,21,15,14,x,12,8 is 15, and the average of 41,37,57,y,50 is 45. Find (x²+y)/(y²-x).","opts":["14/249","16/179","16/159","14/159"],"ans":3,"sol":"x=10,y=40. (100+40)/(1600-10)=140/1590=14/159"},
+{"id":14,"q":"Find the mean of 1³, 2³, 3³, 4³, and 5³.","opts":["55","35","25","45"],"ans":3,"sol":"Sum=1+8+27+64+125=225. Avg=225/5=45"},
+{"id":15,"q":"The average of 7 consecutive numbers is 1. If the next 2 numbers are included, find the new average.","opts":["Increase by 2","Increase by 3","Increase by 1","No change"],"ans":2,"sol":"Original range -2 to 4. Adding 5,6 gives -2 to 6, avg=2 → increase of 1"},
+{"id":16,"q":"If a,b,c,d,e are 5 consecutive odd numbers, express their average in terms of a.","opts":["5(a+4)","abcd/5","5(a+b+c+d+e)","a+4"],"ans":3,"sol":"Average of 5 consecutive terms = middle term = a+4"},
+{"id":17,"q":"The average of two numbers is k. If the first number is m, find the second.","opts":["2k+m","k+m","k+m/2","2k-m"],"ans":3,"sol":"Second=2k-m"},
+{"id":18,"q":"The average of two numbers is XY. If one number is X, find the other.","opts":["Y","Y/2","2XY-X","X(Y-1)"],"ans":2,"sol":"Second=2XY-X"},
+{"id":19,"q":"If the average of a,b,c,d,e,f is 18, find the average of a/5,b/5,c/5,d/5,e/5,f/5.","opts":["4","3.6","3.5","3"],"ans":1,"sol":"Average scales the same way: 18/5=3.6"},
+{"id":20,"q":"The first number is 5/6 of the sum of the other two. The average of all three is 26.4. Find the first number.","opts":["46","68","29","36"],"ans":3,"sol":"F=(5/6)S, F+S=79.2 → S=43.2, F=36"},
+{"id":21,"q":"The average of 4 consecutive odd numbers is 39 less than their sum. Find the first number in the list.","opts":["30","20","50","10"],"ans":3,"sol":"Sum=4×avg, avg=Sum-39 → Sum=52, avg=13, first=10"}
+]

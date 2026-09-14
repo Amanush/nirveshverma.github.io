@@ -1,0 +1,23 @@
+[
+{"id":1,"q":"Find the arithmetic mean of the first n natural numbers.","opts":["(n-1)/2","(n+1)/2","n/2","n"],"ans":1,"sol":"AM=(1+n)/2=(n+1)/2"},
+{"id":2,"q":"If 2x, x+8, 3x+1 are in AP, find x.","opts":["7","-2","5","3"],"ans":2,"sol":"(x+8)-2x=(3x+1)-(x+8) → 15=3x → x=5"},
+{"id":3,"q":"In an AP, the 9th term is 35 and the 19th term is 75. Find the 20th term.","opts":["78","79","80","81"],"ans":1,"sol":"d=4,a=3. 20th=a+19d=79"},
+{"id":4,"q":"In an AP, the first and last terms are 1 and 11. If the sum is 36, find the number of terms.","opts":["3","4","5","6"],"ans":3,"sol":"36=(1+11)/2×n → n=6"},
+{"id":5,"q":"Find the sum of an AP whose first term, last term, and common difference are 3,101,7 respectively.","opts":["750","720","780","810"],"ans":2,"sol":"n=15. Sum=(3+101)/2×15=780"},
+{"id":6,"q":"An AP has 25 terms, last term 314, common difference 12. Find the first term.","opts":["28","26","24","22"],"ans":1,"sol":"314=a+24×12 → a=26"},
+{"id":7,"q":"In an AP, the sum of the first 4 terms is 214, and the sum of the first 10 terms is 625. Find the first term.","opts":["49","8.5","4.7","46"],"ans":0,"sol":"2a+3d=107, 2a+9d=125 → d=3,a=49"},
+{"id":8,"q":"In an increasing AP, (2nd term)×(3rd term)=4 and (1st term)×(4th term)=-14. Find the 10th term.","opts":["15","30","25","20"],"ans":2,"sol":"Solve: d=3,a=-2. 10th=a+9d=25"},
+{"id":9,"q":"If the pth term of an AP is q and the qth term is p, find the rth term.","opts":["p-q+r","p+q-r","p+q+r","p-q-r"],"ans":1,"sol":"rth term=p+q-r"},
+{"id":10,"q":"An AP's first, second, and last terms are a,b,2a. Find the sum.","opts":["3ab/(2(b-a))","ab/(2(b-a))","ab/(b-a)","3ab/(2(b+a))"],"ans":0,"sol":"Sum=3ab/(2(b-a))"},
+{"id":11,"q":"In a GP, the sum of 3 terms is 19 and their product is 216. Find the common ratio.","opts":["-3/2","3/2","2","3"],"ans":1,"sol":"ar=6. Solve 6r²-13r+6=0 → r=3/2"},
+{"id":12,"q":"A GP has first term 1 and 4th term 8. Find the sum of the first 7 terms.","opts":["129","128","127","124"],"ans":2,"sol":"r=2. Sum7=(2⁷-1)/(2-1)=127"},
+{"id":13,"q":"In a GP, the 10th term is 9 and the 4th term is 4. Find the 7th term.","opts":["3√3","6","3√2","9/4"],"ans":1,"sol":"Solve for r,a → 7th term=6"},
+{"id":14,"q":"In a GP, the 4th term is 2 and the 5th term is 8. Find the product of the first 8 terms.","opts":["168","88","48","64"],"ans":2,"sol":"r=4,a=1/32. Product of 8 terms=48"},
+{"id":15,"q":"In a GP, the 5th term is 2. Find the product of the first 9 terms.","opts":["512","256","128","1024"],"ans":0,"sol":"Product=(ar⁴)⁹=2⁹=512"},
+{"id":16,"q":"In a GP, the 3rd and 6th terms are 16 and 432 respectively. Find the sum of the first term and common ratio.","opts":["40/9","43/9","22/3","25/3"],"ans":1,"sol":"r³=27→r=3, a=16/9. Sum=16/9+3=43/9"},
+{"id":17,"q":"In a GP, the 3rd term is 4. Find the product of the first 5 terms.","opts":["32","256","1024","64"],"ans":2,"sol":"Product=(ar²)⁵=4⁵=1024"},
+{"id":18,"q":"In a GP, the 3rd term equals the square of the 1st term. If the 2nd term is 8, find the 6th term.","opts":["128","132","124","120"],"ans":0,"sol":"a=4,r=2. 6th=ar⁵=128"},
+{"id":19,"q":"In a GP of 4 numbers, the 1st×3rd term=729 and the 3rd+4th term=324. Find the sum of all 4 numbers.","opts":["400","220","480","360"],"ans":3,"sol":"ar=27,r=3,a=9. Terms:9,27,81,243. Sum=360"},
+{"id":20,"q":"If the 7th term of an HP is 8 and the 8th term is 7, find the 15th term.","opts":["16","27/14","56/15","14"],"ans":2,"sol":"Reciprocal AP: d=1/56. 15th term of AP=15/56 → HP term=56/15"},
+{"id":21,"q":"A cube's volume equals the infinite sum ∑(1/2)ⁿ for n=0 to ∞. Find the volume.","opts":["2","2.5","1","4"],"ans":0,"sol":"Sum=1/(1-1/2)=2"}
+]
