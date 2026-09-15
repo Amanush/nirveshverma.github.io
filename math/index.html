@@ -141,6 +141,8 @@ const TRICKS = {
   ch18: ["x+1/x family: know the ladder cold — (x+1/x)²-2=x²+1/x²; cube the base to jump to x³+1/x³=q³-3q; square x²+1/x² term to reach x⁴+1/x⁴.", "a+b+c=0 is a MASTER key: it forces a³+b³+c³=3abc every time — spot this condition and the identity collapses instantly.", "Sum-of-squares-equals-zero trick: (expr1)²+(expr2)²+...=0 means EACH bracket=0 individually — regroup the given equation into perfect squares first.", "a-b type substitution: when a question gives a shifted variable (x-5, x-a, x+4), substitute y=that expression and solve the y-ladder — don't work in x directly."],
   ch19: ["Root-relation shortcuts: sum=−b/a, product=c/a. α²+β²=(sum)²−2(product). α/β+β/α=(sum²−2product)/product.", "Remainder theorem: to find remainder of p(x)÷(x−k), just compute p(k) — never do long division.", "Equal roots ⟺ discriminant=0. Set B²−4AC=0 and solve for the unknown directly.", "GCD of two cubics: factor each fully first (try small integer roots via the remainder theorem), then compare factor lists."],
   ch20: ["Consecutive-number word problems: let the MIDDLE term = x (for odd count) — sum simplifies instantly to (count)×x.", "Sum & product given, need difference: (a-b)²=(a+b)²-4ab — never solve the quadratic by hand when this shortcut works.", "Nearest perfect square: find √N, round to nearest integer k, then compare k² to N directly for add/subtract amount.", "Co-prime numbers: LCM×HCF=product always holds, and HCF=1 for co-primes, so LCM=product directly."],
+  ch21: ["For algebraic terms, LCM takes the HIGHEST power of each variable; HCF takes the LOWEST power — never mix these up.", "LCM/HCF of fractions: LCM=LCM(numerators)/HCF(denominators); HCF=HCF(numerators)/LCM(denominators). Memorize both directions.", "'Bells ring together again' = LCM of the intervals. 'How many times in T minutes' = T/LCM + 1 (the +1 counts the start).", "'Same remainder' problems: subtract pairs of numbers first, then find the HCF of those DIFFERENCES — never the HCF of the numbers themselves."],
+  ch22: ["Interior+Exterior angle of a regular polygon always sum to 180°. Exterior angle=360/n. Get one, get both instantly.", "Sum of interior angles=(n-2)×180°. Use this to jump straight from 'angle ratio' to 'find n' problems.", "Complement=90-x, Supplement=180-x. Read the question word-for-word — mixing these two is the #1 error source in this chapter.", "Triangle inequality: the sum of any two sides > third side, and the difference of any two sides < third side — use both together to bound unknown integer sides."],
 };
 
 const CHAPTERS = [
@@ -164,8 +166,8 @@ const CHAPTERS = [
   {id:"ch18", name:"18 · Algebra", file:"ch18.json"},
   {id:"ch19", name:"19 · Equations", file:null},
   {id:"ch20", name:"20 · Number System", file:"ch20.json"},
-  {id:"ch21", name:"21 · LCM & HCF", file:null},
-  {id:"ch22", name:"22 · Geometry", file:null},
+  {id:"ch21", name:"21 · LCM & HCF", file:"ch21.json"},
+  {id:"ch22", name:"22 · Geometry", file:"ch22.json"},
   {id:"ch23", name:"23 · Mensuration I", file:null},
   {id:"ch24", name:"24 · Mensuration II", file:null},
   {id:"ch25", name:"25 · Trigonometry", file:null},
