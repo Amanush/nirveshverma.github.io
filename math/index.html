@@ -138,6 +138,9 @@ const TRICKS = {
   ch15: ["Average of consecutive numbers (AP) = middle term (odd count) or average of the two middle terms (even count) — never sum-and-divide by hand.", "Average of numbers divisible by k in a range = (first + last)/2 — first and last are the nearest multiples of k inside the range.", "When one group's average and a merged group's average are both given, use: unknown = (merged sum) - (known sum) — set up the sum equations, not the averages, to solve."],
   ch16: ["AP: nth term=a+(n-1)d. Sum=n/2×(2a+(n-1)d)=n/2×(first+last). Know both forms cold.", "GP: nth term=ar^(n-1). Product of first n terms=(ar^((n-1)/2))^n — or just multiply out for small n.", "HP: convert to the RECIPROCAL sequence (which is an AP), solve there, then flip back at the end. Never manipulate HP terms directly."],
   ch17: ["Cyclic-exponent identities [(x^a/x^b)^(a+b)×...] almost always collapse to 1 — expand the exponent sum symbolically before crunching numbers.", "Nested infinite radical √(x+k√(x+k√...))=x → solve x=√(x+kx), square both sides, factor.", "Telescoping series 1/(n(n+d)): split into (1/d)[1/n - 1/(n+d)], sum collapses to just first-minus-last term.", "Surd rationalization: multiply by the conjugate FIRST, always — don't try to simplify nested surds by inspection."],
+  ch18: ["x+1/x family: know the ladder cold — (x+1/x)²-2=x²+1/x²; cube the base to jump to x³+1/x³=q³-3q; square x²+1/x² term to reach x⁴+1/x⁴.", "a+b+c=0 is a MASTER key: it forces a³+b³+c³=3abc every time — spot this condition and the identity collapses instantly.", "Sum-of-squares-equals-zero trick: (expr1)²+(expr2)²+...=0 means EACH bracket=0 individually — regroup the given equation into perfect squares first.", "a-b type substitution: when a question gives a shifted variable (x-5, x-a, x+4), substitute y=that expression and solve the y-ladder — don't work in x directly."],
+  ch19: ["Root-relation shortcuts: sum=−b/a, product=c/a. α²+β²=(sum)²−2(product). α/β+β/α=(sum²−2product)/product.", "Remainder theorem: to find remainder of p(x)÷(x−k), just compute p(k) — never do long division.", "Equal roots ⟺ discriminant=0. Set B²−4AC=0 and solve for the unknown directly.", "GCD of two cubics: factor each fully first (try small integer roots via the remainder theorem), then compare factor lists."],
+  ch20: ["Consecutive-number word problems: let the MIDDLE term = x (for odd count) — sum simplifies instantly to (count)×x.", "Sum & product given, need difference: (a-b)²=(a+b)²-4ab — never solve the quadratic by hand when this shortcut works.", "Nearest perfect square: find √N, round to nearest integer k, then compare k² to N directly for add/subtract amount.", "Co-prime numbers: LCM×HCF=product always holds, and HCF=1 for co-primes, so LCM=product directly."],
 };
 
 const CHAPTERS = [
@@ -158,9 +161,9 @@ const CHAPTERS = [
   {id:"ch15", name:"15 · Average", file:"ch15.json"},
   {id:"ch16", name:"16 · AP, GP & HP", file:"ch16.json"},
   {id:"ch17", name:"17 · Simplification", file:"ch17.json"},
-  {id:"ch18", name:"18 · Algebra", file:null},
+  {id:"ch18", name:"18 · Algebra", file:"ch18.json"},
   {id:"ch19", name:"19 · Equations", file:null},
-  {id:"ch20", name:"20 · Number System", file:null},
+  {id:"ch20", name:"20 · Number System", file:"ch20.json"},
   {id:"ch21", name:"21 · LCM & HCF", file:null},
   {id:"ch22", name:"22 · Geometry", file:null},
   {id:"ch23", name:"23 · Mensuration I", file:null},
