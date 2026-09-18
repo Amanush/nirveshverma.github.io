@@ -145,6 +145,10 @@ const TRICKS = {
   ch22: ["Interior+Exterior angle of a regular polygon always sum to 180°. Exterior angle=360/n. Get one, get both instantly.", "Sum of interior angles=(n-2)×180°. Use this to jump straight from 'angle ratio' to 'find n' problems.", "Complement=90-x, Supplement=180-x. Read the question word-for-word — mixing these two is the #1 error source in this chapter.", "Triangle inequality: the sum of any two sides > third side, and the difference of any two sides < third side — use both together to bound unknown integer sides."],
   ch23: ["Triangle area toolkit: Heron's (√(s(s-a)(s-b)(s-c))), Area=r×s (inradius), Area=abc/4R (circumradius) — pick whichever given values fit fastest.", "Right triangle inradius shortcut: r=(a+b-c)/2, where c is the hypotenuse. No Heron's needed.", "Rectangle+border/path problems: outer area − inner area = border/path area. Always compute both areas fully rather than trying a perimeter shortcut.", "'Diagonal + one dimension known' rectangle problems: use d²=l²+w² alongside the given sum or difference of l,w — two equations, solve like a system."],
   ch24: ["Cube: diagonal=a√3, TSA=6a², Volume=a³. Any one given, find the rest by working backward through these three.", "Equal-volume cylinders: r²h=constant — a ratio question on radii/heights is always solved via this single relation, cross-multiplied.", "Melting & recasting: volume is CONSERVED, shape is not. Set Volume(before)=Volume(after) and solve for the missing dimension.", "Cuboid from 3 face areas (lb, bh, lh given): multiply all three, square-root the product to get lbh=Volume directly — no need to solve for l,b,h individually."],
+  ch25: ["tanθ+cotθ = secθ·cscθ always — huge shortcut for 'find secθ·cscθ given tanθ relation' questions.", "Height & distance: draw it mentally as one right triangle per angle given. Two angles from two points → two equations, subtract or divide to eliminate the unknown height/distance.", "Depression angle from top = elevation angle from ground point, to the SAME line — don't confuse which vertex the angle is measured at.", "Min value of a·sec²θ+b·csc²θ = (√a+√b)² — a direct formula, skip calculus entirely."],
+  ch26: ["Repetition allowed → multiply choices per position (n^r style). No repetition → use falling factorial P(n,r)=n!/(n-r)!.", "Letters-of-a-word arrangements: n!/(repeat1!×repeat2!×...) — always divide out every repeated letter's factorial.", "'No two X together' in a row: arrange the OTHER group first, then place X's into the gaps between/around them (n+1 gaps).", "Circular arrangements: (n-1)! not n! — one position is always fixed as reference."],
+  ch27: ["n coins tossed: total outcomes=2^n. 'At least k' = 1 − P(fewer than k) — complement is almost always faster than direct counting.", "Two dice: 36 total outcomes. Build a quick mental 6×6 sum/product grid rather than re-deriving favorable cases each time.", "Conditional probability P(A|B) = P(A∩B)/P(B) — identify the REDUCED sample space (B) first, then count favorable within it.", "Independent events (coin + die, coin + coin): probabilities just multiply — no conditioning needed."],
+  ch28: ["Empirical relation: Mode = 3×Median − 2×Mean. One missing among mode/median/mean? This formula solves it instantly.", "Median position for grouped/ungrouped data: (n+1)/2 th term (odd n) or average of two middle terms (even n) — for grouped frequency, use the cumulative-frequency class.", "Mean deviation about the mean: find mean first, then average of |xi−mean| (weighted by frequency if given).", "Variance = mean of squared deviations from the mean. SD = √Variance. Always compute variance first, then take the root last."],
 };
 
 const CHAPTERS = [
@@ -166,16 +170,16 @@ const CHAPTERS = [
   {id:"ch16", name:"16 · AP, GP & HP", file:"ch16.json"},
   {id:"ch17", name:"17 · Simplification", file:"ch17.json"},
   {id:"ch18", name:"18 · Algebra", file:"ch18.json"},
-  {id:"ch19", name:"19 · Equations", file:null},
+  {id:"ch19", name:"19 · Equations", file:"ch19.json"},
   {id:"ch20", name:"20 · Number System", file:"ch20.json"},
   {id:"ch21", name:"21 · LCM & HCF", file:"ch21.json"},
   {id:"ch22", name:"22 · Geometry", file:"ch22.json"},
   {id:"ch23", name:"23 · Mensuration I", file:"ch23.json"},
   {id:"ch24", name:"24 · Mensuration II", file:"ch24.json"},
-  {id:"ch25", name:"25 · Trigonometry", file:null},
-  {id:"ch26", name:"26 · Permutation & Combination", file:null},
-  {id:"ch27", name:"27 · Probability", file:null},
-  {id:"ch28", name:"28 · Statistics", file:null},
+  {id:"ch25", name:"25 · Trigonometry", file:"ch25.json"},
+  {id:"ch26", name:"26 · Permutation & Combination", file:"ch26.json"},
+  {id:"ch27", name:"27 · Probability", file:"ch27.json"},
+  {id:"ch28", name:"28 · Statistics", file:"ch28.json"},
 ];
 
 let state = { view:"home", chapter:null, qIndex:0, questions:[], selected:{} };
