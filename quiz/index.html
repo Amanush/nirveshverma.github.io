@@ -1,1 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Reels</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff;color:#000;font-family:-apple-system,"Segoe UI","Noto Sans Devanagari",Arial,sans-serif}
+body{min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:460px;padding:14px 16px 24px;display:flex;flex-direction:column;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+h1{font-size:22px;margin:6px 0 4px}
+.sub{font-size:13px;color:#555;margin-bottom:14px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;justify-content:space-between;align-items:center;border:2px solid #000;border-radius:10px;padding:16px;background:#fff;color:#000;font-size:19px;font-weight:600;text-align:left}
+.item:active{background:#000;color:#fff}
+.item .c{font-size:13px;border:1.5px solid currentColor;border-radius:12px;padding:2px 10px;font-weight:500}
+.item.off{opacity:.35;pointer-events:none}
+.item.dark{background:#000;color:#fff}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sm{border:1.5px solid #000;background:#fff;border-radius:6px;padding:5px 11px;font-size:13px}
+.sm.on{background:#000;color:#fff}
+.meta{font-size:13px;color:#555}
+#quiz{display:none;flex:1;flex-direction:column}
+.tag{align-self:flex-start;font-size:12px;border:1.5px solid #000;border-radius:12px;padding:2px 10px;margin:8px 0}
+.q{border:3px solid #000;border-radius:14px;padding:22px 18px;font-weight:700;line-height:1.4;font-size:clamp(24px,6.6vw,32px);min-height:170px;display:flex;align-items:center;word-break:break-word}
+.mid{height:150px;display:flex;align-items:center;justify-content:center;margin:12px 0}
+.ring{position:relative;width:110px;height:110px}
+.ring svg{transform:rotate(-90deg)}
+.ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800}
+#showBtn{display:none;width:100%;padding:18px;font-size:22px;font-weight:700;background:#000;color:#fff;border:3px solid #000;border-radius:12px}
+.ans{display:none;width:100%;border:3px solid #000;border-radius:14px;padding:18px;background:#f0f0f0;font-size:clamp(22px,6vw,29px);font-weight:700;line-height:1.4;text-align:center;word-break:break-word}
+.ans small{display:block;font-size:12px;letter-spacing:1px;color:#555;margin-bottom:6px}
+.nav{display:flex;gap:10px;margin-top:6px;padding-top:10px}
+.nav button{flex:1;padding:15px;font-size:18px;font-weight:600;border:2px solid #000;border-radius:10px;background:#fff;color:#000}
+.nav button:active:not(:disabled){background:#000;color:#fff}
+.nav button:disabled{opacity:.25}
+#err{color:#b00;font-size:12px;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="app">
 
+<div id="home">
+  <h1>Quiz Reels</h1>
+  <div class="sub">Pick a subject</div>
+  <div class="list" id="subjects"></div>
+</div>
+
+<div id="topics" style="display:none">
+  <div class="bar"><button class="sm" onclick="showHome()">← Home</button><span class="meta" id="tSubj"></span></div>
+  <div class="sub">Pick a topic, or play everything</div>
+  <div class="list" id="topicList"></div>
+</div>
+
+<div id="quiz">
+  <div class="bar">
+    <button class="sm" onclick="showTopics()">← Back</button>
+    <span class="meta" id="prog"></span>
+    <button class="sm" id="shufBtn" onclick="toggleShuffle()">Shuffle</button>
+  </div>
+  <div class="tag" id="tag"></div>
+  <div class="q" id="qText"></div>
+  <div class="mid">
+    <div class="ring" id="ring">
+      <svg width="110" height="110"><circle cx="55" cy="55" r="48" fill="none" stroke="#ddd" stroke-width="9"/><circle id="arc" cx="55" cy="55" r="48" fill="none" stroke="#000" stroke-width="9" stroke-dasharray="301.6" stroke-dashoffset="0"/></svg>
+      <div class="n" id="num">10</div>
+    </div>
+    <button id="showBtn" onclick="reveal()">Show me answer</button>
+    <div class="ans" id="ans"><small>ANSWER</small><span id="ansT"></span></div>
+  </div>
+  <div class="nav">
+    <button id="prev" onclick="step(-1)">← Previous</button>
+    <button id="next" onclick="step(1)">Next →</button>
+  </div>
+</div>
+
+<div id="err"></div>
+</div>
+
+<script>
+const SECS = 10;                       // timer length
+let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, shuffle = false;
+const $ = id => document.getElementById(id);
+const norm = d => (Array.isArray(d) ? d : (d.questions || [])).map(x => ({q: x.q, a: x.a, t: x.t || x.topic || 'General'})).filter(x => x.q && x.a);
+
+async function init() {
+  try { MAN = await (await fetch('manifest.json')).json(); } catch (e) { $('err').textContent = 'Serve this folder via a web server. ' + e; return; }
+  await Promise.all(MAN.map(async m => {
+    try { CACHE[m.id] = norm(await (await fetch(m.file)).json()); } catch (e) { CACHE[m.id] = []; }
+    m.count = CACHE[m.id].length;
+  }));
+  showHome();
+}
+function show(id) { ['home','topics'].forEach(x => $(x).style.display = x === id ? 'block' : 'none'); $('quiz').style.display = id === 'quiz' ? 'flex' : 'none'; }
+
+function showHome() {
+  stop(); show('home');
+  $('subjects').innerHTML = '';
+  MAN.forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'item' + (m.count ? '' : ' off');
+    b.innerHTML = '<span>' + m.name + '</span><span class="c">' + (m.count || 'soon') + '</span>';
+    b.onclick = () => pickSubject(m);
+    $('subjects').appendChild(b);
+  });
+}
+function pickSubject(m) { subj = m; pool = CACHE[m.id]; showTopics(); }
+function showTopics() {
+  stop(); show('topics'); $('tSubj').textContent = subj.name;
+  const L = $('topicList'); L.innerHTML = '';
+  const add = (name, n, cls, f) => { const b = document.createElement('button'); b.className = 'item ' + cls; b.innerHTML = '<span>' + name + '</span><span class="c">' + n + '</span>'; b.onclick = f; L.appendChild(b); };
+  add('All questions', pool.length, 'dark', () => start(pool));
+  const g = {}; pool.forEach(x => (g[x.t] = g[x.t] || []).push(x));
+  Object.keys(g).sort((a, b) => g[b].length - g[a].length).forEach(t => add(t, g[t].length, '', () => start(g[t])));
+}
+function start(arr) { set = shuffle ? shuf(arr) : arr.slice(); i = 0; show('quiz'); render(); }
+function shuf(a) { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; }
+function toggleShuffle() { shuffle = !shuffle; $('shufBtn').classList.toggle('on', shuffle); set = shuffle ? shuf(set) : set; i = 0; render(); }
+
+function stop() { clearInterval(tmr); tmr = null; }
+function render() {
+  stop();
+  const q = set[i];
+  $('prog').textContent = (i + 1) + ' / ' + set.length;
+  $('tag').textContent = subj.name + ' · ' + q.t;
+  $('qText').textContent = q.q;
+  $('ansT').textContent = q.a;
+  $('prev').disabled = i === 0; $('next').disabled = i === set.length - 1;
+  $('ans').style.display = 'none'; $('showBtn').style.display = 'none'; $('ring').style.display = 'block';
+  let t = SECS; tick(t);
+  tmr = setInterval(() => { t--; tick(t); if (t <= 0) { stop(); $('ring').style.display = 'none'; $('showBtn').style.display = 'block'; } }, 1000);
+  window.scrollTo(0, 0);
+}
+function tick(t) { $('num').textContent = t; $('arc').setAttribute('stroke-dashoffset', (301.6 * (1 - t / SECS)).toFixed(1)); }
+function reveal() { $('showBtn').style.display = 'none'; $('ans').style.display = 'block'; }
+function step(d) { const n = i + d; if (n >= 0 && n < set.length) { i = n; render(); } }
+document.addEventListener('keydown', e => { if ($('quiz').style.display !== 'flex') return; if (e.key === 'ArrowRight') step(1); if (e.key === 'ArrowLeft') step(-1); if (e.key === 'Enter' && $('showBtn').style.display === 'block') reveal(); });
+init();
+</script>
+</body>
+</html>
