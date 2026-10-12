@@ -1,0 +1,38 @@
+[
+ {
+  "id": "hindi",
+  "name": "Hindi",
+  "file": "hindi.json",
+  "count": 1264
+ },
+ {
+  "id": "english",
+  "name": "English",
+  "file": "english.json",
+  "count": 1563
+ },
+ {
+  "id": "science",
+  "name": "General Science",
+  "file": "science.json",
+  "count": 1829
+ },
+ {
+  "id": "reasoning",
+  "name": "Reasoning",
+  "file": "reasoning.json",
+  "count": 791
+ },
+ {
+  "id": "computer",
+  "name": "Computer",
+  "file": "computer.json",
+  "count": 1320
+ },
+ {
+  "id": "maths",
+  "name": "Maths",
+  "file": "maths.json",
+  "count": 0
+ }
+]
