@@ -45,6 +45,7 @@ h1{font-size:30px;line-height:1.1;margin:0 0 6px;font-weight:700;letter-spacing:
 .set h2{font-size:13px;margin:14px 0 2px;color:var(--mute);font-weight:600}
 .row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;font-size:16px;gap:10px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
+select{max-width:60%;font:inherit;font-size:14px;color:var(--ink);background:#EDF0F7;border:0;border-radius:10px;padding:8px 10px}
 .seg{display:inline-flex;background:#EDF0F7;border-radius:10px;padding:3px;gap:2px}
 .sm{border:0;background:transparent;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:600;color:var(--ink2);transition:background .15s,color .15s}
 .sm.on{background:var(--ink);color:#fff}
@@ -104,6 +105,9 @@ h1{font-size:30px;line-height:1.1;margin:0 0 6px;font-weight:700;letter-spacing:
     <div class="row"><span>Timer, seconds</span><div class="seg" id="sTimer"></div></div>
     <div class="row"><span>Hint</span><div class="seg" id="sHint"></div></div>
     <div class="row"><span>Voice reads question</span><div class="seg" id="sVoice"></div></div>
+    <div class="row vrow"><span>English voice</span><select id="selEn"></select></div>
+    <div class="row vrow"><span>Hindi voice</span><select id="selHi"></select></div>
+    <div class="row"><span>Hear a sample</span><button class="pill" onclick="testVoice()">Play</button></div>
     <div class="row"><span>Tick sound</span><div class="seg" id="sBeep"></div></div>
     <div class="row"><span>Auto-play</span><div class="seg" id="sAuto"></div></div>
   </div>
@@ -168,7 +172,7 @@ function seg(id, key, opts) {
 function buildSettings() {
   seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]);
   seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]);
-  seg('sVoice', 'voice', [['Off', false], ['On', true]]);
+  seg('sVoice', 'voice', [['Off', false], ['On', true]]); fillVoiceSel();
   seg('sBeep', 'beep', [['Off', false], ['On', true]]);
   seg('sAuto', 'auto', [['Off', false], ['On', true]]);
 }
@@ -209,21 +213,82 @@ function shuf(a) { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const
 function toggleShuffle() { shuffle = !shuffle; $('shufBtn').classList.toggle('on', shuffle); set = shuffle ? shuf(set) : set; i = 0; render(); }
 
 /* ---------- helpers ---------- */
-function stop() { clearInterval(tmr); clearTimeout(aux); tmr = aux = null; try { speechSynthesis.cancel(); } catch (e) {} }
+function stop() { clearInterval(tmr); clearTimeout(aux); tmr = aux = null; spkId++; try { speechSynthesis.cancel(); } catch (e) {} }
 function beep(freq, dur) {
   if (!CFG.beep || !AC) return;
   try { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = freq; o.connect(g); g.connect(AC.destination); g.gain.setValueAtTime(0.15, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur); o.start(); o.stop(AC.currentTime + dur); } catch (e) {}
 }
+/* ---------- voice (native Indian) ---------- */
+let VOICES = [], spkId = 0;
+const DEV = /[ऀ-ॿ]/;
+function loadVoices() { try { VOICES = speechSynthesis.getVoices() || []; } catch (e) { VOICES = []; } fillVoiceSel(); }
+if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
+const isLang = (v, p) => v.lang.replace('_', '-').toLowerCase().startsWith(p);
+function pickVoice(kind) {
+  const saved = kind === 'hi' ? CFG.vHi : CFG.vEn;
+  if (saved) { const s = VOICES.find(v => v.name === saved); if (s) return s; }
+  const good = /(neerja|swara|madhur|kalpana|hemant|google|rishi|heera|lekha|kajal|natural|online)/i;
+  const L = kind === 'hi' ? VOICES.filter(v => isLang(v, 'hi'))
+          : VOICES.filter(v => isLang(v, 'en-in')).concat(VOICES.filter(v => isLang(v, 'en') && !isLang(v, 'en-in')));
+  return L.find(v => good.test(v.name)) || L[0] || null;
+}
+function fillVoiceSel() {
+  [['selEn', 'vEn', v => isLang(v, 'en')], ['selHi', 'vHi', v => isLang(v, 'hi')]].forEach(([id, key, f]) => {
+    const el = $(id); if (!el) return;
+    const list = VOICES.filter(f).sort((a, b) => (isLang(b, 'en-in') - isLang(a, 'en-in')));
+    el.innerHTML = '<option value="">Auto (best Indian voice)</option>' + list.map(v => '<option value="' + v.name.replace(/"/g, '&quot;') + '">' + v.name + ' (' + v.lang + ')</option>').join('');
+    el.value = CFG[key] || '';
+    el.onchange = () => { CFG[key] = el.value; saveCfg(); };
+  });
+}
+function cleanSpeech(t) {                      // make text speakable
+  const hi = (t.match(/[ऀ-ॿ]/g) || []).length > (t.match(/[A-Za-z]/g) || []).length;
+  const blank = hi ? ' रिक्त स्थान ' : ' blank ';
+  return t
+    .replace(/\(\s*[_\-\.\s]{2,}\s*\)|_+|\.{4,}|-{3,}|[…]{2,}/g, blank)
+    .replace(/→|->/g, hi ? ' से ' : ' to ')
+    .replace(/&/g, hi ? ' और ' : ' and ')
+    .replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
+    .replace(/=/g, ' equals ').replace(/%/g, ' percent')
+    .replace(/[–—]/g, ', ').replace(/[*#\/\\|~^]/g, ' ')
+    .replace(/\s{2,}/g, ' ').trim();
+}
+function segments(t) {                         // split by script so each part gets the right voice
+  const runs = t.match(/[ऀ-ॿ][ऀ-ॿ\s,.।॥]*|[^ऀ-ॿ]+/g) || [];
+  const out = []; let last = 'en';
+  runs.forEach(r => {
+    const hasD = DEV.test(r), hasL = /[A-Za-z]/.test(r), has = /[\p{L}\p{N}]/u.test(r);
+    if (!has) { if (out.length) out[out.length - 1].t += r; return; }
+    const lang = hasD ? 'hi' : hasL ? 'en' : last;
+    if (out.length && out[out.length - 1].lang === lang) out[out.length - 1].t += r; else out.push({lang, t: r});
+    last = lang;
+  });
+  return out;
+}
 function speak(text, done) {
   if (!CFG.voice || !window.speechSynthesis) { done && done(); return; }
-  let fired = false; const fin = () => { if (!fired) { fired = true; done && done(); } };
+  const my = ++spkId; let fired = false;
+  const fin = () => { if (!fired && my === spkId) { fired = true; done && done(); } };
   try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = /[ऀ-ॿ]/.test(text) ? 'hi-IN' : 'en-IN'; u.rate = 0.95;
-    u.onend = fin; u.onerror = fin; speechSynthesis.cancel(); speechSynthesis.speak(u);
-    aux = setTimeout(fin, 20000);
+    speechSynthesis.cancel();
+    const segs = segments(cleanSpeech(text));
+    if (!segs.length) { fin(); return; }
+    let k = 0;
+    const next = () => {
+      if (my !== spkId) return;
+      if (k >= segs.length) { fin(); return; }
+      const s = segs[k++], u = new SpeechSynthesisUtterance(s.t), v = pickVoice(s.lang);
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = s.lang === 'hi' ? 'hi-IN' : 'en-IN';
+      u.rate = s.lang === 'hi' ? 0.92 : 0.95; u.pitch = 1;
+      u.onend = next; u.onerror = next;
+      speechSynthesis.speak(u);
+    };
+    next();
+    clearTimeout(aux); aux = setTimeout(fin, 25000);
   } catch (e) { fin(); }
 }
+function testVoice() { const was = CFG.voice; CFG.voice = true; speak('Which planet is known as the red planet? मंगल ग्रह को लाल ग्रह कहा जाता है।'); CFG.voice = was; }
+
 function fit(el, text, big) {         // font size by text length
   const n = text.length;
   el.style.fontSize = (big ? (n <= 50 ? 34 : n <= 100 ? 30 : n <= 170 ? 26 : n <= 260 ? 22 : 19)
@@ -235,12 +300,12 @@ function makeHint(a) {
   const jumbleOK = one && g.length >= 4 && g.length <= 12 && !/^[\d.,\/\-+%]+$/.test(a);
   if ((mode === 'jumble' || mode === 'auto') && jumbleOK) {
     let j = g, tries = 0; do { j = shuf(g); tries++; } while (j.join('') === g.join('') && tries < 10);
-    return ['UNSCRAMBLE', j.join(' ')];
+    return ['UNSCRAMBLE', j.join(' '), 'Hint. Unscramble these letters. ' + j.join(', ').toUpperCase()];
   }
   if (words.length <= 4 && g.length <= 28) {
-    return [words.length + ' WORD' + (words.length > 1 ? 'S' : ''), words.map(w => { const x = G(w); return x[0] + ' ' + x.slice(1).map(() => '_').join(' '); }).join('  /  ')];
+    return [words.length + ' WORD' + (words.length > 1 ? 'S' : ''), words.map(w => { const x = G(w); return x[0] + ' ' + x.slice(1).map(() => '_').join(' '); }).join('  /  '), 'Hint. ' + words.length + (words.length > 1 ? ' words' : ' word') + ', ' + (words.length > 1 ? 'starting with ' : 'starts with ') + words.map(w => G(w)[0]).join(', ').toUpperCase()];
   }
-  return [words.length + ' WORDS', 'STARTS WITH ' + G(words[0])[0]];
+  return [words.length + ' WORDS', 'STARTS WITH ' + G(words[0])[0], 'Hint. ' + words.length + ' words, starting with ' + G(words[0])[0].toUpperCase()];
 }
 
 /* ---------- render ---------- */
@@ -262,7 +327,7 @@ function render() {
       t--; tick(t, S);
       if (t <= 3 && t > 0) $('ring').classList.add('urgent');
       if (t > 0) beep(t <= 3 ? 880 : 520, 0.08);
-      if (h && t === Math.ceil(S / 2)) { $('hint').innerHTML = '<small>Hint: ' + h[0].toLowerCase() + '</small>'; $('hint').appendChild(document.createTextNode(h[1])); $('hint').classList.add('show'); }
+      if (h && t === Math.ceil(S / 2)) { $('hint').innerHTML = '<small>Hint: ' + h[0].toLowerCase() + '</small>'; $('hint').appendChild(document.createTextNode(h[1])); $('hint').classList.add('show'); if (CFG.voice && h[2]) speak(h[2]); }
       if (t <= 0) {
         stop(); beep(300, 0.35); $('ring').style.display = 'none';
         if (CFG.auto) reveal(); else $('showBtn').style.display = 'block';
