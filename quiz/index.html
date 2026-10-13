@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Daily Quiz</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2B3A67">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 @font-face{font-family:Poppins;font-weight:500;src:url(fonts/poppins-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
 @font-face{font-family:Poppins;font-weight:600;src:url(fonts/poppins-latin-600-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
@@ -180,6 +185,24 @@ body{background:transparent}
 .ans{background:#D8F3DF;border:2px solid #2E9E5B;color:#0F3D24;margin-top:10px}
 .ans small{display:flex;width:fit-content;margin:0 auto 8px;background:#1F7A45;color:#fff;padding:3px 16px;border-radius:4px;transform:skewX(-8deg);font-weight:800;letter-spacing:.3px}
 .cta{display:flex;align-items:center;gap:10px;color:#3A2F00;font-weight:700;font-size:18px;padding:12px 22px;border:2px solid #E0A800;border-radius:30px;background:#FFF3C4}
+.emblem{position:absolute;right:14px;top:-34px;width:68px;height:68px;border-radius:50%;background:#FFFDF5;border:4px solid #FFC815;display:grid;place-items:center;color:var(--acc);box-shadow:0 8px 18px -6px rgba(40,20,0,.5);font-size:36px;animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+.emblem svg{width:1em;height:1em;stroke-width:1.9}
+.q{min-height:96px}
+.mid{min-height:132px;margin-top:10px}
+.hint.gone{visibility:hidden}
+.tbar b{display:none;position:absolute;left:12px;top:0;bottom:0;display:flex;align-items:center;font:800 14px var(--stage);color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;z-index:1}
+#recTools{position:fixed;top:max(8px,env(safe-area-inset-top));right:8px;display:flex;gap:6px;z-index:30;opacity:.3;transition:opacity .2s}
+#recTools:hover,#recTools:active{opacity:.95}
+#recTools button{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.7);display:grid;place-items:center;font-size:16px;color:#1D2433}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(20,16,38,.92);color:#fff;font-size:14px;line-height:1.4;padding:10px 16px;border-radius:14px;max-width:min(90vw,380px);text-align:center;z-index:40;display:none}
+body.rec{overflow:hidden}
+body.rec .tbar b{display:flex}
+body.rec #app{max-width:min(100vw,calc(100dvh * 9 / 16));height:100dvh;min-height:0;padding:max(5dvh,env(safe-area-inset-top)) 14px max(12dvh,env(safe-area-inset-bottom))}
+body.rec #quiz{height:100%;justify-content:center}
+body.rec #quiz>.topbar,body.rec #quiz>.side,body.rec #prev,body.rec #next,body.rec .navbar{display:none!important}
+body.rec .ctrl{min-height:0;margin-top:10px;justify-content:center}
+body.rec .paper{padding-bottom:26px}
+@media (min-width:1000px){body.rec #quiz:not(.hide){display:flex}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -237,9 +260,11 @@ body{background:transparent}
     <button class="circle" onclick="showTopics()" aria-label="Back" data-ic="chevL"></button>
     <div class="progress"><div class="lbl" id="prog"></div><div class="track"><i id="trk"></i></div></div>
     <button class="circle" id="shufBtn" onclick="toggleShuffle()" aria-label="Shuffle" data-ic="shuffle"></button>
+    <button class="circle" id="recBtn" onclick="enterRec()" aria-label="Recording mode" data-ic="rec"></button>
   </div>
-  <div class="tbar" aria-hidden="true"><i id="tfill"></i><span id="tnum"></span></div>
+  <div class="tbar" aria-hidden="true"><i id="tfill"></i><b id="tcnt"></b><span id="tnum"></span></div>
   <div class="paper">
+    <div class="emblem" id="emblem" aria-hidden="true"></div>
     <div class="tag" id="tag"></div>
     <div class="q" id="qText"></div>
     <div class="opts" id="opts"></div>
@@ -285,6 +310,8 @@ body{background:transparent}
   </div>
 </div>
 <canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
+<div id="recTools" class="hide"><button onclick="toggleFs()" aria-label="Full screen" data-ic="fs"></button><button onclick="exitRec()" aria-label="Exit recording mode" data-ic="close"></button></div>
+<div id="toast"></div>
 <div id="err"></div>
 </div>
 <script>
@@ -310,6 +337,100 @@ const IC = {
   list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', layers: 'M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5'
 };
 const svg = n => '<svg class="ic" viewBox="0 0 24 24"><path d="' + IC[n] + '"/></svg>';
+/* ============ vector emblems: picked from the question's own words, drawn offline ============ */
+const VEC = {
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
+  atom: 'M12 12h.01M2.5 12A9.5 3.6 0 1 0 21.5 12 9.5 3.6 0 1 0 2.5 12M7.25 3.77A9.5 3.6 60 1 0 16.75 20.23 9.5 3.6 60 1 0 7.25 3.77M7.25 20.23A9.5 3.6 120 1 0 16.75 3.77 9.5 3.6 120 1 0 7.25 20.23',
+  dna: 'M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9M9 6.5h6M9 12h6M9 17.5h6',
+  leaf: 'M5 19c0-9 5-14 15-14 0 10-5 15-14 15M5 19l8-8', tree: 'M12 22v-7M12 15c-5 0-7-4-5-7-2-3 0-6 3-6 1-1 3-1 4 0 3 0 5 3 3 6 2 3 0 7-5 7z',
+  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8',
+  moon: 'M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z',
+  planet: 'M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM3.2 15.5c-1.2-2 3-6 9-8.5s10-2.7 9-.7M20.8 8.5c1.2 2-3 6-9 8.5s-10 2.7-9 .7',
+  rocket: 'M12 2c4 2 6 6 5 11l-3 3h-4l-3-3C6 8 8 4 12 2zM9 16l-2 5 4-2M15 16l2 5-4-2M12 8h.01',
+  bolt: 'M13 2L4 14h7l-1 8 9-12h-7l1-8z', magnet: 'M6 3v8a6 6 0 0 0 12 0V3h-4v8a2 2 0 0 1-4 0V3H6zM6 7h4M14 7h4',
+  fire: 'M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z', drop: 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z',
+  waves: 'M3 8c3-3 6 3 9 0s6 3 9 0M3 13c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0', mountain: 'M3 19l6-11 4 6 3-4 5 9H3zM8 11l1.2 2',
+  book: 'M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-17zM4 19.5A2.5 2.5 0 0 1 6.5 17H20M9 7h7',
+  feather: 'M20 4c-7 0-13 5-13 12l-3 4M20 4c0 7-5 12-12 12M10 14h6', letterA: 'M5 20L12 4l7 16M8 14h8',
+  keyboard: 'M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10',
+  mouse: 'M12 2a6 6 0 0 0-6 6v8a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6zM12 2v7', folder: 'M3 6a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z',
+  file: 'M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v5h5M8 13h8M8 17h8',
+  chip: 'M7 7h10v10H7zM10 10h4v4h-4zM9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4', wifi: 'M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01',
+  lock: 'M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4M12 15v2', mail: 'M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM2.5 6.5l9.5 7 9.5-7',
+  calendar: 'M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM3 10h18M8 2v4M16 2v4', rupee: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 8h7M8.5 11h7M9 8c4 0 5 4 0 4l5 4',
+  bank: 'M3 9l9-6 9 6H3zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18M3 18.5h18', flag: 'M5 21V3M5 4h13l-2.5 4 2.5 4H5', crown: 'M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z',
+  scales: 'M12 3v18M7 21h10M4 7h16M4 7l-2.5 7a3.5 3 0 0 0 5 0L4 7zM20 7l-2.5 7a3.5 3 0 0 0 5 0L20 7z', map: 'M3 6l6-2.5 6 2.5 6-2.5v14.5L15 20.5 9 18 3 20.5V6zM9 3.5V18M15 6v14.5',
+  compass: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5 5-2z', temple: 'M12 2v2.5M7 11a5 5 0 0 1 10 0M5 11h14M6.5 11v10M17.5 11v10M10 21v-5a2 2 0 0 1 4 0v5M3 21h18',
+  people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16.5 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6 6 0 0 1 3.5 6', heart: 'M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z',
+  brain: 'M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3V4z', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20.5 20.5L16 16',
+  camera: 'M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+  music: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z', trophy: 'M8 3h8v6a4 4 0 0 1-8 0V3zM8 5H4v1a4 4 0 0 0 4 4M16 5h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9.5 17h5',
+  wrench: 'M14.7 6.3a4 4 0 0 0 5 5l-9 9a2.1 2.1 0 0 1-3-3l9-9a4 4 0 0 0-2-2z', triangle: 'M3 20L12 4l9 16H3zM8 20v-3M12 20v-3M16 20v-3', chart: 'M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-8M20 16v-3',
+  percent: 'M19 5L5 19M7.5 4a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.5 13a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z', pi: 'M4 6h16M8 6v13M16 6c0 8 0 11 3 13',
+  code: 'M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16', cloud: 'M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 10a4 4 0 0 1-.5 8H7z', sword: 'M20 3l-9 9M20 3v5M20 3h-5M11 12l-6 6M5 18l-2 3 3-2M9 14l2 2',
+  speaker: 'M4 9h4l5-4v14l-5-4H4V9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11', paw: 'M12 13c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5 1 0 1.5-.5 2-.5s1 .5 2 .5c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5zM5.5 10m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M9 6.5m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M15 6.5m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M18.5 10m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0',
+  close: 'M6 6l12 12M18 6L6 18', fs: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5', rec: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0'
+};
+Object.assign(IC, VEC);
+// [english words, Hindi fragments, icon] - first match wins; topic and question text are searched
+const VRULES = [
+  ['direction|north|south|east|west|compass', 'दिशा|उत्तर दिशा|दक्षिण दिशा|पूर्व दिशा|पश्चिम दिशा', 'compass'],
+  ['antivirus|malware|firewall|password|encrypt|hacker|cyber|security|phishing', 'सुरक्षा|साइबर|पासवर्ड', 'lock'],
+  ['river|lake|dam|ocean|sea|water|rain|glacier|ganga|yamuna|narmada|tapti|chambal|betwa', 'नदी|झील|बांध|समुद्र|सागर|जल|वर्षा|हिमनद|गंगा|यमुना|नर्मदा|ताप्ती|चंबल|बेतवा', 'waves'],
+  ['mountain|himalaya|plateau|peak|hill|satpura|vindhya', 'पर्वत|पहाड़|हिमालय|पठार|शिखर|सतपुड़ा|विंध्य', 'mountain'],
+  ['dna|gene|genes|chromosome|heredity|cell|cells|bacteria|biology', 'जीन|गुणसूत्र|आनुवंशिक|कोशिका|जीवाणु|जीव विज्ञान', 'dna'],
+  ['atom|atomic|electron|proton|neutron|molecule|element|periodic|nuclear', 'परमाणु|इलेक्ट्रॉन|प्रोटॉन|न्यूट्रॉन|अणु|तत्व|आवर्त', 'atom'],
+  ['acid|base|chemistry|chemical|reaction|compound|solution|salt|metal|alloy', 'अम्ल|क्षार|रसायन|अभिक्रिया|यौगिक|लवण|धातु|मिश्र धातु', 'flask'],
+  ['electric|electricity|current|voltage|battery|resistance|circuit|watt', 'विद्युत|धारा|वोल्ट|बैटरी|प्रतिरोध|परिपथ|वाट', 'bolt'],
+  ['magnet|magnetic', 'चुंबक', 'magnet'],
+  ['heat|temperature|fire|combustion|fuel|thermal', 'ऊष्मा|ताप|आग|दहन|ईंधन', 'fire'],
+  ['moon|lunar|eclipse', 'चंद्रमा|चन्द्रमा|ग्रहण', 'moon'],
+  ['isro|rocket|satellite|space|chandrayaan|mission|launch', 'इसरो|रॉकेट|उपग्रह|अंतरिक्ष|चंद्रयान|मिशन', 'rocket'],
+  ['planet|earth|mars|jupiter|saturn|venus|mercury|galaxy|solar system|star', 'ग्रह|पृथ्वी|मंगल|बृहस्पति|शनि|शुक्र|बुध|आकाशगंगा|सौरमंडल|तारा', 'planet'],
+  ['sun|solar|light|ray|rays|lens|optics|reflection|refraction', 'सूर्य|सौर|प्रकाश|किरण|लेंस|परावर्तन|अपवर्तन', 'sun'],
+  ['blood|heart|pulse|vitamin|disease|medicine|health|body|human|organ|digestion', 'रक्त|हृदय|विटामिन|रोग|दवा|स्वास्थ्य|शरीर|मानव|अंग|पाचन', 'heart'],
+  ['plant|plants|tree|forest|leaf|photosynthesis|crop|agriculture|botany|flower|soil', 'पौधा|पौधे|पेड़|वृक्ष|वन्य|जंगल|पत्ती|प्रकाश संश्लेषण|फसल|कृषि|वनस्पति|फूल|मिट्टी', 'leaf'],
+  ['animal|animals|bird|fish|wildlife|tiger|lion|elephant|peacock|sanctuary|national park', 'पशु|जानवर|पक्षी|मछली|वन्यजीव|बाघ|शेर|हाथी|मोर|अभयारण्य|राष्ट्रीय उद्यान', 'paw'],
+  ['force|energy|pressure|friction|motion|newton|gravity|mass|density|machine|engine|velocity|acceleration', 'बल|ऊर्जा|दाब|घर्षण|न्यूटन|गुरुत्व|द्रव्यमान|घनत्व|मशीन|इंजन|वेग|त्वरण', 'wrench'],
+  ['keyboard|shortcut|ctrl|function key', 'कीबोर्ड|शॉर्टकट', 'keyboard'],
+  ['mouse|cursor|click', 'माउस|कर्सर|क्लिक', 'mouse'],
+  ['email|mail|inbox', 'ईमेल|ई-मेल|मेल', 'mail'],
+  ['internet|network|wifi|wi-fi|web|browser|website|url|http|www|online|router|lan|wan', 'इंटरनेट|नेटवर्क|वेब|ब्राउज़र|वेबसाइट|ऑनलाइन|राउटर', 'wifi'],
+  ['file|files|folder|file extension|ms word|ms excel|excel|powerpoint|ppt|spreadsheet|ms office|docx', 'फाइल|फोल्डर|एक्सटेंशन|एक्सेल|पावरपॉइंट', 'file'],
+  ['program|programming|code|coding|html|python|java|compiler|algorithm|binary|software|language translator', 'प्रोग्राम|कोड|एल्गोरिथ्म|बाइनरी|सॉफ्टवेयर|कंपाइलर', 'code'],
+  ['cloud|saas|iaas', 'क्लाउड', 'cloud'],
+  ['computer|computers|hardware|cpu|processor|memory|ram|rom|chip|generation|input|output|storage', 'कंप्यूटर|हार्डवेयर|प्रोसेसर|मेमोरी|चिप|पीढ़ी|इनपुट|आउटपुट|स्टोरेज', 'chip'],
+  ['percent|percentage', 'प्रतिशत|%', 'percent'],
+  ['profit|loss|interest|price|discount|rupee|cost|salary|tax|money|rate|sales|installment|emi|wage', 'लाभ|हानि|ब्याज|मूल्य|छूट|रुपये|लागत|वेतन|धन|दर|किस्त|मजदूरी', 'rupee'],
+  ['triangle|circle|area|perimeter|angle|geometry|square|rectangle|volume|cube|sphere|cylinder|cone|polygon', 'त्रिभुज|वृत्त|क्षेत्रफल|परिमाप|कोण|ज्यामिति|वर्ग|आयत|आयतन|घन|गोला|बेलन|शंकु', 'triangle'],
+  ['average|ratio|proportion|data|graph|chart|mean|median|mode|probability|statistics|table', 'औसत|अनुपात|समानुपात|आंकड़े|आलेख|माध्य|माध्यिका|बहुलक|प्रायिकता|सांख्यिकी', 'chart'],
+  ['time|speed|distance|clock|pipe|pipes|tank|train|boat|stream|age|ages|work|works|hours|minutes', 'समय|चाल|दूरी|घड़ी|नल|टंकी|रेलगाड़ी|नाव|आयु|उम्र|कार्य|काम|घंटे|मिनट', 'clock'],
+  ['constitution|article|law|court|judge|supreme|right|rights|justice|act|bill|amendment|duty|duties|fundamental', 'संविधान|अनुच्छेद|कानून|न्यायालय|न्यायाधीश|उच्चतम|अधिकार|न्याय|अधिनियम|विधेयक|संशोधन|कर्तव्य|मौलिक', 'scales'],
+  ['king|emperor|dynasty|empire|maurya|gupta|mughal|akbar|ashoka|queen|rani|sultan|chola|rajput|maratha|shivaji', 'राजा|सम्राट|राजवंश|साम्राज्य|मौर्य|गुप्त|मुगल|अकबर|अशोक|रानी|सुल्तान|चोल|राजपूत|मराठा|शिवाजी', 'crown'],
+  ['war|battle|army|military|revolt|1857|panipat|independence|freedom|movement|satyagraha|quit india', 'युद्ध|लड़ाई|सेना|सैन्य|विद्रोह|पानीपत|स्वतंत्रता|आज़ादी|आंदोलन|सत्याग्रह|भारत छोड़ो', 'sword'],
+  ['temple|religion|buddhist|buddha|jain|hindu|festival|god|sanchi|khajuraho|ujjain|mahakal|omkareshwar|fort|monument|heritage', 'मंदिर|धर्म|बौद्ध|बुद्ध|जैन|हिंदू|त्योहार|देवता|भगवान|सांची|खजुराहो|उज्जैन|महाकाल|ओंकारेश्वर|किला|स्मारक|धरोहर|विरासत', 'temple'],
+  ['bank|rbi|economy|gdp|budget|finance|inflation|gst|currency|nabard|sebi|fiscal|monetary', 'बैंक|आरबीआई|अर्थव्यवस्था|बजट|वित्त|मुद्रास्फीति|मुद्रा|नाबार्ड|सेबी|राजकोषीय|मौद्रिक', 'bank'],
+  ['president|prime minister|minister|governor|parliament|lok sabha|rajya sabha|election|vote|government|panchayat|flag|national|chief minister|cabinet', 'राष्ट्रपति|प्रधानमंत्री|मंत्री|राज्यपाल|संसद|लोकसभा|राज्यसभा|चुनाव|मतदान|सरकार|पंचायत|ध्वज|राष्ट्रीय|मुख्यमंत्री|मंत्रिमंडल', 'flag'],
+  ['map|latitude|longitude|border|district|state|capital|city|india|madhya pradesh|bhopal|indore|region|geography|divisions?', 'मानचित्र|अक्षांश|देशांतर|सीमा|जिला|राज्य|राजधानी|शहर|भारत|मध्य प्रदेश|भोपाल|इंदौर|क्षेत्र|भूगोल|संभाग', 'map'],
+  ['calendar|date|month|year|day|week|century|history|era', 'कैलेंडर|तिथि|माह|महीना|वर्ष|दिन|सप्ताह|शताब्दी|इतिहास|युग', 'calendar'],
+  ['sports|sport|olympic|cricket|medal|award|prize|winner|champion|trophy|cup|player|stadium', 'खेल|ओलंपिक|क्रिकेट|पदक|पुरस्कार|विजेता|चैंपियन|ट्रॉफी|कप|खिलाड़ी|स्टेडियम', 'trophy'],
+  ['music|song|raga|dance|instrument|singer|film|cinema', 'संगीत|गीत|राग|नृत्य|वाद्य|गायक|फिल्म|सिनेमा', 'music'],
+  ['poem|poet|author|writer|novel|book|story|literature|kavya|chhand|alankar|autobiography', 'कविता|कवि|लेखक|रचनाकार|उपन्यास|पुस्तक|कहानी|साहित्य|काव्य|छंद|अलंकार|आत्मकथा|रचना', 'feather'],
+  ['grammar|noun|verb|adjective|adverb|pronoun|tense|synonym|antonym|idiom|phrase|proverb|spelling|vowel|consonant|preposition|article|sentence|word|alphabet|voice|narration|conjunction', 'व्याकरण|संज्ञा|क्रिया|विशेषण|सर्वनाम|काल|पर्यायवाची|विलोम|मुहावरा|लोकोक्ति|वर्तनी|स्वर|व्यंजन|वाक्य|शब्द|वर्ण|संधि|समास|प्रत्यय|उपसर्ग|वचन|लिंग|कारक|अव्यय', 'letterA'],
+  ['sound|echo|noise|frequency|pitch', 'ध्वनि|प्रतिध्वनि|आवृत्ति|स्वर', 'speaker'],
+  ['camera|photo|image|picture|video', 'कैमरा|फोटो|चित्र|वीडियो', 'camera'],
+  ['people|population|census|tribe|caste|society|family|women|child|community', 'लोग|जनसंख्या|जनगणना|जनजाति|जाति|समाज|परिवार|महिला|बच्चे|समुदाय', 'people'],
+  ['discover|invented|invention|scientist|research|experiment', 'खोज|आविष्कार|वैज्ञानिक|अनुसंधान|प्रयोग', 'search'],
+  ['logic|reasoning|series|puzzle|analogy|coding-decoding|venn|syllogism|blood relation|ranking|seating', 'तर्क|श्रृंखला|पहेली|सादृश्य|वेन|न्याय निगमन|रक्त संबंध|क्रम', 'brain']
+].map(([a, d, n]) => [new RegExp('\\b(?:' + a + ')\\b', 'i'), new RegExp(d), n]);
+const VDEF = {hindi: 'feather', english: 'letterA', science: 'atom', reasoning: 'brain', computer: 'chip', maths: 'pi'};
+const LANGV = new Set(['feather', 'letterA', 'speaker']);
+function vecFor(q, subjId) {
+  const txt = (q.t || '') + ' ' + (q.q || ''), lang = subjId === 'hindi' || subjId === 'english';
+  for (const [ra, rd, n] of VRULES) if ((!lang || LANGV.has(n)) && (ra.test(txt) || rd.test(txt))) return n;
+  return VDEF[subjId] || 'bulb';
+}
+
 document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = svg(el.dataset.ic));
 const SUBJ = {hindi: {c: '#E5484D', t: 'अ'}, english: {c: '#2F6BFF', t: 'Aa'}, science: {c: '#1F9D6B', p: 'flask'}, reasoning: {c: '#8E4EC6', p: 'target'}, computer: {c: '#0F8BA8', p: 'monitor'}, maths: {c: '#F08A1C', p: 'calc'}};
 const subjGlyph = id => { const s = SUBJ[id] || {p: 'help'}; return s.t ? s.t : svg(s.p); };
@@ -483,7 +604,7 @@ async function fetchTts(text, voice) {
 }
 
 /* ============ screens ============ */
-function show(id) { ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
+function show(id) { if (id !== 'quiz' && REC) exitRec(); ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
 async function init() {
   buildSettings(); setBg(Date.now());
   try { MAN = await (await fetch('manifest.json')).json(); } catch (e) { $('err').textContent = 'Serve this folder with a web server. ' + e; return; }
@@ -539,8 +660,8 @@ function burst(x, y) {
   })(t0);
 }
 function fit(el, text, big) {
-  const n = text.length;
-  el.style.fontSize = (big ? (n <= 45 ? 32 : n <= 90 ? 28 : n <= 150 ? 24 : n <= 240 ? 21 : 18) : (n <= 20 ? 32 : n <= 60 ? 26 : n <= 120 ? 22 : 18)) + 'px';
+  const n = text.length, k = REC ? 1.14 : 1;
+  el.style.fontSize = k * (big ? (n <= 45 ? 32 : n <= 90 ? 28 : n <= 150 ? 24 : n <= 240 ? 21 : 18) : (n <= 20 ? 32 : n <= 60 ? 26 : n <= 120 ? 22 : 18)) + 'px';
 }
 function makeHint(a) {
   const mode = CFG.hint; if (mode === 'off') return null;
@@ -552,7 +673,7 @@ function makeHint(a) {
 }
 function render() {
   stop(); document.documentElement.style.setProperty('--acc', (SUBJ[subj.id] || {c: '#2F6BFF'}).c); const q = set[i], mc = !!q.o, S = mc ? CFG.mathS : CFG.secs; setBg(Date.now() + i * 977);
-  $('prog').textContent = (i + 1) + ' / ' + set.length; $('trk').style.width = ((i + 1) / set.length * 100) + '%';
+  $('prog').textContent = $('tcnt').textContent = (i + 1) + ' / ' + set.length; $('emblem').innerHTML = svg(vecFor(q, subj.id)); $('hint').classList.remove('gone'); $('trk').style.width = ((i + 1) / set.length * 100) + '%';
   $('tag').innerHTML = '<span class="sj"><i class="si" style="display:inline-flex;font-style:normal"></i><span class="sn"></span></span><span class="tp"></span>';
   $('tag').querySelector('.si').innerHTML = subjGlyph(subj.id); $('tag').querySelector('.sn').textContent = subj.name; $('tag').querySelector('.tp').textContent = q.t;
   const badge = txt => { const b = document.createElement('span'); b.className = 'badge'; b.textContent = txt; $('tag').appendChild(b); };
@@ -578,17 +699,44 @@ function render() {
 }
 function tick(t, S) { const f = t / S, fl = $('tfill'); fl.style.width = (f * 100) + '%'; fl.style.background = 'hsl(' + Math.round(150 * f) + ',95%,55%)'; fl.style.color = fl.style.background; $('tnum').textContent = t + 's'; $('num').textContent = t; $('arc').setAttribute('stroke-dashoffset', (320.4 * (1 - t / S)).toFixed(1)); }
 function reveal() {
-  $('showBtn').style.display = 'none'; $('cta').style.display = 'none'; $('ans').style.display = 'block'; $('hint').classList.remove('show');
+  $('showBtn').style.display = 'none'; $('cta').style.display = 'none'; $('ans').style.display = 'block'; $('hint').classList.add('gone');
   const x = set[i]; if (x.o) [...$('opts').children].forEach((el, k) => el.classList.add(k === x.i ? 'right' : 'dim'));
   chime(); const tg = x.o ? $('opts').children[x.i] : $('ans'), bb = tg.getBoundingClientRect(); burst(bb.left + bb.width / 2, bb.top + bb.height / 2);
   speak(x.o ? 'Option ' + 'ABCD'[x.i] + ', ' + x.a : x.a, () => { if (CFG.auto && i < set.length - 1) aux = setTimeout(() => step(1), 3500); });
 }
 function step(d) { const n = i + d; if (n >= 0 && n < set.length) { i = n; render(); } }
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && REC) { exitRec(); return; }
   if (/TEXTAREA|INPUT|SELECT/.test((e.target || {}).tagName || '') || $('quiz').classList.contains('hide') || $('reel').style.display === 'flex') return;
   if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1);
   else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if ($('showBtn').style.display === 'inline-flex') reveal(); else if ($('ans').style.display === 'block') step(1); }
 });
+
+
+/* ============ recording mode ============ */
+let REC = false, RWL = null, toastT = 0;
+function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 4200); }
+function inFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function toggleFs() {
+  const el = document.documentElement;
+  if (inFs()) { (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document); return; }
+  const f = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!f) { toast('This browser cannot go full screen. Install the page to your Home Screen to open it without the address bar.'); return; }
+  try { const r = f.call(el); if (r && r.catch) r.catch(() => toast('Full screen was blocked. Tap the full-screen icon again.')); } catch (e) {}
+}
+function enterRec() {
+  REC = true; document.body.classList.add('rec'); $('recTools').classList.remove('hide'); toggleFsIfNeeded();
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { RWL = l; }).catch(() => {}); } catch (e) {}
+  render();
+}
+function toggleFsIfNeeded() { if (!inFs()) toggleFs(); }
+function exitRec() {
+  REC = false; document.body.classList.remove('rec'); $('recTools').classList.add('hide');
+  if (inFs()) (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
+  try { if (RWL) RWL.release(); } catch (e) {} RWL = null; if (!$('quiz').classList.contains('hide')) render();
+}
+document.querySelector('.paper').addEventListener('click', () => { if (REC && $('ans').style.display === 'block') step(1); });
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 /* ============ rewrite box ============ */
 function toggleEdit() { const b = $('edBox'); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
@@ -695,6 +843,7 @@ function questionFrame(c, P, seg, lt) {
   if (rev) icon(c, 'check', 972, 360, 46, '#fff', 3.6); else { c.fillStyle = '#fff'; c.font = '800 50px ' + FONT; c.fillText(String(Math.ceil(rem)), 1020, 404); }
   c.restore(); c.textAlign = 'left';
   c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P);
+  { const ex = cx + CARD.w - 88, ey = cy + 4; c.save(); c.shadowColor = 'rgba(40,20,0,.4)'; c.shadowBlur = 24; c.shadowOffsetY = 10; c.fillStyle = '#FFFDF5'; c.beginPath(); c.arc(ex, ey, 62, 0, 7); c.fill(); c.restore(); c.strokeStyle = '#FFC815'; c.lineWidth = 8; c.beginPath(); c.arc(ex, ey, 62, 0, 7); c.stroke(); icon(c, P.vecs[seg.qi], ex - 32, ey - 32, 64, col, 1.9); }
   brush(c, cx + 10, cy - 46, 330, 84, '#FFC815', 7); ital(c, 'QUESTION', cx + 175, cy + 12, '800 48px ' + FONT, '#1A1A1A');
   c.font = '700 28px ' + FONT; const nw = c.measureText(P.subj).width, cw = 14 + 40 + 10 + nw + 22;
   c.font = '500 28px ' + FONT; let tp = q.t; const room = pw - cw - 24; while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2); if (tp !== q.t) tp += '…';
@@ -762,7 +911,7 @@ async function startReel(arr, name) {
   const n = CFG.reelN, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
   if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
   const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], total: 0, voice: '', note: ''};
-  P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
+  P.vecs = qs.map(q => vecFor(q, subj.id)); P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
   RC = {prep: true, cancelled: false, srcs: []}; const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
   $('reel').style.display = 'flex'; $('reelDone').style.display = 'none'; $('reelLive').style.display = 'flex'; cv.style.display = 'block';
   c.fillStyle = '#fff'; c.fillRect(0, 0, REEL.W, REEL.H);
