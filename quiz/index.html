@@ -151,40 +151,35 @@ input[type=text],select{font:inherit;font-size:15px;color:var(--ink);background:
   #quiz>.tbar{grid-column:1}
 }
 
-/* ===== dark neon theme ===== */
-:root{--ink:#F4F7FF;--ink2:#C3CCE6;--mute:#8E9AC0;--line:rgba(255,255,255,.10);--card:rgba(14,20,40,.88);--blue:#3D8BFF;--hi:#FFC233;--red:#FF4D5E;--green:#19E6A0;--glass:rgba(255,255,255,.08);--acc:#3D8BFF;--shadow:0 0 0 1px rgba(255,255,255,.07),0 18px 40px -18px rgba(0,0,0,.7)}
-html{color-scheme:dark}
-html,body{background:#0B0F19;color:var(--ink)}
-button.cell:active{background:rgba(255,255,255,.06)}
-.cell .tile{color:#07101F}
-.chipbtn{border:1px solid rgba(255,255,255,.12)}
-.chipbtn.on{background:var(--acc);color:#07101F}
-.seg{background:rgba(255,255,255,.08)}
-.seg button.on{background:#3D8BFF;color:#fff;box-shadow:0 0 14px rgba(61,139,255,.55)}
-.switch{background:rgba(255,255,255,.18)}
-.switch.on{background:#19E6A0;box-shadow:0 0 14px rgba(25,230,160,.5)}
-.track{background:rgba(255,255,255,.1)}
-.track i{background:linear-gradient(90deg,var(--acc),#fff)}
-.paper{border:1.5px solid var(--acc);box-shadow:0 0 34px -6px var(--acc),inset 0 0 44px -30px var(--acc);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-@keyframes rise{0%{opacity:0;transform:translateY(28px) scale(.95)}60%{opacity:1;transform:translateY(-4px) scale(1.01)}100%{transform:none}}
-.tag .sj{background:var(--acc);color:#07101F;box-shadow:0 0 18px -2px var(--acc)}
-.q{font-weight:700;color:var(--ink)}
-.opt{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:var(--ink)}
-.opt b{background:var(--acc);color:#07101F}
-.opt.right{background:linear-gradient(135deg,#19E6A0,#12C987);color:#04140E;border-color:#19E6A0;box-shadow:0 0 28px -4px #19E6A0}
-.opt.right b{background:#04140E;color:#19E6A0}
-.hint{background:rgba(255,194,51,.12);border:1.5px solid #FFC233;color:#FFD466;box-shadow:0 0 22px -8px #FFC233}
-.hint small{color:#FFC233}
-.ans{background:linear-gradient(135deg,#19E6A0,#0FBF7F);color:#03140D;box-shadow:0 0 36px -6px #19E6A0}
-.ans small{color:#063D2A}
-#showBtn{color:#fff;border:1px solid rgba(255,255,255,.18)}
-.tbar{position:relative;height:30px;border-radius:15px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden;margin-bottom:12px}
-.tbar i{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:15px;background:hsl(150 95% 55%);box-shadow:0 0 18px currentColor;transition:width 1s linear}
-.tbar span{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font:700 14px var(--stage);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
+/* ===== warm scenic theme ===== */
+:root{--ink:#1D2433;--ink2:#4A5368;--mute:#6F7686;--line:rgba(29,36,51,.10);--card:#FBF8EF;--acc:#2F6BFF;--hi:#FFC815;--shadow:0 1px 2px rgba(40,20,0,.08),0 16px 36px -14px rgba(40,20,0,.45)}
+html{background:#2B3A67}
+body{background:transparent}
+.title{color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.4)}
+.sub,.ghead,.note,.keys,#prog{color:rgba(255,255,255,.92);text-shadow:0 1px 8px rgba(0,0,0,.5)}
+#topics>.cell.plain .lab{color:#fff!important;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.seg button.on{background:#FFC815;color:#1A1A1A}
+.chipbtn.on{background:var(--acc);color:#fff}
+.track{background:rgba(255,255,255,.3)}
+.track i{background:#FFC815}
+.tbar{position:relative;height:28px;border-radius:14px;background:rgba(255,255,255,.35);overflow:hidden;margin-bottom:14px}
+.tbar i{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:14px;background:hsl(150 90% 50%);box-shadow:0 2px 8px rgba(0,0,0,.25);transition:width 1s linear}
+.tbar span{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font:800 14px var(--stage);color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
 #ring{display:none!important}
-.cta{display:flex;align-items:center;gap:10px;color:var(--acc);font-weight:700;font-size:18px;padding:12px 22px;border:1.5px solid var(--acc);border-radius:30px;background:rgba(255,255,255,.04);box-shadow:0 0 20px -8px var(--acc)}
-#reelCv{background:#0B0F19}
-#metaBox{background:#141B30;color:var(--ink)}
+.paper{position:relative;margin-top:26px;padding-top:30px;border-radius:26px}
+.paper::before{content:"QUESTION";position:absolute;left:12px;top:-22px;background:#FFC815;color:#1A1A1A;font:800 italic 17px var(--stage);letter-spacing:.3px;padding:7px 20px;clip-path:polygon(0 18%,3% 0,50% 8%,97% 0,100% 45%,98% 100%,50% 92%,2% 100%);transform:rotate(-2deg)}
+@keyframes rise{0%{opacity:0;transform:translateY(28px) scale(.95)}60%{opacity:1;transform:translateY(-4px) scale(1.01)}100%{transform:none}}
+.tag .sj{background:var(--acc);color:#fff}
+.q{font-weight:700}
+.opt{background:#F3EEE0;border-color:#DDD5BE}
+.opt b{background:var(--acc);color:#fff}
+.opt.right{background:#2E9E5B;color:#fff;border-color:#2E9E5B;box-shadow:0 8px 20px -8px rgba(46,158,91,.8)}
+.opt.right b{background:#fff;color:#2E9E5B}
+.hint{background:#FFF1B8;border:2px solid #E3B100;color:#2B2200}
+.hint small{color:#7A5A00}
+.ans{background:#D8F3DF;border:2px solid #2E9E5B;color:#0F3D24;margin-top:10px}
+.ans small{display:flex;width:fit-content;margin:0 auto 8px;background:#1F7A45;color:#fff;padding:3px 16px;border-radius:4px;transform:skewX(-8deg);font-weight:800;letter-spacing:.3px}
+.cta{display:flex;align-items:center;gap:10px;color:#3A2F00;font-weight:700;font-size:18px;padding:12px 22px;border:2px solid #E0A800;border-radius:30px;background:#FFF3C4}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -316,28 +311,53 @@ const IC = {
 };
 const svg = n => '<svg class="ic" viewBox="0 0 24 24"><path d="' + IC[n] + '"/></svg>';
 document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = svg(el.dataset.ic));
-const SUBJ = {hindi: {c: '#FF4D6D', t: 'अ'}, english: {c: '#3D8BFF', t: 'Aa'}, science: {c: '#19E6A0', p: 'flask'}, reasoning: {c: '#B16CFF', p: 'target'}, computer: {c: '#22D3EE', p: 'monitor'}, maths: {c: '#FFB020', p: 'calc'}};
+const SUBJ = {hindi: {c: '#E5484D', t: 'अ'}, english: {c: '#2F6BFF', t: 'Aa'}, science: {c: '#1F9D6B', p: 'flask'}, reasoning: {c: '#8E4EC6', p: 'target'}, computer: {c: '#0F8BA8', p: 'monitor'}, maths: {c: '#F08A1C', p: 'calc'}};
 const subjGlyph = id => { const s = SUBJ[id] || {p: 'help'}; return s.t ? s.t : svg(s.p); };
 
 /* ============ backgrounds ============ */
-const TINTS = [['#0B1224', '#1B1250'], ['#0A1A2E', '#0B3B4A'], ['#150B2B', '#3A0F4F'], ['#0B1426', '#10305A'], ['#111026', '#2B1259'], ['#0A1622', '#0E3A3A'], ['#160B1F', '#40122F'], ['#0B1020', '#18204D']];
-const GLOWS = ['#3D8BFF', '#B16CFF', '#22D3EE', '#FF4DA6', '#19E6A0', '#FFB020'];
 const GLYPHS = {hindi: ['अ', 'आ', 'क', 'ख', 'ग', 'श्री'], english: ['Aa', 'Bb', 'Qq', '?', 'Zz', '“ ”'], science: ['H₂O', 'E=mc²', 'Δ', 'pH', 'CO₂', 'DNA'], reasoning: ['?', '△', '◇', 'A:B', '∞', '→'], computer: ['{ }', '</>', '01', '&&', '#', '>_'], maths: ['π', '∑', '√', '÷', '±', '%']};
 function rng(seed) { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function theme(seed) {
-  const r = rng(seed), tn = TINTS[Math.floor(r() * TINTS.length)];
-  return {a: tn[0], b: tn[1], glow: GLOWS[Math.floor(r() * GLOWS.length)], ang: Math.floor(r() * 360), pat: ['dots', 'grid', 'lines', 'plus', 'none'][Math.floor(r() * 5)], gl: Array.from({length: 7}, () => ({x: r(), y: r(), s: 100 + r() * 120, rot: (r() - .5) * .8, k: Math.floor(r() * 100)}))};
-}
-function cssBg(t) {
-  const k = 'rgba(255,255,255,.06)'; let p = 'radial-gradient(60% 40% at 85% 8%,' + t.glow + '40,transparent),';
-  if (t.pat === 'dots') p = 'radial-gradient(' + k + ' 1.6px,transparent 1.7px) 0 0/24px 24px,';
-  else if (t.pat === 'grid') p = 'linear-gradient(' + k + ' 1px,transparent 1px) 0 0/30px 30px,linear-gradient(90deg,' + k + ' 1px,transparent 1px) 0 0/30px 30px,';
-  else if (t.pat === 'lines') p = 'repeating-linear-gradient(0deg,transparent 0 31px,' + k + ' 31px 32px),';
-  else if (t.pat === 'plus') p = 'radial-gradient(' + k + ' 2px,transparent 2.1px) 0 0/36px 36px,radial-gradient(' + k + ' 2px,transparent 2.1px) 18px 18px/36px 36px,';
-  return p + 'linear-gradient(' + t.ang + 'deg,' + t.a + ',' + t.b + ')';
+/* ============ scenic backgrounds (same warm family, random every question) ============ */
+const SKIES = [['#2B3A67', '#F2A65A', '#FFE0A3'], ['#3A2A5C', '#E8707A', '#FFCDA8'], ['#1F4E6B', '#5BB5B0', '#FFE9B5'], ['#5B2A4A', '#F0803C', '#FFD98A'], ['#3F3470', '#B07CC6', '#FFD3C0'], ['#2F6DB5', '#7FC1E8', '#FFEFCF']];
+const hx = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const mix = (a, b, t) => { const A = hx(a.startsWith('#') ? a : '#888888'), B = hx(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')'; };
+const mixc = (a, b, t) => { const A = a.match(/\d+/g).map(Number), B = hx(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')'; };
+function theme(seed) { return {seed}; }
+function scene(c, seed) {
+  const W = 1080, H = 1920, r = rng(seed), sk = SKIES[Math.floor(r() * SKIES.length)], hz = 1020 + r() * 120;
+  let g = c.createLinearGradient(0, 0, 0, hz + 140); g.addColorStop(0, sk[0]); g.addColorStop(.6, sk[1]); g.addColorStop(1, sk[2]); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  const sx = 160 + r() * 760, sy = hz - 80 - r() * 220;
+  g = c.createRadialGradient(sx, sy, 0, sx, sy, 560); g.addColorStop(0, 'rgba(255,248,215,.95)'); g.addColorStop(.1, 'rgba(255,228,160,.6)'); g.addColorStop(1, 'rgba(255,200,120,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = 'rgba(255,252,236,.95)'; c.beginPath(); c.arc(sx, sy, 48, 0, 7); c.fill();
+  for (let k = 0; k < 6; k++) { const cx = r() * W, cy = 420 + r() * (hz - 700), s = .7 + r() * 1.1; c.fillStyle = 'rgba(255,255,255,.17)'; for (let j = 0; j < 5; j++) { c.beginPath(); c.ellipse(cx + (j - 2) * 55 * s, cy + (j % 2) * 10 * s, 80 * s, 26 * s, 0, 0, 7); c.fill(); } }
+  c.strokeStyle = 'rgba(40,25,50,.5)'; c.lineWidth = 4; c.lineCap = 'round';
+  for (let k = 0; k < 5; k++) { const bx = 100 + r() * 800, by = 520 + r() * 300, s = 14 + r() * 14; c.beginPath(); c.moveTo(bx - s, by); c.quadraticCurveTo(bx - s / 2, by - s * .7, bx, by); c.quadraticCurveTo(bx + s / 2, by - s * .7, bx + s, by); c.stroke(); }
+  const ridge = (y0, amp, f1, f2) => { const p1 = r() * 6, p2 = r() * 6; return x => y0 + amp * (Math.sin(x * f1 + p1) * .6 + Math.sin(x * f2 + p2) * .4); };
+  const L = [{fn: ridge(hz + 40, 50, .006, .017), col: mix(sk[1], '#6A4A7A', .5)}, {fn: ridge(hz + 150, 70, .005, .013), col: mix(sk[1], '#5A3A55', .66)}, {fn: ridge(hz + 330, 90, .004, .011), col: mix(sk[0], '#2E1F2A', .5)}, {fn: ridge(1620, 50, .005, .014), col: mix('#3A2433', sk[0], .25)}];
+  const fillL = l => { c.fillStyle = l.col; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 20) c.lineTo(x, l.fn(x)); c.lineTo(W, H); c.closePath(); c.fill(); };
+  fillL(L[0]); fillL(L[1]);
+  const lm = ['dome', 'temple', 'fort', 'none'][Math.floor(r() * 4)], lx = 200 + r() * 560, ly = L[1].fn(lx) + 6, s = .9 + r() * .5;
+  c.fillStyle = mixc(L[1].col, '#241624', .4);
+  if (lm === 'dome') {
+    c.fillRect(lx - 90 * s, ly - 40 * s, 180 * s, 44 * s); for (let i = 0; i < 5; i++) c.fillRect(lx - 80 * s + i * 38 * s, ly - 130 * s, 12 * s, 92 * s);
+    c.fillRect(lx - 96 * s, ly - 146 * s, 192 * s, 18 * s); c.beginPath(); c.ellipse(lx, ly - 146 * s, 84 * s, 78 * s, 0, Math.PI, 0); c.fill();
+    c.fillRect(lx - 4 * s, ly - 250 * s, 8 * s, 28 * s); c.beginPath(); c.arc(lx, ly - 256 * s, 9 * s, 0, 7); c.fill();
+  } else if (lm === 'temple') {
+    for (let i = 0; i < 6; i++) { const w = (170 - i * 24) * s; c.fillRect(lx - w / 2, ly - (i + 1) * 40 * s, w, 41 * s); }
+    c.beginPath(); c.ellipse(lx, ly - 270 * s, 16 * s, 22 * s, 0, 0, 7); c.fill(); c.fillRect(lx - 2 * s, ly - 350 * s, 4 * s, 70 * s); c.beginPath(); c.moveTo(lx + 2 * s, ly - 350 * s); c.lineTo(lx + 44 * s, ly - 334 * s); c.lineTo(lx + 2 * s, ly - 318 * s); c.fill();
+  } else if (lm === 'fort') {
+    c.fillRect(lx - 230 * s, ly - 110 * s, 460 * s, 114 * s); for (let i = 0; i < 12; i++) c.fillRect(lx - 230 * s + i * 40 * s, ly - 134 * s, 24 * s, 26 * s);
+    [-250, 180].forEach(o => { c.fillRect(lx + o * s, ly - 210 * s, 70 * s, 214 * s); c.beginPath(); c.ellipse(lx + (o + 35) * s, ly - 210 * s, 44 * s, 40 * s, 0, Math.PI, 0); c.fill(); });
+    c.fillRect(lx - 60 * s, ly - 180 * s, 120 * s, 184 * s); c.beginPath(); c.ellipse(lx, ly - 180 * s, 70 * s, 56 * s, 0, Math.PI, 0); c.fill();
+  }
+  fillL(L[2]);
+  for (let k = 0; k < 4; k++) { const tx = r() * W, ty = L[2].fn(tx) + 4, tc = mixc(L[2].col, '#1E1420', .35); c.fillStyle = tc; c.fillRect(tx - 4, ty - 60, 8, 62); for (let j = 0; j < 3; j++) { c.beginPath(); c.arc(tx + (j - 1) * 30, ty - 80 - (j % 2) * 18, 38, 0, 7); c.fill(); } }
+  fillL(L[3]);
+  g = c.createLinearGradient(0, 0, 0, 520); g.addColorStop(0, 'rgba(15,10,35,.38)'); g.addColorStop(1, 'rgba(15,10,35,0)'); c.fillStyle = g; c.fillRect(0, 0, W, 520);
+  g = c.createLinearGradient(0, 1450, 0, H); g.addColorStop(0, 'rgba(25,12,20,0)'); g.addColorStop(1, 'rgba(25,12,20,.3)'); c.fillStyle = g; c.fillRect(0, 1450, W, H - 1450);
 }
 let bgFlip = false;
-function setBg(seed) { const el = $(bgFlip ? 'bgA' : 'bgB'), old = $(bgFlip ? 'bgB' : 'bgA'); el.style.background = cssBg(theme(seed)); el.classList.add('on'); old.classList.remove('on'); bgFlip = !bgFlip; }
+function setBg(seed) { const el = $(bgFlip ? 'bgA' : 'bgB'), old = $(bgFlip ? 'bgB' : 'bgA'); const cv = document.createElement('canvas'); cv.width = 540; cv.height = 960; const cc = cv.getContext('2d'); cc.scale(.5, .5); scene(cc, seed); el.style.background = 'url(' + cv.toDataURL('image/jpeg', .85) + ') center/cover no-repeat'; el.classList.add('on'); old.classList.remove('on'); bgFlip = !bgFlip; }
 
 /* ============ one-line rewriting ============ */
 const INSTR = /^(in the (following|below|given|question)|in the sentence|in this question|out of|from the|four alternatives|below are|choose|select|find|each (sentence|of)|the sentence|read the|consider|identify|improve|rearrange|arrange|mark|pick|a part|a sentence|the (first|rest)|these four|in each)/i;
@@ -483,9 +503,9 @@ function pickSubject(m) { subj = m; pool = CACHE[m.id]; showTopics(); }
 function showTopics() {
   stop(); show('topics'); $('tSubj').textContent = subj.name;
   const L = $('topicList'); L.innerHTML = ''; const col = (SUBJ[subj.id] || {c: '#667'}).c;
-  L.appendChild(cell(svg('layers'), '#3D8BFF', 'All questions', pool.length, () => go(pool, 'All')));
-  const nd = pool.filter(x => x.need).length; if (nd) L.appendChild(cell(svg('pencil'), '#FFB020', 'Needs rewrite', nd, () => go(pool.filter(x => x.need), 'Needs rewrite')));
-  const ed = pool.filter(x => x.ed).length; if (ed) L.appendChild(cell(svg('check'), '#19E6A0', 'Rewritten by me', ed, () => go(pool.filter(x => x.ed), 'Rewritten')));
+  L.appendChild(cell(svg('layers'), '#10192F', 'All questions', pool.length, () => go(pool, 'All')));
+  const nd = pool.filter(x => x.need).length; if (nd) L.appendChild(cell(svg('pencil'), '#F08A1C', 'Needs rewrite', nd, () => go(pool.filter(x => x.need), 'Needs rewrite')));
+  const ed = pool.filter(x => x.ed).length; if (ed) L.appendChild(cell(svg('check'), '#1F9D6B', 'Rewritten by me', ed, () => go(pool.filter(x => x.ed), 'Rewritten')));
   const g = {}; pool.forEach(x => (g[x.t] = g[x.t] || []).push(x));
   Object.keys(g).sort((a, b) => g[b].length - g[a].length).forEach(t => L.appendChild(cell(svg('list'), col, t, g[t].length, () => go(g[t], t))));
 }
@@ -531,7 +551,7 @@ function makeHint(a) {
   return [words.length + ' words', 'Starts with ' + G(words[0])[0]];
 }
 function render() {
-  stop(); document.documentElement.style.setProperty('--acc', (SUBJ[subj.id] || {c: '#3D8BFF'}).c); const q = set[i], mc = !!q.o, S = mc ? CFG.mathS : CFG.secs; setBg(Date.now() + i * 977);
+  stop(); document.documentElement.style.setProperty('--acc', (SUBJ[subj.id] || {c: '#2F6BFF'}).c); const q = set[i], mc = !!q.o, S = mc ? CFG.mathS : CFG.secs; setBg(Date.now() + i * 977);
   $('prog').textContent = (i + 1) + ' / ' + set.length; $('trk').style.width = ((i + 1) / set.length * 100) + '%';
   $('tag').innerHTML = '<span class="sj"><i class="si" style="display:inline-flex;font-style:normal"></i><span class="sn"></span></span><span class="tp"></span>';
   $('tag').querySelector('.si').innerHTML = subjGlyph(subj.id); $('tag').querySelector('.sn').textContent = subj.name; $('tag').querySelector('.tp').textContent = q.t;
@@ -585,9 +605,9 @@ function exportJson() {
 
 /* ============ video: drawing (1080x1920, inside Shorts/Reels safe zones) ============ */
 const REEL = {W: 1080, H: 1920, HOLD: 3.5, INTRO: 2.8, OUTRO: 3.4};
-const INK = '#F4F7FF', MUTE = '#93A0C4', RED = '#FF4D5E', HI = '#FFC233', DK = '#07101F', GRN = '#19E6A0';
+const INK = '#1D2433', MUTE = '#6F7686', RED = '#D93F36', HI = '#FFC815';
 const FONT = '"Poppins","Noto Sans Devanagari","Segoe UI",system-ui,sans-serif';
-const CARD = {x: 50, y: 390, w: 880, h: 1080};
+const CARD = {x: 50, y: 450, w: 820, h: 1020};
 const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function icon(c, name, x, y, s, color, lw) { c.save(); c.translate(x, y); c.scale(s / 24, s / 24); c.strokeStyle = color; c.lineWidth = lw || 2; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke(new Path2D(IC[name])); c.restore(); }
@@ -612,107 +632,112 @@ function fitText(c, text, maxW, maxH, maxS, minS, weight, lh) {
 function fit1(c, text, maxW, maxS, minS, weight) { let s = maxS; c.font = weight + ' ' + s + 'px ' + FONT; while (s > minS && c.measureText(text).width > maxW) { s -= 2; c.font = weight + ' ' + s + 'px ' + FONT; } return s; }
 function drawLines(c, f, x, y0, boxH, lh, align) { const total = f.L.length * f.s * lh; let y = y0 + (boxH - total) / 2 + f.s * 1.0; c.textAlign = align; f.L.forEach(l => { c.fillText(l, x, y); y += f.s * lh; }); c.textAlign = 'left'; }
 
-const acc = P => (SUBJ[P.subjId] || {c: '#3D8BFF'}).c;
-function buildBg(P, qi) {
-  const th = P.themes[qi], cv = document.createElement('canvas'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d'), W = REEL.W, H = REEL.H;
-  const a = th.ang * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), R = Math.abs(W * dx) / 2 + Math.abs(H * dy) / 2;
-  const g = c.createLinearGradient(W / 2 - dx * R, H / 2 - dy * R, W / 2 + dx * R, H / 2 + dy * R); g.addColorStop(0, th.a); g.addColorStop(1, th.b); c.fillStyle = g; c.fillRect(0, 0, W, H);
-  [[W * .88, H * .2, 820, th.glow], [W * .1, H * .88, 700, acc(P)]].forEach(([x, y, r, col]) => { const rg = c.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, col + '55'); rg.addColorStop(1, col + '00'); c.fillStyle = rg; c.fillRect(0, 0, W, H); });
-  c.fillStyle = c.strokeStyle = 'rgba(255,255,255,.055)'; c.lineWidth = 2;
-  if (th.pat === 'dots') { for (let y = 22; y < H; y += 44) for (let x = 22; x < W; x += 44) { c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill(); } }
-  else if (th.pat === 'grid') { for (let x = 0; x < W; x += 54) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); } for (let y = 0; y < H; y += 54) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); } }
-  else if (th.pat === 'lines') { for (let y = 40; y < H; y += 58) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); } }
-  else if (th.pat === 'plus') { for (let y = 36; y < H; y += 72) for (let x = 36; x < W; x += 72) { c.beginPath(); c.moveTo(x - 8, y); c.lineTo(x + 8, y); c.moveTo(x, y - 8); c.lineTo(x, y + 8); c.stroke(); } }
-  const set = GLYPHS[P.subjId] || [];
-  th.gl.forEach(gl => { const t = set[gl.k % (set.length || 1)]; if (!t) return; c.save(); c.translate(gl.x * W, gl.y * H); c.rotate(gl.rot); c.fillStyle = 'rgba(255,255,255,.045)'; c.font = '700 ' + Math.round(gl.s * 1.6) + 'px ' + FONT; c.textAlign = 'center'; c.fillText(t, 0, 0); c.restore(); });
-  return cv;
+const acc = P => (SUBJ[P.subjId] || {c: '#2F6BFF'}).c;
+function buildBg(P, qi) { const cv = document.createElement('canvas'); cv.width = REEL.W; cv.height = REEL.H; scene(cv.getContext('2d'), P.themes[qi].seed); return cv; }
+function brush(c, x, y, w, h, fill, seed) {
+  const r = rng(seed), n = 9; c.save(); c.fillStyle = fill; c.beginPath(); c.moveTo(x + r() * 16, y + r() * 10);
+  for (let k = 1; k <= n; k++) c.lineTo(x + w * k / n + (r() - .5) * 10, y + (r() - .5) * 12);
+  c.lineTo(x + w + 12 + r() * 10, y + h * .5 + (r() - .5) * 10);
+  for (let k = n; k >= 0; k--) c.lineTo(x + w * k / n + (r() - .5) * 10, y + h + (r() - .5) * 12);
+  c.lineTo(x - 10 - r() * 8, y + h * .5); c.closePath(); c.fill(); c.restore();
 }
+function ital(c, text, x, y, font, color, align) { c.save(); c.translate(x, y); c.transform(1, 0, -0.2, 1, 0, 0); c.font = font; c.fillStyle = color; c.textAlign = align || 'center'; c.fillText(text, 0, 0); c.restore(); }
 function header(c, P, label) {
-  const col = acc(P);
-  c.save(); c.shadowColor = col; c.shadowBlur = 28; c.fillStyle = col; rrect(c, 60, 268, 64, 64, 18); c.fill(); c.restore();
-  icon(c, 'check', 74, 282, 36, DK, 2.8);
-  c.fillStyle = INK; c.font = '700 40px ' + FONT; c.textAlign = 'left'; c.fillText('Daily Quiz', 142, 313);
-  if (label) { c.font = '600 34px ' + FONT; const w = c.measureText(label).width + 44; c.fillStyle = 'rgba(255,255,255,.09)'; rrect(c, 1020 - w, 272, w, 56, 28); c.fill(); c.strokeStyle = 'rgba(255,255,255,.22)'; c.lineWidth = 2; c.stroke(); c.fillStyle = INK; c.textAlign = 'center'; c.fillText(label, 1020 - w / 2, 311); c.textAlign = 'left'; }
+  const col = acc(P); c.font = '700 36px ' + FONT; const tw = c.measureText('Daily Quiz').width, pw = 28 + 52 + 14 + tw + 28;
+  c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 18; c.fillStyle = 'rgba(24,18,38,.62)'; rrect(c, 60, 270, pw, 68, 34); c.fill(); c.restore();
+  c.strokeStyle = col; c.lineWidth = 3; rrect(c, 60, 270, pw, 68, 34); c.stroke();
+  c.fillStyle = col; c.beginPath(); c.arc(60 + 14 + 26, 304, 26, 0, 7); c.fill(); icon(c, 'check', 60 + 14 + 26 - 15, 304 - 15, 30, '#fff', 3);
+  c.fillStyle = '#fff'; c.font = '700 36px ' + FONT; c.textAlign = 'left'; c.fillText('Daily Quiz', 60 + 14 + 52 + 14, 316);
+  const bw = 400, bx = 1020 - bw; brush(c, bx, 262, bw, label ? 96 : 70, '#FFC815', 11);
+  const ex = (CFG.exam || 'Daily Quiz').toUpperCase(), es = fit1(c, ex, bw - 50, 42, 24, '800');
+  ital(c, ex, bx + bw / 2, label ? 308 : 311, '800 ' + es + 'px ' + FONT, '#1A1A1A');
+  if (label) ital(c, label, bx + bw / 2, 344, '700 26px ' + FONT, '#3A2F00');
 }
-function cardShell(c, col) {
-  c.save(); c.shadowColor = col; c.shadowBlur = 70; c.fillStyle = 'rgba(12,18,36,.94)'; rrect(c, CARD.x, CARD.y, CARD.w, CARD.h, 56); c.fill(); c.restore();
-  c.strokeStyle = col; c.lineWidth = 4; rrect(c, CARD.x, CARD.y, CARD.w, CARD.h, 56); c.stroke();
+function paperPath(c, x, y, w, h, seed) {
+  const r = rng(seed), R = 40; c.beginPath(); c.moveTo(x, y + R); c.lineTo(x + 4, y + 6);
+  for (let px = x + 4; px < x + w - 4; px += 18) c.lineTo(Math.min(px + 18, x + w - 4), y + r() * 9 - 2);
+  c.lineTo(x + w, y + R); c.arcTo(x + w, y + h, x, y + h, R); c.arcTo(x, y + h, x, y, R); c.closePath();
+}
+function cardShell(c, P) {
+  c.save(); c.shadowColor = 'rgba(40,20,0,.45)'; c.shadowBlur = 56; c.shadowOffsetY = 22; c.fillStyle = '#FBF8EF'; paperPath(c, CARD.x, CARD.y, CARD.w, CARD.h, 5); c.fill(); c.restore();
 }
 function timerBar(c, f, rev, e) {
-  const x = 60, y = 350, w = 800, h = 26, col = rev ? GRN : 'hsl(' + Math.round(150 * f) + ',95%,55%)';
-  c.save(); c.globalAlpha = e; c.fillStyle = 'rgba(255,255,255,.10)'; rrect(c, x, y, w, h, 13); c.fill();
-  if (rev || f > 0.001) { c.shadowColor = col; c.shadowBlur = 26; c.fillStyle = col; rrect(c, x, y, rev ? w : Math.max(h, w * f), h, 13); c.fill(); }
+  const x = 60, y = 366, w = 800, h = 22, col = rev ? '#35C27A' : 'hsl(' + Math.round(150 * f) + ',90%,50%)';
+  c.save(); c.globalAlpha = e; c.fillStyle = 'rgba(255,255,255,.38)'; rrect(c, x, y, w, h, 12); c.fill();
+  if (rev || f > 0.001) { c.shadowColor = 'rgba(0,0,0,.25)'; c.shadowBlur = 12; c.shadowOffsetY = 3; c.fillStyle = col; rrect(c, x, y, rev ? w : Math.max(h, w * f), h, 12); c.fill(); }
   c.restore(); return col;
 }
 function bookend(c, P, seg, lt) {
   const intro = seg.type === 'intro', e = ease(lt / 0.5), mx = CARD.x + CARD.w / 2, pw = CARD.w - 96, col = acc(P);
   c.drawImage(P.bgs[intro ? 0 : P.qs.length - 1], 0, 0); header(c, P, '');
-  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, col);
-  const cy = CARD.y + CARD.h / 2;
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P);
+  brush(c, CARD.x + 10, CARD.y - 46, 360, 84, '#FFC815', 21); ital(c, intro ? 'TODAY’S QUIZ' : 'WELL DONE', CARD.x + 190, CARD.y + 12, '800 48px ' + FONT, '#1A1A1A');
+  const cy = CARD.y + CARD.h / 2 + 20;
   if (intro) {
-    c.save(); c.shadowColor = col; c.shadowBlur = 40; c.fillStyle = col; rrect(c, mx - 90, cy - 330, 180, 180, 48); c.fill(); c.restore(); glyph(c, P.subjId, mx, cy - 240, 96, DK);
+    c.save(); c.shadowColor = 'rgba(0,0,0,.25)'; c.shadowBlur = 30; c.shadowOffsetY = 12; c.fillStyle = col; rrect(c, mx - 90, cy - 330, 180, 180, 48); c.fill(); c.restore(); glyph(c, P.subjId, mx, cy - 240, 96, '#fff');
     c.fillStyle = INK; drawLines(c, fitText(c, P.subj, pw, 200, 92, 52, '700', 1.15), mx, cy - 120, 200, 1.15, 'center');
-    c.fillStyle = '#C3CCE6'; c.font = '500 40px ' + FONT; c.textAlign = 'center';
+    c.fillStyle = '#4A5368'; c.font = '500 40px ' + FONT; c.textAlign = 'center';
     c.fillText(P.qs.length + ' questions  ·  ' + P.Ss[0] + ' seconds each', mx, cy + 120);
     icon(c, 'chat', mx - 20, cy + 190, 40, col, 2.2); c.fillStyle = MUTE; c.font = '500 34px ' + FONT; c.fillText('Comment your answers', mx, cy + 285); c.textAlign = 'left';
   } else {
     c.fillStyle = INK; drawLines(c, fitText(c, 'How many did you get right?', pw, 330, 84, 48, '700', 1.2), mx, cy - 250, 330, 1.2, 'center');
-    c.fillStyle = '#C3CCE6'; c.font = '500 40px ' + FONT; c.textAlign = 'center'; c.fillText('Follow for a new quiz every day', mx, cy + 130);
-    if (P.handle) { c.save(); c.shadowColor = col; c.shadowBlur = 24; c.fillStyle = col; c.font = '700 48px ' + FONT; c.fillText(P.handle, mx, cy + 210); c.restore(); } c.textAlign = 'left';
+    c.fillStyle = '#4A5368'; c.font = '500 40px ' + FONT; c.textAlign = 'center'; c.fillText('Follow for a new quiz every day', mx, cy + 120);
+    if (P.handle) { const hs = fit1(c, P.handle, pw - 80, 48, 28, '800'); brush(c, mx - 230, cy + 160, 460, 90, '#FFC815', 33); ital(c, P.handle, mx, cy + 220, '800 ' + hs + 'px ' + FONT, '#1A1A1A'); } c.textAlign = 'left';
   }
   c.restore();
 }
 function questionFrame(c, P, seg, lt) {
   const S = P.Ss[seg.qi], q = P.qs[seg.qi], mc = !!q.o, rev = lt >= S, e = ease(lt / 0.5), col = acc(P);
-  const cx = CARD.x, cy = CARD.y, px = cx + 48, pw = CARD.w - 96, mx = cx + CARD.w / 2;
-  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, (seg.qi + 1) + ' / ' + P.qs.length);
-  const rem = Math.max(0, S - lt), bcol = timerBar(c, rem / S, rev, e);
-  c.save(); c.globalAlpha = e; c.textAlign = 'right';
-  if (rev) icon(c, 'check', 962, 335, 56, GRN, 3.4); else { c.fillStyle = bcol; c.font = '700 62px ' + FONT; c.fillText(String(Math.ceil(rem)), 1020, 386); }
+  const cx = CARD.x, cy = CARD.y, px = cx + 44, pw = CARD.w - 88, mx = cx + CARD.w / 2;
+  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, 'QUESTION ' + (seg.qi + 1) + ' / ' + P.qs.length);
+  const rem = Math.max(0, S - lt); timerBar(c, rem / S, rev, e);
+  c.save(); c.globalAlpha = e; c.textAlign = 'right'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 12;
+  if (rev) icon(c, 'check', 972, 360, 46, '#fff', 3.6); else { c.fillStyle = '#fff'; c.font = '800 50px ' + FONT; c.fillText(String(Math.ceil(rem)), 1020, 404); }
   c.restore(); c.textAlign = 'left';
-  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, col);
-  c.font = '700 30px ' + FONT; const nw = c.measureText(P.subj).width, cw = 14 + 40 + 10 + nw + 22;
-  c.font = '500 30px ' + FONT; let tp = q.t; const room = pw - cw - 24; while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2); if (tp !== q.t) tp += '…';
-  const gx = mx - (cw + 16 + c.measureText(tp).width) / 2, ty = cy + 34;
-  c.save(); c.shadowColor = col; c.shadowBlur = 22; c.fillStyle = col; rrect(c, gx, ty, cw, 54, 27); c.fill(); c.restore();
-  c.fillStyle = 'rgba(7,16,31,.16)'; c.beginPath(); c.arc(gx + 27, ty + 27, 20, 0, 7); c.fill(); glyph(c, P.subjId, gx + 27, ty + 27, 24, DK);
-  c.fillStyle = DK; c.font = '700 30px ' + FONT; c.fillText(P.subj, gx + 14 + 40 + 10, ty + 38); c.fillStyle = MUTE; c.font = '500 30px ' + FONT; c.fillText(tp, gx + cw + 16, ty + 38);
-  const qh = mc ? 230 : 400; c.fillStyle = INK; drawLines(c, fitText(c, q.q, pw, qh, mc ? 54 : 68, 30, '700', 1.36), mx, cy + 110, qh, 1.36, 'center');
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P);
+  brush(c, cx + 10, cy - 46, 330, 84, '#FFC815', 7); ital(c, 'QUESTION', cx + 175, cy + 12, '800 48px ' + FONT, '#1A1A1A');
+  c.font = '700 28px ' + FONT; const nw = c.measureText(P.subj).width, cw = 14 + 40 + 10 + nw + 22;
+  c.font = '500 28px ' + FONT; let tp = q.t; const room = pw - cw - 24; while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2); if (tp !== q.t) tp += '…';
+  const gx = mx - (cw + 16 + c.measureText(tp).width) / 2, ty = cy + 70;
+  c.fillStyle = col; rrect(c, gx, ty, cw, 52, 26); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.arc(gx + 27, ty + 26, 20, 0, 7); c.fill(); glyph(c, P.subjId, gx + 27, ty + 26, 24, '#fff');
+  c.fillStyle = '#fff'; c.font = '700 28px ' + FONT; c.fillText(P.subj, gx + 14 + 40 + 10, ty + 37); c.fillStyle = MUTE; c.font = '500 28px ' + FONT; c.fillText(tp, gx + cw + 16, ty + 37);
+  const qh = mc ? 220 : 360; c.fillStyle = INK; drawLines(c, fitText(c, q.q, pw, qh, mc ? 52 : 66, 30, '700', 1.36), mx, cy + 150, qh, 1.36, 'center');
   if (mc) {
-    const oy = cy + 350, oe = ease((lt - S) / 0.35);
+    const oy = cy + 390, oe = ease((lt - S) / 0.35);
     q.o.forEach((o, k) => {
-      const y = oy + k * 88, right = k === q.i, hot = rev && right; c.save(); if (rev && !right) c.globalAlpha = e * (1 - 0.65 * oe);
-      if (hot) { c.shadowColor = GRN; c.shadowBlur = 30; }
-      c.fillStyle = hot ? GRN : 'rgba(255,255,255,.06)'; rrect(c, px, y, pw, 76, 22); c.fill(); c.shadowColor = 'transparent'; c.shadowBlur = 0; c.strokeStyle = hot ? GRN : 'rgba(255,255,255,.16)'; c.lineWidth = 2; c.stroke();
-      c.fillStyle = hot ? DK : col; c.beginPath(); c.arc(px + 42, y + 38, 24, 0, 7); c.fill();
-      c.fillStyle = hot ? GRN : DK; c.font = '700 28px ' + FONT; c.textAlign = 'center'; c.fillText('ABCD'[k], px + 42, y + 48);
-      c.fillStyle = hot ? DK : INK; const fs = fit1(c, o, pw - 120, 36, 20, '600'); c.textAlign = 'left'; c.fillText(o, px + 86, y + 38 + fs * 0.35); c.restore();
+      const y = oy + k * 82, right = k === q.i, hot = rev && right; c.save(); if (rev && !right) c.globalAlpha = e * (1 - 0.6 * oe);
+      if (hot) { c.shadowColor = 'rgba(46,158,91,.6)'; c.shadowBlur = 24; c.shadowOffsetY = 8; }
+      c.fillStyle = hot ? '#2E9E5B' : '#F3EEE0'; rrect(c, px, y, pw, 72, 22); c.fill(); c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; c.strokeStyle = hot ? '#2E9E5B' : '#DDD5BE'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = hot ? '#fff' : col; c.beginPath(); c.arc(px + 40, y + 36, 23, 0, 7); c.fill();
+      c.fillStyle = hot ? '#2E9E5B' : '#fff'; c.font = '700 27px ' + FONT; c.textAlign = 'center'; c.fillText('ABCD'[k], px + 40, y + 46);
+      c.fillStyle = hot ? '#fff' : INK; const fs = fit1(c, o, pw - 110, 34, 20, '600'); c.textAlign = 'left'; c.fillText(o, px + 82, y + 36 + fs * 0.35); c.restore();
     });
   }
   const h = P.hints[seg.qi];
   if (h && !rev) {
     const he = ease((lt - 0.2) / 0.4); c.save(); c.globalAlpha = e * he; c.translate(0, (1 - he) * 14);
-    c.save(); c.shadowColor = HI; c.shadowBlur = 24; c.fillStyle = 'rgba(255,194,51,.13)'; rrect(c, px, cy + 520, pw, 130, 28); c.fill(); c.restore(); c.strokeStyle = HI; c.lineWidth = 3; rrect(c, px, cy + 520, pw, 130, 28); c.stroke();
-    c.fillStyle = HI; c.font = '600 28px ' + FONT; const lab = 'Hint: ' + h[0].toLowerCase(), lw = c.measureText(lab).width; icon(c, 'bulb', mx - lw / 2 - 40, cy + 536, 30, HI, 2.2); c.textAlign = 'left'; c.fillText(lab, mx - lw / 2 - 2, cy + 562);
-    fit1(c, h[1], pw - 40, 52, 26, '700'); c.fillStyle = '#FFD466'; c.textAlign = 'center'; c.fillText(h[1], mx, cy + 626); c.textAlign = 'left'; c.restore();
+    c.fillStyle = '#FFF1B8'; rrect(c, px, cy + 520, pw, 130, 28); c.fill(); c.strokeStyle = '#E3B100'; c.lineWidth = 3; c.stroke();
+    c.fillStyle = '#7A5A00'; c.font = '600 28px ' + FONT; const lab = 'Hint: ' + h[0].toLowerCase(), lw = c.measureText(lab).width; icon(c, 'bulb', mx - lw / 2 - 40, cy + 536, 30, '#7A5A00', 2.2); c.textAlign = 'left'; c.fillText(lab, mx - lw / 2 - 2, cy + 562);
+    fit1(c, h[1], pw - 40, 52, 26, '700'); c.fillStyle = '#2B2200'; c.textAlign = 'center'; c.fillText(h[1], mx, cy + 626); c.textAlign = 'left'; c.restore();
   }
-  const top = cy + (mc ? 720 : 690), ph = mc ? 270 : 300;
+  const top = cy + (mc ? 740 : 700), ph = mc ? 270 : 280;
   if (!rev) {
     const my = top + ph / 2; c.save(); c.globalAlpha = e;
-    c.font = '700 46px ' + FONT; const t1 = 'Comment your answer', bw = c.measureText(t1).width + 130, bx = mx - bw / 2;
-    c.fillStyle = 'rgba(255,255,255,.05)'; rrect(c, bx, my - 56, bw, 112, 56); c.fill(); c.strokeStyle = col; c.lineWidth = 3; c.stroke();
-    icon(c, 'chat', bx + 36, my - 24, 48, col, 2.4); c.fillStyle = INK; c.textAlign = 'left'; c.fillText(t1, bx + 100, my + 16);
-    c.fillStyle = MUTE; c.font = '500 30px ' + FONT; c.textAlign = 'center'; c.fillText('Answer appears when the bar ends', mx, my + 108); c.textAlign = 'left'; c.restore();
+    c.font = '700 44px ' + FONT; const t1 = 'Comment your answer', bw = c.measureText(t1).width + 130, bx = mx - bw / 2;
+    c.fillStyle = '#FFF3C4'; rrect(c, bx, my - 54, bw, 108, 54); c.fill(); c.strokeStyle = '#E0A800'; c.lineWidth = 3; c.stroke();
+    icon(c, 'chat', bx + 36, my - 24, 48, '#B07A00', 2.4); c.fillStyle = '#3A2F00'; c.textAlign = 'left'; c.fillText(t1, bx + 100, my + 15);
+    c.fillStyle = MUTE; c.font = '500 28px ' + FONT; c.textAlign = 'center'; c.fillText('Answer appears when the bar ends', mx, my + 104); c.textAlign = 'left'; c.restore();
   } else {
     const ae = ease((lt - S) / 0.35), txt = mc ? q.s : q.a; c.save(); c.globalAlpha = e * ae; c.translate(mx, top + ph / 2); c.scale(0.94 + 0.06 * ae, 0.94 + 0.06 * ae); c.translate(-mx, -(top + ph / 2));
-    c.save(); c.shadowColor = GRN; c.shadowBlur = 40; c.fillStyle = GRN; rrect(c, px, top, pw, ph, 40); c.fill(); c.restore();
-    const lbl = mc ? 'Solution' : 'Answer'; c.font = '600 32px ' + FONT; const aw = c.measureText(lbl).width, sx = mx - (aw + 44) / 2; icon(c, 'check', sx, top + 26, 32, '#063D2A', 3.2); c.fillStyle = '#063D2A'; c.fillText(lbl, sx + 44, top + 54);
-    c.fillStyle = DK; drawLines(c, mc ? fitText(c, txt, pw - 70, ph - 100, 38, 22, '600', 1.4) : fitText(c, txt, pw - 60, ph - 100, 76, 32, '700', 1.3), mx, top + 74, ph - 90, mc ? 1.4 : 1.3, 'center'); c.restore();
+    c.fillStyle = '#D8F3DF'; rrect(c, px, top, pw, ph, 36); c.fill(); c.strokeStyle = '#2E9E5B'; c.lineWidth = 3; c.stroke();
+    brush(c, px - 4, top - 34, mc ? 290 : 250, 66, '#1F7A45', 17); ital(c, mc ? 'SOLUTION' : 'ANSWER', px - 4 + (mc ? 145 : 125), top + 14, '800 38px ' + FONT, '#fff');
+    c.fillStyle = '#0F3D24'; drawLines(c, mc ? fitText(c, txt, pw - 60, ph - 90, 38, 22, '600', 1.4) : fitText(c, txt, pw - 50, ph - 90, 76, 32, '700', 1.3), mx, top + 54, ph - 70, mc ? 1.4 : 1.3, 'center'); c.restore();
   }
   c.restore();
   if (rev) {                                           // confetti burst, computed from time so every frame is exact
     const tt = lt - S; if (tt < 1.9) {
-      const ox = mx, oy = mc ? cy + 350 + q.i * 88 + 38 : top + ph / 2, rg = rng(P.seed + seg.qi * 31);
+      const ox = mx, oy = mc ? cy + 390 + q.i * 82 + 36 : top + ph / 2, rg = rng(P.seed + seg.qi * 31);
       for (let k = 0; k < 90; k++) {
         const a = -Math.PI / 2 + (rg() - .5) * 2.4, sp = 560 + rg() * 900, w = 14 + rg() * 14, hh = 9 + rg() * 11, r0 = rg() * 6, vr = (rg() - .5) * 14, rnd = k % 4 === 0;
         const x = ox + Math.cos(a) * sp * tt * Math.pow(0.5, tt * 1.2), y = oy + Math.sin(a) * sp * tt * Math.pow(0.5, tt * 1.2) + 900 * tt * tt;
