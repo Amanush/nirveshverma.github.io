@@ -239,6 +239,7 @@ body.rec .paper{padding-bottom:26px}
     <div class="group">
       <div class="cell plain"><span class="lab">Questions per video</span><div class="seg" id="sReel"></div></div>
       <div class="cell plain"><span class="lab">AI voice in video<span class="vsub">A different voice each video</span></span><div class="switch" id="sAiv"></div></div>
+      <div class="cell plain"><span class="lab">Test AI voice<span class="vsub">Plays a sample and shows which service works</span></span><button class="chipbtn" onclick="testAiVoice()">Test</button></div>
       <div class="cell plain"><span class="lab">Record my microphone</span><div class="switch" id="sMic"></div></div>
       <div class="cell plain"><span class="lab">AI title and description</span><div class="switch" id="sAi"></div></div>
       <div class="cell plain"><span class="lab">Exam name</span><input id="inExam" type="text" placeholder="MP Patwari" maxlength="30"></div>
@@ -305,7 +306,7 @@ body.rec .paper{padding-bottom:26px}
         <span id="mSrc"></span>
         <div class="acts"><button class="chipbtn" onclick="copyEl('mTitle',this)">Copy title</button><button class="chipbtn" onclick="copyEl('mDesc',this)">Copy description</button><button class="chipbtn" onclick="regenMeta()">Rewrite with AI</button></div>
       </div>
-      <div class="acts"><a id="reelDl" class="chipbtn pri" style="text-decoration:none">Download video</a><button class="chipbtn" onclick="closeReel()">Done</button></div>
+      <div class="acts"><a id="reelDl" class="chipbtn pri" style="text-decoration:none">Download video</a><button class="chipbtn pri" onclick="nextVideo()">Next video</button><button class="chipbtn" onclick="closeReel()">Done</button></div>
     </div>
   </div>
 </div>
@@ -316,10 +317,11 @@ body.rec .paper{padding-bottom:26px}
 </div>
 <script>
 /* ============ config ============ */
-const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 10, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
+const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 1, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
 let CFG = Object.assign({}, DEF);
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('qr_cfg') || '{}')); } catch (e) {}
 const saveCfg = () => { try { localStorage.setItem('qr_cfg', JSON.stringify(CFG)); } catch (e) {} };
+if ((CFG.cfgv || 0) < 2) { CFG.reelN = 1; CFG.cfgv = 2; saveCfg(); }
 const $ = id => document.getElementById(id);
 let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, aux = null, shuffle = false, AC = null, RC = null;
 
@@ -524,7 +526,7 @@ function seg(id, key, opts) {
 function sw(id, key) { const el = $(id); el.classList.toggle('on', !!CFG[key]); el.setAttribute('role', 'switch'); el.tabIndex = 0; el.onclick = () => { CFG[key] = !CFG[key]; saveCfg(); el.classList.toggle('on', CFG[key]); }; el.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.onclick(); } }; }
 function buildSettings() {
   seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]); seg('sMath', 'mathS', [['15', 15], ['20', 20], ['30', 30], ['45', 45]]);
-  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['5', 5], ['10', 10], ['15', 15]]);
+  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['1', 1], ['5', 5], ['10', 10], ['15', 15]]);
   seg('sMode', 'mode', [['Play live', 'live'], ['Export video', 'reel']]);
   [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai']].forEach(([a, b]) => sw(a, b));
   $('inExam').value = CFG.exam || ''; $('inExam').oninput = e => { CFG.exam = e.target.value; saveCfg(); };
@@ -590,18 +592,32 @@ function testVoice() { const was = CFG.voice; CFG.voice = true; speak('Which pla
 /* ============ AI voice (recordable) ============ */
 const AI_VOICES = ['nova', 'shimmer', 'alloy', 'echo', 'fable', 'onyx', 'coral', 'sage'];
 function pickAiVoice() {
-  let last = ''; try { last = localStorage.getItem('qr_lastv') || ''; } catch (e) {}
-  const L = AI_VOICES.filter(v => v !== last), v = L[Math.floor(Math.random() * L.length)];
-  try { localStorage.setItem('qr_lastv', v); } catch (e) {} return v;
+  let last = '', lse = ''; try { last = localStorage.getItem('qr_lastv') || ''; lse = localStorage.getItem('qr_lastse') || ''; } catch (e) {}
+  const L = AI_VOICES.filter(v => v !== last), pl = L[Math.floor(Math.random() * L.length)], se = lse === 'Raveena' ? 'Aditi' : 'Raveena';
+  try { localStorage.setItem('qr_lastv', pl); localStorage.setItem('qr_lastse', se); } catch (e) {} return {pl, se};
 }
-async function fetchTts(text, voice) {
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+async function fetchAudio(url, ms) {
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
   try {
-    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + voice, {signal: ctl.signal});
-    if (!r.ok || !/audio|octet/.test(r.headers.get('content-type') || '')) throw new Error('no audio');
+    const r = await fetch(url, {signal: ctl.signal}); if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!/audio|octet/.test(r.headers.get('content-type') || '')) throw new Error('not audio');
     return await AC.decodeAudioData(await r.arrayBuffer());
   } finally { clearTimeout(to); }
 }
+// Indian-accent voices first (Amazon Polly Aditi/Raveena through StreamElements, no key), Pollinations as the backup
+async function fetchTts(text, v, errs) {
+  const seV = DEV.test(text) ? 'Aditi' : v.se;
+  const tries = [['StreamElements', 'https://api.streamelements.com/kappa/v2/speech?voice=' + seV + '&text=' + encodeURIComponent(text)], ['Pollinations', 'https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + v.pl]];
+  for (const [nm, u] of tries) { try { const b = await fetchAudio(u, 15000); fetchTts.used = nm; return b; } catch (e) { if (errs) errs.push(nm + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message)); } }
+  throw new Error('no voice service');
+}
+async function testAiVoice() {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
+  toast('Testing voice services\u2026'); const errs = [];
+  try { const b = await fetchTts('\u0928\u092e\u0938\u094d\u0924\u0947, \u092f\u0939 \u0906\u0935\u093e\u091c\u093c \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0939\u0948. This is a voice test.', {pl: 'nova', se: 'Aditi'}, errs); const sr = AC.createBufferSource(); sr.buffer = b; sr.connect(AC.destination); sr.start(); toast('Voice works via ' + fetchTts.used + (errs.length ? ' (' + errs.join('; ') + ')' : '')); }
+  catch (e) { toast('No voice service reachable. ' + errs.join(' | ')); }
+}
+const ansText = q => cleanSpeech(q.o ? 'Option ' + 'ABCD'[q.i] + ', ' + q.a : q.a);
 
 /* ============ screens ============ */
 function show(id) { if (id !== 'quiz' && REC) exitRec(); ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
@@ -715,7 +731,7 @@ document.addEventListener('keydown', e => {
 
 /* ============ recording mode ============ */
 let REC = false, RWL = null, toastT = 0;
-function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 4200); }
+function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 7000); }
 function inFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
 function toggleFs() {
   const el = document.documentElement;
@@ -837,7 +853,7 @@ function bookend(c, P, seg, lt) {
 function questionFrame(c, P, seg, lt) {
   const S = P.Ss[seg.qi], q = P.qs[seg.qi], mc = !!q.o, rev = lt >= S, e = ease(lt / 0.5), col = acc(P);
   const cx = CARD.x, cy = CARD.y, px = cx + 44, pw = CARD.w - 88, mx = cx + CARD.w / 2;
-  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, 'QUESTION ' + (seg.qi + 1) + ' / ' + P.qs.length);
+  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, P.qs.length === 1 ? 'DAILY QUESTION' : 'QUESTION ' + (seg.qi + 1) + ' / ' + P.qs.length);
   const rem = Math.max(0, S - lt); timerBar(c, rem / S, rev, e);
   c.save(); c.globalAlpha = e; c.textAlign = 'right'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 12;
   if (rev) icon(c, 'check', 972, 360, 46, '#fff', 3.6); else { c.fillStyle = '#fff'; c.font = '800 50px ' + FONT; c.fillText(String(Math.ceil(rem)), 1020, 404); }
@@ -904,29 +920,32 @@ function drawFrame(c, P, t) {
 /* ============ video: recorder ============ */
 function pickMime() { const L = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']; return L.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || ''; }
 const reelMsg = t => { $('reelMsg').textContent = t; };
+let LASTREEL = null;
+function nextVideo() { if (LASTREEL) { closeReel(); startReel(LASTREEL.arr, LASTREEL.name); } }
 async function startReel(arr, name) {
-  if (RC) return;
+  if (RC) return; LASTREEL = {arr, name};
   if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome or Edge.'); return; }
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
   const n = CFG.reelN, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
   if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
-  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], total: 0, voice: '', note: ''};
+  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], audioA: [], errs: [], total: 0, voice: '', note: ''};
   P.vecs = qs.map(q => vecFor(q, subj.id)); P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
   RC = {prep: true, cancelled: false, srcs: []}; const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
   $('reel').style.display = 'flex'; $('reelDone').style.display = 'none'; $('reelLive').style.display = 'flex'; cv.style.display = 'block';
   c.fillStyle = '#fff'; c.fillRect(0, 0, REEL.W, REEL.H);
   if (CFG.aiv && AC) {
-    P.voice = pickAiVoice();
+    P.vobj = pickAiVoice(); P.voice = P.vobj.se + ' / ' + P.vobj.pl;
     for (let k = 0; k < qs.length; k++) {
       if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…');
-      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.voice); } catch (e) { if (k === 0) break; }
+      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.vobj, P.errs); } catch (e) { if (k === 0) break; continue; }
+      try { P.audioA[k] = await fetchTts(ansText(qs[k]).slice(0, 200), P.vobj, P.errs); } catch (e) {}
     }
     if (RC.cancelled) { RC = null; return; }
-    if (!P.audio.some(Boolean)) { P.voice = ''; P.note = 'AI voice was unavailable, so this video has no voice.'; }
+    if (!P.audio.some(Boolean)) { P.voice = ''; P.note = 'AI voice could not load (' + P.errs.slice(0, 2).join('; ') + '). Turn on \u201cRecord my microphone\u201d and speak, or try another network.'; }
   }
   P.audio.forEach((b, k) => { if (b) P.Ss[k] = Math.max(P.Ss[k], Math.ceil(b.duration + 1.6)); });
   let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
-  add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + (q.o ? 6 : REEL.HOLD), qi)); add('outro', REEL.OUTRO); P.total = st;
+  if (qs.length > 1) add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + Math.max(q.o ? 6 : REEL.HOLD, P.audioA[qi] ? P.audioA[qi].duration + 1.2 : 0), qi)); if (qs.length > 1) add('outro', REEL.OUTRO); P.total = st;
   try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
   const stream = cv.captureStream(30), dest = AC ? AC.createMediaStreamDestination() : null; let mic = null;
   if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
@@ -947,6 +966,7 @@ async function startReel(arr, name) {
   };
   rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1;
   if (AC && dest) P.audio.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + 0.5); RC.srcs.push(src); });
+  if (AC && dest) P.audioA.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + P.Ss[k] + 0.6); RC.srcs.push(src); });
   const loop = () => {
     if (!RC) return; const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
     if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi]; if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
@@ -964,6 +984,7 @@ const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart
 const snip = t => t.replace(/\s+/g, ' ').trim().slice(0, 55) + (t.length > 55 ? '…' : '');
 const chapters = P => '0:00 Intro\n' + P.segs.filter(s => s.type === 'q').map(s => fmtT(s.start) + ' Q' + (s.qi + 1) + ' ' + snip(P.qs[s.qi].q)).join('\n');
 function templateMeta(P, name) {
+  if (P.qs.length === 1) { const q = P.qs[0], ex = (CFG.exam || 'MP Patwari').trim(), tags = ['#' + ex.replace(/[^A-Za-z0-9]/g, ''), '#MPPEB', '#GovtExam', '#Quiz', '#DailyQuiz', '#Shorts'].concat(TAGS[P.subjId] || []); return {title: 'Can You Answer This ' + P.subj + ' Question? | ' + ex, desc: q.q.replace(/\s+/g, ' ').trim() + '\n\nComment your answer, then watch the reveal.\n' + (P.handle ? 'Follow ' + P.handle + ' for a new question every day.\n' : '') + '\n' + tags.join(' ')}; }
   const n = P.qs.length, exam = (CFG.exam || 'MP Patwari').trim(), sj = P.subj, tp = (name && name !== 'All') ? name : '';
   const titles = [n + ' ' + sj + ' Questions That Decide Your Selection | ' + exam, 'Can You Solve All ' + n + '? ' + sj + ' Quiz | ' + exam, sj + (tp ? ' ' + tp : ' Practice') + ' Quiz: ' + n + ' PYQs | ' + exam];
   let title = titles[(new Date().getDate() + n) % 3]; if (title.length > 95) title = titles[0].slice(0, 95);
