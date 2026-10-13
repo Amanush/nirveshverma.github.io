@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Daily Quiz</title>
 <style>
 @font-face{font-family:Poppins;font-weight:500;src:url(fonts/poppins-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
@@ -12,426 +12,540 @@
 @font-face{font-family:Poppins;font-weight:600;src:url(fonts/poppins-devanagari-600-normal.woff2) format("woff2");unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+25CC,U+A830-A839,U+A8E0-A8FF;font-display:swap}
 @font-face{font-family:Poppins;font-weight:700;src:url(fonts/poppins-devanagari-700-normal.woff2) format("woff2");unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+25CC,U+A830-A839,U+A8E0-A8FF;font-display:swap}
 :root{
-  --paper:#E8ECF4; --card:#fff; --ink:#0F1B3D; --ink2:#3A4768; --mute:#6B7792;
-  --line:#D5DBE9; --red:#C8312B; --hi:#FFE27A;
-  --r:18px;
-  --shadow:0 1px 0 rgba(15,27,61,.04),0 10px 30px -12px rgba(15,27,61,.22);
+  --ink:#10192F; --ink2:#3C4763; --mute:#6E7893; --line:rgba(16,25,47,.10); --card:#fff;
+  --blue:#2F6BFF; --hi:#FFE27A; --red:#D93F36; --green:#1F9D6B;
+  --glass:rgba(255,255,255,.72);
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Google Sans","Segoe UI",Roboto,system-ui,sans-serif;
+  --stage:"Poppins","Noto Sans Devanagari","Segoe UI",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(16,25,47,.05),0 12px 32px -14px rgba(16,25,47,.25);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"Poppins","Noto Sans Devanagari","Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;background:#EEF2FA}
 body{min-height:100vh;display:flex;justify-content:center}
-#app{width:100%;max-width:460px;padding:18px 18px 28px;display:flex;flex-direction:column;min-height:100vh}
-button{font-family:inherit;cursor:pointer;color:inherit}
-button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.bg{position:fixed;inset:0;z-index:-1;opacity:0;transition:opacity .8s ease}
+.bg.on{opacity:1}
+#app{width:100%;max-width:480px;padding:max(16px,env(safe-area-inset-top)) 16px 28px;display:flex;flex-direction:column;min-height:100vh}
+button{font-family:inherit;cursor:pointer;color:inherit;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hide{display:none!important}
+svg.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-/* home */
-.brand{display:flex;align-items:center;gap:10px;margin:4px 0 22px}
-.mark{width:34px;height:34px;border-radius:10px;background:var(--ink);display:grid;place-items:center}
-.mark svg{display:block}
-.brand b{font-size:19px;font-weight:700;letter-spacing:-.2px}
-h1{font-size:30px;line-height:1.1;margin:0 0 6px;font-weight:700;letter-spacing:-.6px}
-.sub{font-size:16px;color:var(--mute);margin:0 0 20px}
-.list{display:flex;flex-direction:column;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-.item{display:flex;justify-content:space-between;align-items:center;gap:12px;border:0;border-bottom:1px solid var(--line);padding:18px 18px;background:transparent;font-size:19px;font-weight:600;text-align:left;width:100%;transition:background .15s}
-.item:last-child{border-bottom:0}
-.item:active{background:#F1F4FA}
-.item span:first-child{flex:1}
-.item .c{font-size:15px;font-weight:500;color:var(--mute);font-variant-numeric:tabular-nums}
-.item::after{content:"";width:8px;height:8px;border-top:2px solid var(--mute);border-right:2px solid var(--mute);transform:rotate(45deg);margin-left:2px;flex:none}
-.item.off{opacity:.4;pointer-events:none}
-.item.dark{background:var(--ink);color:#fff}
-.item.dark .c{color:#B9C3DE}
-.item.dark::after{border-color:#B9C3DE}
-.item.dark:active{background:#1B2A55}
+/* large-title screens */
+.navbar{display:flex;align-items:center;justify-content:space-between;min-height:40px;margin-bottom:4px}
+.title{font-size:34px;font-weight:700;letter-spacing:-.8px;margin:6px 0 2px}
+.sub{font-size:15px;color:var(--mute);margin:0 0 18px}
+.circle{width:40px;height:40px;border-radius:50%;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;place-items:center;font-size:20px;box-shadow:0 1px 2px rgba(16,25,47,.08);transition:transform .12s,opacity .2s}
+.circle:active{transform:scale(.92)}
+.circle:disabled{opacity:.3}
+.circle.sm{width:36px;height:36px;font-size:18px}
+.chipbtn{height:34px;padding:0 14px;border-radius:17px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(16,25,47,.08)}
+.chipbtn.on{background:var(--ink);color:#fff}
+.chipbtn.pri{background:var(--blue);color:#fff}
 
-.set{margin-top:22px;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:6px 18px}
-.set h2{font-size:13px;margin:14px 0 2px;color:var(--mute);font-weight:600}
-.row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;font-size:16px;gap:10px;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:0}
-select{max-width:60%;font:inherit;font-size:14px;color:var(--ink);background:#EDF0F7;border:0;border-radius:10px;padding:8px 10px}
-.seg{display:inline-flex;background:#EDF0F7;border-radius:10px;padding:3px;gap:2px}
-.sm{border:0;background:transparent;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:600;color:var(--ink2);transition:background .15s,color .15s}
-.sm.on{background:var(--ink);color:#fff}
+/* grouped lists */
+.group{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.group+.group{margin-top:20px}
+.ghead{font-size:13px;color:var(--mute);font-weight:600;margin:22px 8px 8px}
+.cell{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 16px;font-size:17px;font-weight:500;min-height:56px;position:relative;transition:background .15s}
+.cell+.cell::before{content:"";position:absolute;left:62px;right:0;top:0;height:1px;background:var(--line)}
+.cell.plain+.cell.plain::before{left:16px}
+button.cell:active{background:rgba(16,25,47,.05)}
+.cell.off{opacity:.4;pointer-events:none}
+.cell .tile{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700;color:#fff;flex:none}
+.cell .lab{flex:1;min-width:0}
+.cell .cnt{color:var(--mute);font-size:15px;font-variant-numeric:tabular-nums}
+.cell .chev{color:#B4BBCD;font-size:16px}
+.cell .vsub{display:block;font-size:12px;color:var(--mute);font-weight:400;margin-top:1px}
 
-/* bars */
-.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
-.meta{font-size:15px;color:var(--mute);font-weight:500;font-variant-numeric:tabular-nums}
-.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600}
-.pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-#topics .sub{margin-bottom:16px}
+/* controls */
+.seg{display:inline-flex;background:rgba(118,126,153,.14);border-radius:9px;padding:2px;gap:1px}
+.seg button{padding:6px 12px;border-radius:7px;font-size:14px;font-weight:600;color:var(--ink2);transition:background .15s,color .15s,box-shadow .15s}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(16,25,47,.18)}
+.switch{width:51px;height:31px;border-radius:16px;background:rgba(118,126,153,.3);position:relative;transition:background .2s;flex:none}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:transform .2s}
+.switch.on{background:#34C759}
+.switch.on::after{transform:translateX(20px)}
+input[type=text],select{font:inherit;font-size:15px;color:var(--ink);background:rgba(118,126,153,.14);border:0;border-radius:9px;padding:8px 10px;max-width:58%;min-width:0}
+.note{font-size:12.5px;color:var(--mute);line-height:1.5;margin:8px 10px 0}
 
 /* quiz */
-#quiz{display:none;flex:1;flex-direction:column}
-.track{height:4px;background:var(--line);border-radius:4px;margin:-4px 0 16px;overflow:hidden}
-.track i{display:block;height:100%;width:0;background:var(--ink);border-radius:4px;transition:width .3s}
-.paper{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:20px 20px 24px}
-.tag{font-size:12px;color:var(--mute);font-weight:500;margin-bottom:10px;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
-.tag b{background:var(--ink);color:#fff;border-radius:6px;padding:1px 9px;font-weight:600;font-size:13px}
-.q{font-weight:500;line-height:1.25;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word;color:var(--ink)}
-.hint{min-height:0;margin-top:14px;padding:11px 14px;border-radius:12px;background:var(--hi);text-align:center;font-weight:700;letter-spacing:5px;font-size:24px;display:none;word-break:break-word;animation:pop .25s ease-out}
-.hint.show{display:block}
-.hint small{display:block;font-size:13px;letter-spacing:0;font-weight:600;color:#6B5A00;margin-bottom:2px}
+#quiz{display:flex;flex:1;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.progress{flex:1;min-width:0}
+.progress .lbl{font-size:13px;font-weight:600;color:var(--ink2);text-align:center;margin-bottom:5px;font-variant-numeric:tabular-nums}
+.track{height:5px;background:rgba(16,25,47,.1);border-radius:3px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--ink);border-radius:3px;transition:width .35s}
+.paper{background:var(--card);border-radius:26px;box-shadow:var(--shadow);padding:18px 20px 22px;font-family:var(--stage)}
+.paper.enter{animation:rise .42s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.paper.enter{animation:rise .38s cubic-bezier(.2,.8,.2,1)}
-.paper.enter .q{animation:rise .5s .05s cubic-bezier(.2,.8,.2,1) both}
-@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}
-
-.mid{min-height:150px;display:flex;align-items:center;justify-content:center;margin:16px 0 8px}
-.ring{position:relative;width:96px;height:96px;opacity:.16;transition:opacity .3s}
-.ring.urgent{opacity:.4}
-.ring svg{transform:rotate(-90deg);display:block;width:96px;height:96px}
-.ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.tag{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:500;color:var(--mute);margin-bottom:12px;flex-wrap:wrap}
+.tag .sj{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;border-radius:9px;padding:3px 10px 3px 8px;font-weight:600}
+.tag .badge{font-size:11px;font-weight:600;color:#6B5A00;background:var(--hi);border-radius:6px;padding:1px 7px}
+.q{font-weight:600;line-height:1.45;min-height:130px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word;color:var(--ink)}
+.q.mc{min-height:70px}
+.opts{display:none;flex-direction:column;gap:8px;margin-top:12px}
+.opts.on{display:flex}
+.opt{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:#F2F5FB;border:1.5px solid var(--line);font-weight:500;font-size:17px;line-height:1.3;transition:background .3s,color .3s,opacity .3s}
+.opt b{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:14px;flex:none}
+.opt.right{background:var(--ink);color:#fff;border-color:var(--ink)}
+.opt.right b{background:#9FE3B8;color:var(--ink)}
+.opt.dim{opacity:.35}
+.hint{display:none;margin-top:12px;padding:10px 14px;border-radius:14px;background:var(--hi);text-align:center;font-weight:700;letter-spacing:5px;font-size:24px;word-break:break-word;animation:pop .3s ease-out}
+.hint.show{display:block}
+.hint small{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;letter-spacing:0;font-weight:600;color:#6B5A00;margin-bottom:2px}
+.mid{min-height:128px;display:flex;align-items:center;justify-content:center;margin-top:12px}
+.ring{position:relative;width:92px;height:92px;opacity:.16;transition:opacity .3s}
+.ring.urgent{opacity:.42}
+.ring svg{transform:rotate(-90deg);display:block;width:92px;height:92px}
+.ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:600;font-variant-numeric:tabular-nums}
 #arc{stroke:var(--ink);transition:stroke-dashoffset 1s linear,stroke .2s}
 .ring.urgent #arc{stroke:var(--red)}
 .ring.urgent .n{color:var(--red)}
-#showBtn{display:none;width:auto;padding:10px 26px;font-size:15px;font-weight:500;background:transparent;color:rgba(15,27,61,.5);border:1.5px solid rgba(15,27,61,.22);border-radius:999px}
-#showBtn:active{transform:translateY(1px)}
-.ans{display:none;width:100%;border-radius:18px;padding:20px 18px 22px;background:var(--ink);color:#fff;font-weight:700;line-height:1.35;text-align:center;word-break:break-word;animation:pop .25s ease-out}
-.ans small{display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:600;color:#9FE3B8;margin-bottom:8px}
-.ans small::before{content:"";width:12px;height:7px;border-left:3px solid #9FE3B8;border-bottom:3px solid #9FE3B8;transform:rotate(-45deg) translateY(-2px)}
-
-.nav{display:flex;gap:10px;margin-top:10px}
-.edit{margin-top:14px;text-align:center}
+.ans{display:none;width:100%;border-radius:20px;padding:16px 16px 18px;background:var(--ink);color:#fff;font-weight:700;line-height:1.35;text-align:center;word-break:break-word;animation:pop .3s ease-out}
+.ans.mc{font-weight:500}
+.ans small{display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:600;color:#9FE3B8;margin-bottom:6px}
+.ctrl{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;min-height:44px}
+.ctrl .mid2{flex:1;display:flex;justify-content:center}
+#showBtn{display:none;height:40px;padding:0 20px;border-radius:20px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:15px;font-weight:600;color:var(--ink2);align-items:center;gap:8px;box-shadow:0 1px 2px rgba(16,25,47,.1)}
+.side{margin-top:16px;text-align:center}
 #edBox{display:none;margin-top:10px;text-align:left}
-#edBox textarea{width:100%;min-height:96px;font:inherit;font-size:15px;line-height:1.45;border:1.5px solid var(--line);border-radius:12px;padding:10px;color:var(--ink);background:var(--card);resize:vertical}
+#edBox textarea{width:100%;min-height:96px;font:inherit;font-size:15px;line-height:1.45;border:0;border-radius:14px;padding:12px;color:var(--ink);background:var(--glass);resize:vertical}
 #edBox .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-#edBox small{display:block;margin-top:8px;color:var(--mute);font-size:12px;line-height:1.4}
-.badge{font-size:11px;font-weight:600;color:#6B5A00;background:var(--hi);border-radius:6px;padding:1px 7px}
-.nav button{flex:1;padding:16px;font-size:18px;font-weight:600;border:0;border-radius:14px;background:var(--card);box-shadow:var(--shadow);transition:transform .1s}
-.nav button:active:not(:disabled){transform:translateY(1px);background:#F1F4FA}
-.nav #next{background:var(--ink);color:#fff}
-.nav button:disabled{opacity:.35;box-shadow:none}
-input[type=text]{font:inherit;font-size:15px;border:0;background:#EDF0F7;border-radius:10px;padding:8px 10px;width:55%;color:var(--ink)}
-#reel{position:fixed;inset:0;background:rgba(15,27,61,.94);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20;padding:16px}
+#edBox small{display:block;margin-top:8px;color:var(--ink2);font-size:12px;line-height:1.4}
+.keys{font-size:12px;color:var(--ink2);margin-top:12px;line-height:1.5;opacity:.8}
+
+/* export overlay */
+#reel{overflow:auto;position:fixed;inset:0;background:rgba(16,25,47,.92);display:none;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;z-index:20;padding:16px;color:#fff}
+#reel>*{margin-top:auto;margin-bottom:auto}
 #reelCv{height:72vh;max-width:100%;aspect-ratio:9/16;border-radius:14px;background:#fff}
-#reelLive{display:flex;align-items:center;gap:14px;color:#fff;font-size:16px}
+#reelLive{display:flex;align-items:center;gap:14px;font-size:15px}
 #reelDone{display:none;flex-direction:column;align-items:center;gap:14px}
-#reelVid{height:72vh;max-width:100%;border-radius:14px;background:#000}
-#reelDone .acts{display:flex;gap:10px}
+#reelVid{height:min(72vh,640px);max-width:100%;border-radius:14px;background:#000}
+#metaBox{background:#fff;color:var(--ink);border-radius:18px;padding:14px;width:min(100%,420px);display:flex;flex-direction:column;gap:8px}
+#metaBox h3{margin:0;font-size:16px}
+#metaBox input,#metaBox textarea{font:inherit;font-size:14px;width:100%;max-width:100%;border:0;border-radius:10px;padding:9px 10px;color:var(--ink);background:rgba(118,126,153,.14)}
+#metaBox textarea{min-height:170px;resize:vertical;line-height:1.45}
+#metaBox .acts,#reelDone .acts{display:flex;gap:8px;flex-wrap:wrap}
+#mSrc{font-size:12px;color:var(--mute)}
 #err{color:var(--red);font-size:13px;margin-top:10px}
+
+@media (min-width:720px){
+  #app{max-width:680px}
+  #topicList{display:grid;grid-template-columns:1fr 1fr}
+  #topicList .cell:nth-child(2n)::before{left:0}
+}
+@media (min-width:900px){#reelDone{flex-direction:row;align-items:flex-start;gap:24px}}
+@media (min-width:1000px){
+  #app{max-width:1040px;padding-top:28px}
+  #home:not(.hide){display:grid;grid-template-columns:1fr 400px;column-gap:32px;align-items:start}
+  #home .navbar,#home .title,#home .sub{grid-column:1/-1}
+  #home .settings .ghead:first-child{margin-top:0}
+  #topicList{grid-template-columns:1fr 1fr 1fr}
+  #quiz:not(.hide){display:grid;grid-template-columns:minmax(0,540px) 320px;column-gap:32px;justify-content:center;align-content:start}
+  #quiz>.topbar,#quiz>.paper,#quiz>.ctrl{grid-column:1}
+  #quiz>.side{grid-column:2;grid-row:1/5;align-self:start;margin-top:0;padding-top:54px}
+  .q{min-height:190px}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div class="bg" id="bgA"></div><div class="bg" id="bgB"></div>
 <div id="app">
 
 <div id="home">
-  <div class="brand"><div class="mark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9.5l4 4 8-9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><b>Daily Quiz</b></div>
-  <h1>Choose a subject</h1>
-  <p class="sub">Pick one to start recording.</p>
-  <div class="list" id="subjects"></div>
-  <div class="set">
-    <h2>Recording settings</h2>
-    <div class="row"><span>Timer, seconds</span><div class="seg" id="sTimer"></div></div>
-    <div class="row"><span>Hint</span><div class="seg" id="sHint"></div></div>
-    <div class="row"><span>Voice reads question</span><div class="seg" id="sVoice"></div></div>
-    <div class="row vrow"><span>English voice</span><select id="selEn"></select></div>
-    <div class="row vrow"><span>Hindi voice</span><select id="selHi"></select></div>
-    <div class="row"><span>Hear a sample</span><button class="pill" onclick="testVoice()">Play</button></div>
-    <div class="row"><span>Tick sound</span><div class="seg" id="sBeep"></div></div>
-    <div class="row"><span>Skip questions that need options</span><div class="seg" id="sSkip"></div></div>
-    <div class="row"><span>Auto-play</span><div class="seg" id="sAuto"></div></div>
-    <h2>Video export</h2>
-    <div class="row"><span>Questions per video</span><div class="seg" id="sReel"></div></div>
-    <div class="row"><span>Record my microphone</span><div class="seg" id="sMic"></div></div>
-    <div class="row"><span>Channel name</span><input id="inHandle" type="text" placeholder="@yourchannel" maxlength="40"></div>
+  <div class="navbar"><span></span></div>
+  <div class="title">Daily Quiz</div>
+  <p class="sub">Choose a subject to practise or record.</p>
+  <div>
+    <div class="group" id="subjects"></div>
+  </div>
+  <div class="settings">
+    <div class="ghead">Playback</div>
+    <div class="group">
+      <div class="cell plain"><span class="lab">Timer, seconds</span><div class="seg" id="sTimer"></div></div>
+      <div class="cell plain"><span class="lab">Maths timer, seconds</span><div class="seg" id="sMath"></div></div>
+      <div class="cell plain"><span class="lab">Hint</span><div class="seg" id="sHint"></div></div>
+      <div class="cell plain"><span class="lab">Skip questions that need options</span><div class="switch" id="sSkip"></div></div>
+      <div class="cell plain"><span class="lab">Auto-play</span><div class="switch" id="sAuto"></div></div>
+      <div class="cell plain"><span class="lab">Tick sound, last 3 seconds</span><div class="switch" id="sBeep"></div></div>
+    </div>
+    <div class="ghead">Device voice (play live only)</div>
+    <div class="group">
+      <div class="cell plain"><span class="lab">Read question aloud</span><div class="switch" id="sVoice"></div></div>
+      <div class="cell plain"><span class="lab">Change voice every question</span><div class="switch" id="sVary"></div></div>
+      <div class="cell plain"><span class="lab">English voice</span><select id="selEn"></select></div>
+      <div class="cell plain"><span class="lab">Hindi voice</span><select id="selHi"></select></div>
+      <div class="cell plain"><span class="lab">Hear a sample</span><button class="chipbtn" onclick="testVoice()">Play</button></div>
+    </div>
+    <div class="ghead">Video export</div>
+    <div class="group">
+      <div class="cell plain"><span class="lab">Questions per video</span><div class="seg" id="sReel"></div></div>
+      <div class="cell plain"><span class="lab">AI voice in video<span class="vsub">A different voice each video</span></span><div class="switch" id="sAiv"></div></div>
+      <div class="cell plain"><span class="lab">Record my microphone</span><div class="switch" id="sMic"></div></div>
+      <div class="cell plain"><span class="lab">AI title and description</span><div class="switch" id="sAi"></div></div>
+      <div class="cell plain"><span class="lab">Exam name</span><input id="inExam" type="text" placeholder="MP Patwari" maxlength="30"></div>
+      <div class="cell plain"><span class="lab">Channel name</span><input id="inHandle" type="text" placeholder="@yourchannel" maxlength="40"></div>
+    </div>
+    <p class="note">The device voice cannot be recorded into a video. AI voice and your microphone can.</p>
   </div>
 </div>
 
-<div id="topics" style="display:none">
-  <div class="bar"><button class="pill" onclick="showHome()">Back</button><span class="meta" id="tSubj"></span></div>
-  <h1>Choose a topic</h1>
-  <p class="sub">Or play every question.</p>
-  <div class="row" style="padding:0 0 14px;border:0"><span>What to do</span><div class="seg" id="sMode"></div></div>
-  <div class="list" id="topicList"></div>
+<div id="topics" class="hide">
+  <div class="navbar"><button class="circle" onclick="showHome()" aria-label="Back" data-ic="chevL"></button><span class="chipbtn" id="tSubj"></span></div>
+  <div class="title">Choose a topic</div>
+  <div class="cell plain" style="padding:0 0 14px;min-height:0"><span class="lab" style="font-size:15px;color:var(--mute)">What to do</span><div class="seg" id="sMode"></div></div>
+  <div class="group" id="topicList"></div>
 </div>
 
-<div id="quiz">
-  <div class="bar">
-    <button class="pill" onclick="showTopics()">Back</button>
-    <span class="meta" id="prog"></span>
-    <button class="pill" id="shufBtn" onclick="toggleShuffle()">Shuffle</button>
+<div id="quiz" class="hide">
+  <div class="topbar">
+    <button class="circle" onclick="showTopics()" aria-label="Back" data-ic="chevL"></button>
+    <div class="progress"><div class="lbl" id="prog"></div><div class="track"><i id="trk"></i></div></div>
+    <button class="circle" id="shufBtn" onclick="toggleShuffle()" aria-label="Shuffle" data-ic="shuffle"></button>
   </div>
-  <div class="track"><i id="trk"></i></div>
   <div class="paper">
     <div class="tag" id="tag"></div>
     <div class="q" id="qText"></div>
+    <div class="opts" id="opts"></div>
     <div class="hint" id="hint"></div>
     <div class="mid">
       <div class="ring" id="ring">
-        <svg width="116" height="116" viewBox="0 0 116 116"><circle cx="58" cy="58" r="51" fill="none" stroke="#E4E9F3" stroke-width="8"/>
-          <circle id="arc" cx="58" cy="58" r="51" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="0"/></svg>
+        <svg viewBox="0 0 116 116"><circle cx="58" cy="58" r="51" fill="none" stroke="#E4E9F3" stroke-width="8"/><circle id="arc" cx="58" cy="58" r="51" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="0"/></svg>
         <div class="n" id="num">7</div>
       </div>
-      <button id="showBtn" onclick="reveal()">Show me answer</button>
-      <div class="ans" id="ans"><small>Answer</small><span id="ansT"></span></div>
+      <div class="ans" id="ans"><small><span data-ic="check"></span><span id="ansLbl">Answer</span></small><span id="ansT"></span></div>
     </div>
   </div>
-  <div class="nav">
-    <button id="prev" onclick="step(-1)">Previous</button>
-    <button id="next" onclick="step(1)">Next</button>
+  <div class="ctrl">
+    <button class="circle sm" id="prev" onclick="step(-1)" aria-label="Previous" data-ic="chevL"></button>
+    <div class="mid2"><button id="showBtn" onclick="reveal()"><span data-ic="eye"></span>Show answer</button></div>
+    <button class="circle sm" id="next" onclick="step(1)" aria-label="Next" data-ic="chevR"></button>
   </div>
-  <div class="edit">
-    <button class="pill" onclick="toggleEdit()">Rewrite question</button>
+  <div class="side">
+    <button class="chipbtn" onclick="toggleEdit()"><span data-ic="pencil"></span>Rewrite question</button>
     <div id="edBox">
       <textarea id="edTa" placeholder="Rewrite so it makes sense without options"></textarea>
-      <div class="acts"><button class="pill on" onclick="saveEdit()">Save</button><button class="pill" onclick="resetEdit()">Restore original</button><button class="pill" onclick="exportJson()">Download JSON</button></div>
+      <div class="acts"><button class="chipbtn pri" onclick="saveEdit()">Save</button><button class="chipbtn" onclick="resetEdit()">Restore</button><button class="chipbtn" onclick="exportJson()">Download JSON</button></div>
       <small id="edInfo"></small>
     </div>
+    <div class="keys">Space shows the answer, then moves on. Arrow keys move between questions.</div>
   </div>
 </div>
 
 <div id="reel">
   <canvas id="reelCv"></canvas>
-  <div id="reelLive"><span id="reelMsg"></span><button class="pill" onclick="cancelReel()">Cancel</button></div>
+  <div id="reelLive"><span id="reelMsg"></span><button class="chipbtn" onclick="cancelReel()">Cancel</button></div>
   <div id="reelDone"><video id="reelVid" controls playsinline></video>
-    <div class="acts"><a id="reelDl" class="pill on" style="text-decoration:none">Download video</a><button class="pill" onclick="closeReel()">Done</button></div></div>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center"><div id="vNote" style="font-size:13px;opacity:.85;text-align:center"></div>
+      <div id="metaBox"><h3>Title and description</h3>
+        <input id="mTitle" type="text" aria-label="Video title">
+        <textarea id="mDesc" aria-label="Video description"></textarea>
+        <span id="mSrc"></span>
+        <div class="acts"><button class="chipbtn" onclick="copyEl('mTitle',this)">Copy title</button><button class="chipbtn" onclick="copyEl('mDesc',this)">Copy description</button><button class="chipbtn" onclick="regenMeta()">Rewrite with AI</button></div>
+      </div>
+      <div class="acts"><a id="reelDl" class="chipbtn pri" style="text-decoration:none">Download video</a><button class="chipbtn" onclick="closeReel()">Done</button></div>
+    </div>
+  </div>
 </div>
 <div id="err"></div>
 </div>
-
 <script>
-const DEF = {secs: 7, hint: 'auto', voice: false, beep: true, auto: false, mode: 'live', skip: false, reelN: 10, mic: false, handle: ''};
+/* ============ config ============ */
+const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 10, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
 let CFG = Object.assign({}, DEF);
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('qr_cfg') || '{}')); } catch (e) {}
 const saveCfg = () => { try { localStorage.setItem('qr_cfg', JSON.stringify(CFG)); } catch (e) {} };
-
-let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, aux = null, shuffle = false, AC = null;
 const $ = id => document.getElementById(id);
+let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, aux = null, shuffle = false, AC = null, RC = null;
+
+/* ============ icons ============ */
+const IC = {
+  chevL: 'M15 5l-7 7 7 7', chevR: 'M9 5l7 7-7 7', eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  shuffle: 'M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5', check: 'M4.5 12.5l5 5 10-11',
+  bulb: 'M9 18h6M10 21.5h4M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.6.5.8 1.2.8 1.7h6c0-.5.2-1.2.8-1.7A6.5 6.5 0 0 0 12 2.5z',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3.2 2', help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.3 9.3a2.8 2.8 0 1 1 4 2.5c-.9.5-1.3 1.1-1.3 2M12 17.2h.01',
+  flask: 'M9.5 3h5M10.5 3v6.2L4.6 19a2 2 0 0 0 1.7 3h11.4a2 2 0 0 0 1.7-3l-5.9-9.8V3M7.5 15h9',
+  monitor: 'M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 21h8M12 17v4',
+  calc: 'M7 2.5h10a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-15a2 2 0 0 1 2-2zM8.5 6.5h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01',
+  target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM12 11.5h.01',
+  chat: 'M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', pencil: 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4',
+  list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', layers: 'M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5'
+};
+const svg = n => '<svg class="ic" viewBox="0 0 24 24"><path d="' + IC[n] + '"/></svg>';
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = svg(el.dataset.ic));
+const SUBJ = {hindi: {c: '#E5484D', t: 'अ'}, english: {c: '#2F6BFF', t: 'Aa'}, science: {c: '#1F9D6B', p: 'flask'}, reasoning: {c: '#8E4EC6', p: 'target'}, computer: {c: '#0F8BA8', p: 'monitor'}, maths: {c: '#F08A1C', p: 'calc'}};
+const subjGlyph = id => { const s = SUBJ[id] || {p: 'help'}; return s.t ? s.t : svg(s.p); };
+
+/* ============ backgrounds ============ */
+const TINTS = [['#DCEBFF', '#EFE3FF'], ['#FFE6DF', '#FFF2CF'], ['#D9F5E9', '#E0EDFF'], ['#FBE1F0', '#E7E3FF'], ['#FFF3CF', '#DDF5EA'], ['#E1EAFF', '#FFE1EA'], ['#D6F3F8', '#EAE3FF'], ['#F1E4FF', '#FFEBD3']];
+const GLYPHS = {hindi: ['अ', 'आ', 'क', 'ख', 'ग', 'श्री'], english: ['Aa', 'Bb', 'Qq', '?', 'Zz', '“ ”'], science: ['H₂O', 'E=mc²', 'Δ', 'pH', 'CO₂', 'DNA'], reasoning: ['?', '△', '◇', 'A:B', '∞', '→'], computer: ['{ }', '</>', '01', '&&', '#', '>_'], maths: ['π', '∑', '√', '÷', '±', '%']};
+function rng(seed) { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function theme(seed) {
+  const r = rng(seed), tn = TINTS[Math.floor(r() * TINTS.length)];
+  return {a: tn[0], b: tn[1], ang: Math.floor(r() * 360), pat: ['dots', 'grid', 'lines', 'plus', 'none'][Math.floor(r() * 5)], gl: Array.from({length: 7}, () => ({x: r(), y: r(), s: 100 + r() * 120, rot: (r() - .5) * .8, k: Math.floor(r() * 100)}))};
+}
+function cssBg(t) {
+  const k = 'rgba(16,25,47,.07)'; let p = '';
+  if (t.pat === 'dots') p = 'radial-gradient(' + k + ' 1.6px,transparent 1.7px) 0 0/24px 24px,';
+  else if (t.pat === 'grid') p = 'linear-gradient(' + k + ' 1px,transparent 1px) 0 0/30px 30px,linear-gradient(90deg,' + k + ' 1px,transparent 1px) 0 0/30px 30px,';
+  else if (t.pat === 'lines') p = 'repeating-linear-gradient(0deg,transparent 0 31px,' + k + ' 31px 32px),';
+  else if (t.pat === 'plus') p = 'radial-gradient(' + k + ' 2px,transparent 2.1px) 0 0/36px 36px,radial-gradient(' + k + ' 2px,transparent 2.1px) 18px 18px/36px 36px,';
+  return p + 'linear-gradient(' + t.ang + 'deg,' + t.a + ',' + t.b + ')';
+}
+let bgFlip = false;
+function setBg(seed) { const el = $(bgFlip ? 'bgA' : 'bgB'), old = $(bgFlip ? 'bgB' : 'bgA'); el.style.background = cssBg(theme(seed)); el.classList.add('on'); old.classList.remove('on'); bgFlip = !bgFlip; }
+
+/* ============ one-line rewriting ============ */
+const INSTR = /^(in the (following|below|given|question)|in the sentence|in this question|out of|from the|four alternatives|below are|choose|select|find|each (sentence|of)|the sentence|read the|consider|identify|improve|rearrange|arrange|mark|pick|a part|a sentence|the (first|rest)|these four|in each)/i;
+const LABELS = [
+  [/active\/passive|passive\/active/i, 'Active ⇄ Passive'], [/direct\/indirect|indirect\/direct/i, 'Direct ⇄ Indirect'],
+  [/blank[\s\S]*idiom|idiom[\s\S]*blank/i, 'Fill the blank (idiom)'], [/blank/i, 'Fill the blank'],
+  [/bracketed|improve the sentence/i, 'Improve the bracketed part'], [/grammatical error|segment which contains/i, 'Spot the error'],
+  [/group of words/i, 'One word for'], [/idiom|phrase/i, 'Idiom meaning'],
+  [/split into four parts|p, q, r and s/i, 'Rearrange P Q R S'], [/sequenced|logical order|coherent paragraph/i, 'Order the sentences'],
+  [/spelt|misspelt|spelling/i, 'Spot the misspelt word'],
+  [/related to the third[\s\S]*first/i, 'Analogy']
+];
+function oneLine(t) {
+  let q = t.replace(/\s+/g, ' ').trim();
+  q = q.replace(/ा{2,}/g, 'ा').replace(/ी{2,}/g, 'ी').replace(/ू{2,}/g, 'ू').replace(/ि{2,}/g, 'ि');
+  let m = q.match(/^(?:select|choose|find)(?: the)?(?: word)? (synonym|antonym)(?: of| to| for)?(?: the (?:given )?word)?\s*[:.\-]?\s*(.+)$/i);
+  if (m) return m[1][0].toUpperCase() + m[1].slice(1).toLowerCase() + ': ' + m[2];
+  if (/[ऀ-ॿ]/.test(q)) return q.replace(/^निम्[‌‍]?न(?:लिखित)?\s+में\s+से\s+/, '');
+  const S = q.split(/(?<=[.?!])\s+(?=[A-Z"“‘'(\[0-9])/); let k = 0;
+  while (k < S.length - 1 && INSTR.test(S[k]) && !/_{2,}/.test(S[k])) k++;
+  if (k === 0) return q;
+  const instr = S.slice(0, k).join(' '), rest = S.slice(k).join(' ');
+  for (const [re, lab] of LABELS) if (re.test(instr) && rest.length >= 8 && rest.length < q.length - 15) return lab + ': ' + rest;
+  return q;
+}
+
+/* ============ data ============ */
 let EDITS = {}; try { EDITS = JSON.parse(localStorage.getItem('qr_edits') || '{}'); } catch (e) {}
 const saveEdits = () => { try { localStorage.setItem('qr_edits', JSON.stringify(EDITS)); } catch (e) {} };
-const NEEDS = /which (of|one of) the (following|below|given|these)|out of the (four|following|given)|four alternatives|in the (following|below) question|the question below|\boptions?\b|विकल्प|निम्(\u200d)?नलिखित में से (कौन|किस|किन)|निम्(\u200d)?न में से (कौन|किस|किन)/i;
+const NEEDS = /which (of|one of) the (following|below|given|these)|out of the (four|following|given)|four alternatives|in the (following|below) question|the question below|\boptions?\b|विकल्प|निम्[‍]?नलिखित में से (कौन|किस|किन)|निम्[‍]?न में से (कौन|किस|किन)/i;
 const norm = (d, sid) => (Array.isArray(d) ? d : (d.questions || [])).map(x => {
-  const oq = x.oq || x.q, ed = (EDITS[sid] || {})[oq], q = ed || x.q, edited = q !== oq;
-  return {q, oq, a: String(x.a), t: x.t || x.topic || 'General', ed: edited, need: !edited && NEEDS.test(q)};
+  const oq = x.oq || x.q, mcq = !!x.o, base = (x.oq || mcq) ? x.q : oneLine(x.q), ed = (EDITS[sid] || {})[oq], q = ed || base;
+  return {q, oq, a: String(x.a), t: x.t || x.topic || 'General', o: x.o, i: x.i, s: x.s, chk: x.chk, ed: !!ed, need: !ed && !mcq && NEEDS.test(q)};
 }).filter(x => x.q && x.a);
 const G = s => (window.Intl && Intl.Segmenter) ? Array.from(new Intl.Segmenter(undefined, {granularity: 'grapheme'}).segment(s), x => x.segment) : Array.from(s);
+const shuf = a => { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
 
-/* ---------- settings ---------- */
+/* ============ settings ============ */
 function seg(id, key, opts) {
   const box = $(id); box.innerHTML = '';
-  opts.forEach(([label, val]) => {
-    const b = document.createElement('button'); b.className = 'sm' + (CFG[key] === val ? ' on' : ''); b.textContent = label;
-    b.onclick = () => { CFG[key] = val; saveCfg(); seg(id, key, opts); };
-    box.appendChild(b);
-  });
+  opts.forEach(([label, val]) => { const b = document.createElement('button'); b.textContent = label; if (CFG[key] === val) b.className = 'on'; b.onclick = () => { CFG[key] = val; saveCfg(); seg(id, key, opts); }; box.appendChild(b); });
 }
+function sw(id, key) { const el = $(id); el.classList.toggle('on', !!CFG[key]); el.setAttribute('role', 'switch'); el.tabIndex = 0; el.onclick = () => { CFG[key] = !CFG[key]; saveCfg(); el.classList.toggle('on', CFG[key]); }; el.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.onclick(); } }; }
 function buildSettings() {
-  seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]);
-  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]);
-  seg('sVoice', 'voice', [['Off', false], ['On', true]]); fillVoiceSel();
-  seg('sBeep', 'beep', [['Off', false], ['On', true]]);
-  seg('sAuto', 'auto', [['Off', false], ['On', true]]);
-  seg('sSkip', 'skip', [['Off', false], ['On', true]]);
-  seg('sReel', 'reelN', [['5', 5], ['10', 10], ['15', 15]]);
-  seg('sMic', 'mic', [['Off', false], ['On', true]]);
-  $('inHandle').value = CFG.handle || ''; $('inHandle').oninput = e => { CFG.handle = e.target.value; saveCfg(); };
+  seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]); seg('sMath', 'mathS', [['15', 15], ['20', 20], ['30', 30], ['45', 45]]);
+  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['5', 5], ['10', 10], ['15', 15]]);
   seg('sMode', 'mode', [['Play live', 'live'], ['Export video', 'reel']]);
+  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai']].forEach(([a, b]) => sw(a, b));
+  $('inExam').value = CFG.exam || ''; $('inExam').oninput = e => { CFG.exam = e.target.value; saveCfg(); };
+  $('inHandle').value = CFG.handle || ''; $('inHandle').oninput = e => { CFG.handle = e.target.value; saveCfg(); };
+  fillVoiceSel();
 }
 
-/* ---------- init / screens ---------- */
-async function init() {
-  buildSettings();
-  try { MAN = await (await fetch('manifest.json')).json(); } catch (e) { $('err').textContent = 'Serve this folder via a web server. ' + e; return; }
-  await Promise.all(MAN.map(async m => {
-    try { CACHE[m.id] = norm(await (await fetch(m.file)).json(), m.id); } catch (e) { CACHE[m.id] = []; }
-    m.count = CACHE[m.id].length;
-  }));
-  showHome();
-}
-function show(id) { ['home','topics'].forEach(x => $(x).style.display = x === id ? 'block' : 'none'); $('quiz').style.display = id === 'quiz' ? 'flex' : 'none'; }
-function showHome() {
-  stop(); show('home'); $('subjects').innerHTML = '';
-  MAN.forEach(m => {
-    const b = document.createElement('button'); b.className = 'item' + (m.count ? '' : ' off');
-    b.innerHTML = '<span>' + m.name + '</span><span class="c">' + (m.count || 'soon') + '</span>';
-    b.onclick = () => pickSubject(m); $('subjects').appendChild(b);
-  });
-}
-function pickSubject(m) { subj = m; pool = CACHE[m.id]; showTopics(); }
-function showTopics() {
-  stop(); show('topics'); $('tSubj').textContent = subj.name;
-  const L = $('topicList'); L.innerHTML = '';
-  const add = (name, n, cls, f) => { const b = document.createElement('button'); b.className = 'item ' + cls; b.innerHTML = '<span>' + name + '</span><span class="c">' + n + '</span>'; b.onclick = f; L.appendChild(b); };
-  add('All questions', pool.length, 'dark', () => go(pool, 'All'));
-  const nd = pool.filter(x => x.need).length; if (nd) add('Needs rewrite (depend on options)', nd, '', () => go(pool.filter(x => x.need), 'Needs rewrite'));
-  const ed = pool.filter(x => x.ed).length; if (ed) add('Rewritten by me', ed, '', () => go(pool.filter(x => x.ed), 'Rewritten'));
-  const g = {}; pool.forEach(x => (g[x.t] = g[x.t] || []).push(x));
-  Object.keys(g).sort((a, b) => g[b].length - g[a].length).forEach(t => add(t, g[t].length, '', () => go(g[t], t)));
-}
-function start(arr) {
-  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {}
-  set = shuffle ? shuf(arr) : arr.slice(); i = 0; show('quiz'); render();
-}
-function shuf(a) { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; }
-function toggleShuffle() { shuffle = !shuffle; $('shufBtn').classList.toggle('on', shuffle); set = shuffle ? shuf(set) : set; i = 0; render(); }
-
-/* ---------- helpers ---------- */
-function stop() { clearInterval(tmr); clearTimeout(aux); tmr = aux = null; spkId++; try { speechSynthesis.cancel(); } catch (e) {} }
-function beep(freq, dur) {
-  if (!CFG.beep || !AC) return;
-  try { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = freq; o.connect(g); if (RC && RC.dest) g.connect(RC.dest); else g.connect(AC.destination); g.gain.setValueAtTime(0.15, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur); o.start(); o.stop(AC.currentTime + dur); } catch (e) {}
-}
-/* ---------- voice (native Indian) ---------- */
-let VOICES = [], spkId = 0;
-const DEV = /[ऀ-ॿ]/;
+/* ============ device voice (live only) ============ */
+let VOICES = [], spkId = 0; const DEV = /[ऀ-ॿ]/;
 function loadVoices() { try { VOICES = speechSynthesis.getVoices() || []; } catch (e) { VOICES = []; } fillVoiceSel(); }
 if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
 const isLang = (v, p) => v.lang.replace('_', '-').toLowerCase().startsWith(p);
 function pickVoice(kind) {
   const saved = kind === 'hi' ? CFG.vHi : CFG.vEn;
+  const L = kind === 'hi' ? VOICES.filter(v => isLang(v, 'hi')) : VOICES.filter(v => isLang(v, 'en-in')).concat(VOICES.filter(v => isLang(v, 'en') && !isLang(v, 'en-in')));
+  if (!L.length) return null;
+  if (CFG.vary) return L[Math.floor(Math.random() * L.length)];
   if (saved) { const s = VOICES.find(v => v.name === saved); if (s) return s; }
   const good = /(neerja|swara|madhur|kalpana|hemant|google|rishi|heera|lekha|kajal|natural|online)/i;
-  const L = kind === 'hi' ? VOICES.filter(v => isLang(v, 'hi'))
-          : VOICES.filter(v => isLang(v, 'en-in')).concat(VOICES.filter(v => isLang(v, 'en') && !isLang(v, 'en-in')));
   const score = v => (/natural|online/i.test(v.name) ? 4 : 0) + (/google/i.test(v.name) ? 2 : 0) + (good.test(v.name) ? 1 : 0);
-  return L.slice().sort((a, b) => score(b) - score(a))[0] || null;
+  return L.slice().sort((a, b) => score(b) - score(a))[0];
 }
 function fillVoiceSel() {
   [['selEn', 'vEn', v => isLang(v, 'en')], ['selHi', 'vHi', v => isLang(v, 'hi')]].forEach(([id, key, f]) => {
     const el = $(id); if (!el) return;
-    const list = VOICES.filter(f).sort((a, b) => (isLang(b, 'en-in') - isLang(a, 'en-in')));
-    el.innerHTML = '<option value="">Auto (best Indian voice)</option>' + list.map(v => '<option value="' + v.name.replace(/"/g, '&quot;') + '">' + v.name + ' (' + v.lang + ')</option>').join('');
-    el.value = CFG[key] || '';
-    el.onchange = () => { CFG[key] = el.value; saveCfg(); };
+    el.innerHTML = '<option value="">Auto</option>' + VOICES.filter(f).map(v => '<option value="' + v.name.replace(/"/g, '&quot;') + '">' + v.name + '</option>').join('');
+    el.value = CFG[key] || ''; el.onchange = () => { CFG[key] = el.value; saveCfg(); };
   });
 }
-function cleanSpeech(t) {                      // make text speakable
-  const hi = (t.match(/[ऀ-ॿ]/g) || []).length > (t.match(/[A-Za-z]/g) || []).length;
-  const blank = hi ? ' रिक्त स्थान ' : ' blank ';
-  return t
-    .replace(/\(\s*[_\-\.\s]{2,}\s*\)|_+|\.{4,}|-{3,}|[…]{2,}/g, blank)
-    .replace(/→|->/g, hi ? ' से ' : ' to ')
-    .replace(/&/g, hi ? ' और ' : ' and ')
-    .replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
-    .replace(/=/g, ' equals ').replace(/%/g, ' percent')
-    .replace(/[–—]/g, ', ').replace(/[*#\/\\|~^]/g, ' ')
-    .replace(/\s{2,}/g, ' ').trim();
+function cleanSpeech(t) {
+  const hi = (t.match(/[ऀ-ॿ]/g) || []).length > (t.match(/[A-Za-z]/g) || []).length, blank = hi ? ' रिक्त स्थान ' : ' blank ';
+  return t.replace(/\(\s*[_\-\.\s]{2,}\s*\)|_+|\.{4,}|-{3,}|[…]{2,}/g, blank).replace(/(\d)\s*:\s*(?=\d)/g, '$1 to ')
+    .replace(/→|->|⇄/g, hi ? ' से ' : ' to ').replace(/&/g, hi ? ' और ' : ' and ').replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
+    .replace(/=/g, ' equals ').replace(/%/g, ' percent').replace(/[–—]/g, ', ').replace(/[*#\/\\|~^]/g, ' ').replace(/\s{2,}/g, ' ').trim();
 }
-function segments(t) {                         // split by script so each part gets the right voice
-  const runs = t.match(/[ऀ-ॿ][ऀ-ॿ\s,.।॥]*|[^ऀ-ॿ]+/g) || [];
-  const out = []; let last = 'en';
+const speechText = q => cleanSpeech(q.q + (q.o ? ' Options. ' + q.o.map((o, k) => 'Option ' + 'ABCD'[k] + ', ' + o + '.').join(' ') : ''));
+function segments(t) {
+  const runs = t.match(/[ऀ-ॿ][ऀ-ॿ\s,.।॥]*|[^ऀ-ॿ]+/g) || [], out = []; let last = 'en';
   runs.forEach(r => {
     const hasD = DEV.test(r), hasL = /[A-Za-z]/.test(r), has = /[\p{L}\p{N}]/u.test(r);
     if (!has) { if (out.length) out[out.length - 1].t += r; return; }
     const lang = hasD ? 'hi' : hasL ? 'en' : last;
-    if (out.length && out[out.length - 1].lang === lang) out[out.length - 1].t += r; else out.push({lang, t: r});
-    last = lang;
+    if (out.length && out[out.length - 1].lang === lang) out[out.length - 1].t += r; else out.push({lang, t: r}); last = lang;
   });
   return out;
 }
 function speak(text, done) {
   if (!CFG.voice || !window.speechSynthesis) { done && done(); return; }
-  const my = ++spkId; let fired = false;
-  const fin = () => { if (!fired && my === spkId) { fired = true; done && done(); } };
+  const my = ++spkId; let fired = false; const fin = () => { if (!fired && my === spkId) { fired = true; done && done(); } };
   try {
-    speechSynthesis.cancel();
-    const segs = segments(cleanSpeech(text));
-    if (!segs.length) { fin(); return; }
-    let k = 0;
+    speechSynthesis.cancel(); const segs = segments(cleanSpeech(text)); if (!segs.length) { fin(); return; } let k = 0;
     const next = () => {
-      if (my !== spkId) return;
-      if (k >= segs.length) { fin(); return; }
+      if (my !== spkId) return; if (k >= segs.length) { fin(); return; }
       const s = segs[k++], u = new SpeechSynthesisUtterance(s.t), v = pickVoice(s.lang);
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = s.lang === 'hi' ? 'hi-IN' : 'en-IN';
-      u.rate = s.lang === 'hi' ? 0.92 : 0.95; u.pitch = 1;
-      u.onend = next; u.onerror = next;
-      speechSynthesis.speak(u);
+      u.rate = s.lang === 'hi' ? 0.93 : 0.96; u.pitch = CFG.vary ? 0.9 + Math.random() * 0.25 : 1; u.onend = next; u.onerror = next; speechSynthesis.speak(u);
     };
-    next();
-    clearTimeout(aux); aux = setTimeout(fin, 25000);
+    next(); clearTimeout(aux); aux = setTimeout(fin, 25000);
   } catch (e) { fin(); }
 }
 function testVoice() { const was = CFG.voice; CFG.voice = true; speak('Which planet is known as the red planet? मंगल ग्रह को लाल ग्रह कहा जाता है।'); CFG.voice = was; }
 
-function fit(el, text, big) {         // font size by text length
+/* ============ AI voice (recordable) ============ */
+const AI_VOICES = ['nova', 'shimmer', 'alloy', 'echo', 'fable', 'onyx', 'coral', 'sage'];
+function pickAiVoice() {
+  let last = ''; try { last = localStorage.getItem('qr_lastv') || ''; } catch (e) {}
+  const L = AI_VOICES.filter(v => v !== last), v = L[Math.floor(Math.random() * L.length)];
+  try { localStorage.setItem('qr_lastv', v); } catch (e) {} return v;
+}
+async function fetchTts(text, voice) {
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+  try {
+    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + voice, {signal: ctl.signal});
+    if (!r.ok || !/audio|octet/.test(r.headers.get('content-type') || '')) throw new Error('no audio');
+    return await AC.decodeAudioData(await r.arrayBuffer());
+  } finally { clearTimeout(to); }
+}
+
+/* ============ screens ============ */
+function show(id) { ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
+async function init() {
+  buildSettings(); setBg(Date.now());
+  try { MAN = await (await fetch('manifest.json')).json(); } catch (e) { $('err').textContent = 'Serve this folder with a web server. ' + e; return; }
+  await Promise.all(MAN.map(async m => { try { CACHE[m.id] = norm(await (await fetch(m.file)).json(), m.id); } catch (e) { CACHE[m.id] = []; } m.count = CACHE[m.id].length; }));
+  showHome();
+}
+function cell(tileHtml, tileColor, label, count, onclick, off) {
+  const b = document.createElement('button'); b.className = 'cell' + (off ? ' off' : '');
+  b.innerHTML = '<span class="tile" style="background:' + tileColor + '">' + tileHtml + '</span><span class="lab"></span><span class="cnt"></span><span class="chev">' + svg('chevR') + '</span>';
+  b.querySelector('.lab').textContent = label; b.querySelector('.cnt').textContent = count; b.onclick = onclick; return b;
+}
+function showHome() {
+  stop(); show('home'); const g = $('subjects'); g.innerHTML = '';
+  MAN.forEach(m => { const s = SUBJ[m.id] || {c: '#667'}; g.appendChild(cell(subjGlyph(m.id), s.c, m.name, m.count || 'Soon', () => pickSubject(m), !m.count)); });
+}
+function pickSubject(m) { subj = m; pool = CACHE[m.id]; showTopics(); }
+function showTopics() {
+  stop(); show('topics'); $('tSubj').textContent = subj.name;
+  const L = $('topicList'); L.innerHTML = ''; const col = (SUBJ[subj.id] || {c: '#667'}).c;
+  L.appendChild(cell(svg('layers'), '#10192F', 'All questions', pool.length, () => go(pool, 'All')));
+  const nd = pool.filter(x => x.need).length; if (nd) L.appendChild(cell(svg('pencil'), '#F08A1C', 'Needs rewrite', nd, () => go(pool.filter(x => x.need), 'Needs rewrite')));
+  const ed = pool.filter(x => x.ed).length; if (ed) L.appendChild(cell(svg('check'), '#1F9D6B', 'Rewritten by me', ed, () => go(pool.filter(x => x.ed), 'Rewritten')));
+  const g = {}; pool.forEach(x => (g[x.t] = g[x.t] || []).push(x));
+  Object.keys(g).sort((a, b) => g[b].length - g[a].length).forEach(t => L.appendChild(cell(svg('list'), col, t, g[t].length, () => go(g[t], t))));
+}
+function go(arr, name) {
+  if (CFG.skip) { const f = arr.filter(x => !x.need); if (f.length) arr = f; }
+  if (CFG.mode === 'reel') { const f = arr.filter(x => !x.chk); if (f.length) arr = f; startReel(arr, name); } else start(arr);
+}
+function start(arr) {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {}
+  set = shuffle ? shuf(arr) : arr.slice(); i = 0; show('quiz'); render();
+}
+function toggleShuffle() { shuffle = !shuffle; $('shufBtn').classList.toggle('on', shuffle); $('shufBtn').style.background = shuffle ? '#10192F' : ''; $('shufBtn').style.color = shuffle ? '#fff' : ''; set = shuffle ? shuf(set) : set; i = 0; render(); }
+
+/* ============ live quiz ============ */
+function stop() { clearInterval(tmr); clearTimeout(aux); tmr = aux = null; spkId++; try { speechSynthesis.cancel(); } catch (e) {} }
+function beep(freq, dur) {
+  if (!CFG.beep || !AC) return;
+  try { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = freq; o.connect(g); if (RC && RC.dest) g.connect(RC.dest); else g.connect(AC.destination); g.gain.setValueAtTime(0.15, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur); o.start(); o.stop(AC.currentTime + dur); } catch (e) {}
+}
+function fit(el, text, big) {
   const n = text.length;
-  el.style.fontSize = (big ? (n <= 50 ? 34 : n <= 100 ? 30 : n <= 170 ? 26 : n <= 260 ? 22 : 19)
-                           : (n <= 20 ? 34 : n <= 60 ? 28 : n <= 120 ? 24 : 20)) + 'px';
+  el.style.fontSize = (big ? (n <= 45 ? 32 : n <= 90 ? 28 : n <= 150 ? 24 : n <= 240 ? 21 : 18) : (n <= 20 ? 32 : n <= 60 ? 26 : n <= 120 ? 22 : 18)) + 'px';
 }
 function makeHint(a) {
   const mode = CFG.hint; if (mode === 'off') return null;
   const words = a.trim().split(/\s+/), one = words.length === 1, g = G(a.trim());
   const jumbleOK = one && g.length >= 4 && g.length <= 12 && !/^[\d.,\/\-+%]+$/.test(a);
-  if ((mode === 'jumble' || mode === 'auto') && jumbleOK) {
-    let j = g, tries = 0; do { j = shuf(g); tries++; } while (j.join('') === g.join('') && tries < 10);
-    return ['UNSCRAMBLE', j.join(' '), 'Hint. Unscramble these letters. ' + j.join(', ').toUpperCase()];
-  }
-  if (words.length <= 4 && g.length <= 28) {
-    return [words.length + ' WORD' + (words.length > 1 ? 'S' : ''), words.map(w => { const x = G(w); return x[0] + ' ' + x.slice(1).map(() => '_').join(' '); }).join('  /  '), 'Hint. ' + words.length + (words.length > 1 ? ' words' : ' word') + ', ' + (words.length > 1 ? 'starting with ' : 'starts with ') + words.map(w => G(w)[0]).join(', ').toUpperCase()];
-  }
-  return [words.length + ' WORDS', 'STARTS WITH ' + G(words[0])[0], 'Hint. ' + words.length + ' words, starting with ' + G(words[0])[0].toUpperCase()];
+  if ((mode === 'jumble' || mode === 'auto') && jumbleOK) { let j = g, tries = 0; do { j = shuf(g); tries++; } while (j.join('') === g.join('') && tries < 10); return ['Unscramble', j.join(' ')]; }
+  if (words.length <= 4 && g.length <= 28) return [words.length + (words.length > 1 ? ' words' : ' word'), words.map(w => { const x = G(w); return x[0] + ' ' + x.slice(1).map(() => '_').join(' '); }).join('  /  ')];
+  return [words.length + ' words', 'Starts with ' + G(words[0])[0]];
 }
-
-/* ---------- render ---------- */
 function render() {
-  stop();
-  const q = set[i], S = CFG.secs;
-  $('prog').textContent = (i + 1) + ' / ' + set.length;
-  $('tag').innerHTML = '<b>' + subj.name + '</b><span></span>'; $('tag').lastChild.textContent = q.t; if (q.need) { const bd = document.createElement('span'); bd.className = 'badge'; bd.textContent = 'needs rewrite'; $('tag').appendChild(bd); }
-  $('qText').textContent = q.q; fit($('qText'), q.q, true);
-  $('ansT').textContent = q.a; fit($('ans'), q.a, false);
-  const h = makeHint(q.a), hb = $('hint');
-  if (h) { hb.innerHTML = '<small>Hint: ' + h[0].toLowerCase() + '</small>'; hb.appendChild(document.createTextNode(h[1])); hb.classList.add('show'); hb.style.animation = 'none'; void hb.offsetWidth; hb.style.animation = ''; } else hb.classList.remove('show');
+  stop(); const q = set[i], mc = !!q.o, S = mc ? CFG.mathS : CFG.secs; setBg(Date.now() + i * 977);
+  $('prog').textContent = (i + 1) + ' / ' + set.length; $('trk').style.width = ((i + 1) / set.length * 100) + '%';
+  $('tag').innerHTML = '<span class="sj"><i class="si" style="display:inline-flex;font-style:normal"></i><span class="sn"></span></span><span class="tp"></span>';
+  $('tag').querySelector('.si').innerHTML = subjGlyph(subj.id); $('tag').querySelector('.sn').textContent = subj.name; $('tag').querySelector('.tp').textContent = q.t;
+  const badge = txt => { const b = document.createElement('span'); b.className = 'badge'; b.textContent = txt; $('tag').appendChild(b); };
+  if (q.chk) badge('verify answer'); if (q.need) badge('needs rewrite');
+  $('qText').textContent = q.q; fit($('qText'), q.q, true); $('qText').classList.toggle('mc', mc);
+  if (mc) $('qText').style.fontSize = Math.min(parseInt($('qText').style.fontSize), 24) + 'px';
+  const ob = $('opts'); ob.className = 'opts' + (mc ? ' on' : ''); ob.innerHTML = '';
+  if (mc) q.o.forEach((o, k) => { const d = document.createElement('div'); d.className = 'opt'; d.innerHTML = '<b>' + 'ABCD'[k] + '</b><span></span>'; d.lastChild.textContent = o; ob.appendChild(d); });
+  $('ansT').textContent = mc ? q.s : q.a; fit($('ans'), mc ? q.s : q.a, false); $('ans').classList.toggle('mc', mc); $('ansLbl').textContent = mc ? 'Solution' : 'Answer'; if (mc) $('ans').style.fontSize = Math.min(parseInt($('ans').style.fontSize), 19) + 'px';
+  const h = mc ? null : makeHint(q.a), hb = $('hint');
+  if (h) { hb.innerHTML = '<small>' + svg('bulb') + 'Hint: ' + h[0].toLowerCase() + '</small>'; hb.appendChild(document.createTextNode(h[1])); hb.classList.add('show'); hb.style.animation = 'none'; void hb.offsetWidth; hb.style.animation = ''; } else hb.classList.remove('show');
   const pp = document.querySelector('.paper'); pp.classList.remove('enter'); void pp.offsetWidth; pp.classList.add('enter');
-  $('edTa').value = q.q; $('edInfo').textContent = q.ed ? 'Rewritten. Original: ' + q.oq : 'Edits stay in this browser. Download the JSON and replace the file in your folder to keep them for good.';
-  $('ring').classList.remove('urgent'); $('trk').style.width = ((i + 1) / set.length * 100) + '%';
-  $('prev').disabled = i === 0; $('next').disabled = i === set.length - 1;
-  $('ans').style.display = 'none'; $('showBtn').style.display = 'none'; $('ring').style.display = 'block';
-  tick(S, S); window.scrollTo(0, 0);
-  speak(q.q, () => {
+  $('edTa').value = q.q; $('edInfo').textContent = q.q !== q.oq ? 'Original: ' + q.oq : 'Edits stay in this browser. Download the JSON and replace the file in your folder to keep them for good.';
+  $('ring').classList.remove('urgent'); $('prev').disabled = i === 0; $('next').disabled = i === set.length - 1;
+  $('ans').style.display = 'none'; $('showBtn').style.display = 'none'; $('ring').style.display = 'block'; tick(S, S); window.scrollTo(0, 0);
+  speak(speechText(q), () => {
     let t = S;
     tmr = setInterval(() => {
-      t--; tick(t, S);
-      if (t <= 3 && t > 0) $('ring').classList.add('urgent');
-      if (t > 0) beep(t <= 3 ? 880 : 520, 0.08);
-      if (t <= 0) {
-        stop(); beep(300, 0.35); $('ring').style.display = 'none';
-        if (CFG.auto) reveal(); else $('showBtn').style.display = 'block';
-      }
+      t--; tick(t, S); if (t <= 3 && t > 0) { $('ring').classList.add('urgent'); beep(880, 0.08); }
+      if (t <= 0) { stop(); beep(300, 0.35); $('ring').style.display = 'none'; if (CFG.auto) reveal(); else $('showBtn').style.display = 'inline-flex'; }
     }, 1000);
   });
 }
 function tick(t, S) { $('num').textContent = t; $('arc').setAttribute('stroke-dashoffset', (320.4 * (1 - t / S)).toFixed(1)); }
 function reveal() {
   $('showBtn').style.display = 'none'; $('ans').style.display = 'block'; $('hint').classList.remove('show');
-  speak(set[i].a, () => { if (CFG.auto && i < set.length - 1) aux = setTimeout(() => step(1), 3500); });
+  const x = set[i]; if (x.o) [...$('opts').children].forEach((el, k) => el.classList.add(k === x.i ? 'right' : 'dim'));
+  speak(x.o ? 'Option ' + 'ABCD'[x.i] + ', ' + x.a : x.a, () => { if (CFG.auto && i < set.length - 1) aux = setTimeout(() => step(1), 3500); });
 }
 function step(d) { const n = i + d; if (n >= 0 && n < set.length) { i = n; render(); } }
-document.addEventListener('keydown', e => { if (/TEXTAREA|INPUT/.test((e.target || {}).tagName || '')) return; if ($('quiz').style.display !== 'flex') return; if (e.key === 'ArrowRight') step(1); if (e.key === 'ArrowLeft') step(-1); if (e.key === 'Enter' && $('showBtn').style.display === 'block') reveal(); });
-/* ---------- rewrite box ---------- */
+document.addEventListener('keydown', e => {
+  if (/TEXTAREA|INPUT|SELECT/.test((e.target || {}).tagName || '') || $('quiz').classList.contains('hide') || $('reel').style.display === 'flex') return;
+  if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1);
+  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if ($('showBtn').style.display === 'inline-flex') reveal(); else if ($('ans').style.display === 'block') step(1); }
+});
+
+/* ============ rewrite box ============ */
 function toggleEdit() { const b = $('edBox'); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
 function saveEdit() {
   const x = set[i], v = $('edTa').value.trim(); if (!v) return;
-  x.q = v; x.ed = v !== x.oq; x.need = !x.ed && NEEDS.test(v);
-  const E = EDITS[subj.id] = EDITS[subj.id] || {}; if (x.ed) E[x.oq] = v; else delete E[x.oq];
-  saveEdits(); render();
+  x.q = v; x.ed = !x.o && v !== oneLine(x.oq); x.need = !x.ed && !x.o && NEEDS.test(v);
+  const E = EDITS[subj.id] = EDITS[subj.id] || {}; if (x.ed) E[x.oq] = v; else delete E[x.oq]; saveEdits(); render();
 }
-function resetEdit() { $('edTa').value = set[i].oq; saveEdit(); }
+function resetEdit() { $('edTa').value = set[i].o ? set[i].oq : oneLine(set[i].oq); saveEdit(); }
 function exportJson() {
-  const out = CACHE[subj.id].map(x => { const o = {q: x.q, a: x.a, t: x.t}; if (x.q !== x.oq) o.oq = x.oq; return o; });
+  const out = CACHE[subj.id].map(x => { const o = {q: x.q, a: x.a, t: x.t}; if (x.o) { o.o = x.o; o.i = x.i; o.s = x.s; } if (x.chk) o.chk = 1; if (x.q !== x.oq) o.oq = x.oq; return o; });
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], {type: 'application/json'})); a.download = subj.file; a.click();
 }
-/* ---------- reel export (auto-record to a video file) ---------- */
-const REEL = {W: 1080, H: 1920, HOLD: 3.5, INTRO: 2.6, OUTRO: 3.2};
-let RC = null;
-const INK = '#0F1B3D', PAPER = '#E8ECF4', RED = '#C8312B', HI = '#FFE27A', MUTE = '#6B7792';
+
+/* ============ video: drawing (1080x1920, inside Shorts/Reels safe zones) ============ */
+const REEL = {W: 1080, H: 1920, HOLD: 3.5, INTRO: 2.8, OUTRO: 3.4};
+const INK = '#10192F', MUTE = '#6E7893', RED = '#D93F36', HI = '#FFE27A';
 const FONT = '"Poppins","Noto Sans Devanagari","Segoe UI",system-ui,sans-serif';
-
-function go(arr, name) {
-  if (CFG.skip) { const f = arr.filter(x => !x.need); if (f.length) arr = f; }
-  if (CFG.mode === 'reel') startReel(arr, name); else start(arr);
-}
-
+const CARD = {x: 50, y: 390, w: 880, h: 1080};
+const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function icon(c, name, x, y, s, color, lw) { c.save(); c.translate(x, y); c.scale(s / 24, s / 24); c.strokeStyle = color; c.lineWidth = lw || 2; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke(new Path2D(IC[name])); c.restore(); }
+function glyph(c, id, cx, cy, s, color) {            // subject tile glyph: letter or icon, centred
+  const m = SUBJ[id] || {p: 'help'};
+  if (m.t) { c.fillStyle = color; c.font = '700 ' + Math.round(s * 0.8) + 'px ' + FONT; c.textAlign = 'center'; c.fillText(m.t, cx, cy + s * 0.28); c.textAlign = 'left'; }
+  else icon(c, m.p, cx - s / 2, cy - s / 2, s, color, 2);
+}
 function wrapLines(c, text, maxW) {
   const lines = []; let cur = '';
   for (const w of text.split(/\s+/)) {
-    const test = cur ? cur + ' ' + w : w;
-    if (c.measureText(test).width <= maxW) { cur = test; continue; }
+    const test = cur ? cur + ' ' + w : w; if (c.measureText(test).width <= maxW) { cur = test; continue; }
     if (cur) { lines.push(cur); cur = ''; }
-    if (c.measureText(w).width <= maxW) cur = w;
-    else { let part = ''; for (const ch of G(w)) { if (c.measureText(part + ch).width > maxW) { lines.push(part); part = ch; } else part += ch; } cur = part; }
+    if (c.measureText(w).width <= maxW) cur = w; else { let part = ''; for (const ch of G(w)) { if (c.measureText(part + ch).width > maxW) { lines.push(part); part = ch; } else part += ch; } cur = part; }
   }
   if (cur) lines.push(cur); return lines;
 }
@@ -439,143 +553,192 @@ function fitText(c, text, maxW, maxH, maxS, minS, weight, lh) {
   for (let s = maxS; s >= minS; s -= 2) { c.font = weight + ' ' + s + 'px ' + FONT; const L = wrapLines(c, text, maxW); if (L.length * s * lh <= maxH) return {s, L}; }
   c.font = weight + ' ' + minS + 'px ' + FONT; return {s: minS, L: wrapLines(c, text, maxW)};
 }
-function drawLines(c, f, x, y0, boxH, lh, align) {
-  const total = f.L.length * f.s * lh; let y = y0 + (boxH - total) / 2 + f.s * 1.0;
-  c.textAlign = align; f.L.forEach(l => { c.fillText(l, x, y); y += f.s * lh; }); c.textAlign = 'left';
+function fit1(c, text, maxW, maxS, minS, weight) { let s = maxS; c.font = weight + ' ' + s + 'px ' + FONT; while (s > minS && c.measureText(text).width > maxW) { s -= 2; c.font = weight + ' ' + s + 'px ' + FONT; } return s; }
+function drawLines(c, f, x, y0, boxH, lh, align) { const total = f.L.length * f.s * lh; let y = y0 + (boxH - total) / 2 + f.s * 1.0; c.textAlign = align; f.L.forEach(l => { c.fillText(l, x, y); y += f.s * lh; }); c.textAlign = 'left'; }
+
+function buildBg(P, qi) {
+  const th = P.themes[qi], cv = document.createElement('canvas'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d'), W = REEL.W, H = REEL.H;
+  const a = th.ang * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), R = Math.abs(W * dx) / 2 + Math.abs(H * dy) / 2;
+  const g = c.createLinearGradient(W / 2 - dx * R, H / 2 - dy * R, W / 2 + dx * R, H / 2 + dy * R); g.addColorStop(0, th.a); g.addColorStop(1, th.b); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = c.strokeStyle = 'rgba(16,25,47,.07)'; c.lineWidth = 2;
+  if (th.pat === 'dots') { for (let y = 22; y < H; y += 44) for (let x = 22; x < W; x += 44) { c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill(); } }
+  else if (th.pat === 'grid') { for (let x = 0; x < W; x += 54) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); } for (let y = 0; y < H; y += 54) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); } }
+  else if (th.pat === 'lines') { for (let y = 40; y < H; y += 58) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); } }
+  else if (th.pat === 'plus') { for (let y = 36; y < H; y += 72) for (let x = 36; x < W; x += 72) { c.beginPath(); c.moveTo(x - 8, y); c.lineTo(x + 8, y); c.moveTo(x, y - 8); c.lineTo(x, y + 8); c.stroke(); } }
+  const set = GLYPHS[P.subjId] || [];
+  th.gl.forEach(gl => { const t = set[gl.k % (set.length || 1)]; if (!t) return; c.save(); c.translate(gl.x * W, gl.y * H); c.rotate(gl.rot); c.fillStyle = 'rgba(16,25,47,.06)'; c.font = '700 ' + Math.round(gl.s * 1.6) + 'px ' + FONT; c.textAlign = 'center'; c.fillText(t, 0, 0); c.restore(); });
+  return cv;
 }
-function header(c, P, label, light) {
-  const W = REEL.W;
-  c.fillStyle = light ? '#fff' : INK; rrect(c, 60, 170, 80, 80, 22); c.fill();
-  c.strokeStyle = light ? INK : '#fff'; c.lineWidth = 9; c.lineCap = 'round'; c.lineJoin = 'round';
-  c.beginPath(); c.moveTo(82, 212); c.lineTo(99, 229); c.lineTo(122, 192); c.stroke();
-  c.fillStyle = light ? '#fff' : INK; c.font = '700 46px ' + FONT; c.fillText('Daily Quiz', 160, 224);
-  if (label) { c.fillStyle = light ? '#B9C3DE' : MUTE; c.font = '600 44px ' + FONT; c.textAlign = 'right'; c.fillText(label, W - 60, 224); c.textAlign = 'left'; }
+function header(c, P, label) {
+  c.fillStyle = INK; rrect(c, 60, 268, 64, 64, 18); c.fill(); icon(c, 'check', 74, 282, 36, '#fff', 2.6);
+  c.fillStyle = INK; c.font = '700 40px ' + FONT; c.textAlign = 'left'; c.fillText('Daily Quiz', 142, 313);
+  if (label) { c.font = '600 38px ' + FONT; c.fillStyle = '#3C4763'; c.textAlign = 'right'; c.fillText(label, 1020, 313); c.textAlign = 'left'; }
+}
+function cardShell(c, e) {
+  c.shadowColor = 'rgba(16,25,47,.22)'; c.shadowBlur = 60; c.shadowOffsetY = 24; c.fillStyle = '#fff'; rrect(c, CARD.x, CARD.y, CARD.w, CARD.h, 56); c.fill();
+  c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
 }
 function bookend(c, P, seg, lt) {
-  const W = REEL.W, H = REEL.H, intro = seg.type === 'intro';
-  c.fillStyle = INK; c.fillRect(0, 0, W, H); header(c, P, '', true);
-  c.globalAlpha = Math.min(1, lt / 0.35); c.fillStyle = '#fff';
-  const t1 = intro ? P.subj : 'How many did you get right?';
-  const f = fitText(c, t1, W - 160, 520, 128, 64, '700', 1.15);
-  drawLines(c, f, 80, 520, 560, 1.15, 'left');
-  c.fillStyle = '#B9C3DE'; c.font = '500 52px ' + FONT;
-  const sub = intro ? [P.qs.length + ' questions, ' + P.S + ' seconds each', 'Comment your answers before the timer ends'] : ['Follow for a new quiz every day', P.handle || ''];
-  sub.forEach((s, k) => { if (s) c.fillText(s, 80, 1180 + k * 80); });
-  c.globalAlpha = 1;
-}
-const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
-function questionFrame(c, P, seg, lt) {
-  const W = REEL.W, H = REEL.H, S = P.S, q = P.qs[seg.qi];
-  c.fillStyle = PAPER; c.fillRect(0, 0, W, H);
-  header(c, P, (seg.qi + 1) + ' / ' + P.qs.length, false);
-  c.fillStyle = '#D5DBE9'; rrect(c, 60, 290, W - 120, 10, 5); c.fill();
-  c.fillStyle = INK; rrect(c, 60, 290, Math.max(20, (W - 120) * ((seg.qi + Math.min(1, lt / S)) / P.qs.length)), 10, 5); c.fill();
-  const e = ease(lt / 0.5), cx = 60, cy = 340, cw = 960, ch = 1240, px = cx + 56, pw = cw - 112, mx = cx + cw / 2;
-  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36);
-  c.shadowColor = 'rgba(15,27,61,.22)'; c.shadowBlur = 60; c.shadowOffsetY = 24; c.fillStyle = '#fff'; rrect(c, cx, cy, cw, ch, 56); c.fill();
-  c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
-  // tag, centred
-  c.font = '600 32px ' + FONT; const sw = c.measureText(P.subj).width + 44;
-  c.font = '500 32px ' + FONT; let tp = q.t; const room = pw - sw - 30;
-  while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2);
-  if (tp !== q.t) tp += '…'; const tw = c.measureText(tp).width, gx = mx - (sw + 18 + tw) / 2;
-  c.fillStyle = INK; rrect(c, gx, cy + 50, sw, 58, 16); c.fill();
-  c.fillStyle = '#fff'; c.font = '600 32px ' + FONT; c.textAlign = 'left'; c.fillText(P.subj, gx + 22, cy + 90);
-  c.fillStyle = MUTE; c.font = '500 32px ' + FONT; c.fillText(tp, gx + sw + 18, cy + 90);
-  // question, centred
-  c.fillStyle = INK; drawLines(c, fitText(c, q.q, pw, 540, 74, 36, '600', 1.42), mx, cy + 140, 540, 1.42, 'center');
-  // hint from the start
-  const h = P.hints[seg.qi];
-  if (h && lt < S) {
-    const he = ease((lt - 0.2) / 0.4); c.save(); c.globalAlpha = e * he; c.translate(0, (1 - he) * 14);
-    c.fillStyle = HI; rrect(c, px, cy + 710, pw, 150, 30); c.fill();
-    c.fillStyle = '#6B5A00'; c.font = '500 30px ' + FONT; c.textAlign = 'center'; c.fillText('Hint: ' + h[0].toLowerCase(), mx, cy + 756);
-    const hf = fitText(c, h[1], pw - 40, 70, 56, 28, '600', 1.1); c.font = '600 ' + hf.s + 'px ' + FONT; c.fillStyle = INK; c.fillText(hf.L.join(' '), mx, cy + 826); c.textAlign = 'left';
-    c.restore();
-  }
-  // timer: faint watermark ring; answer: soft pop-in
-  if (lt < S) {
-    const rem = S - lt, my = cy + 1050, r = 100, urgent = rem <= 3;
-    c.save(); c.globalAlpha = e * (urgent ? 0.30 : 0.13);
-    c.lineWidth = 18; c.lineCap = 'round'; c.strokeStyle = '#9AA6C4'; c.beginPath(); c.arc(mx, my, r, 0, 7); c.stroke();
-    c.strokeStyle = urgent ? RED : INK; c.beginPath(); c.arc(mx, my, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (rem / S)); c.stroke();
-    c.fillStyle = urgent ? RED : INK; c.font = '600 104px ' + FONT; c.textAlign = 'center'; c.fillText(String(Math.ceil(rem)), mx, my + 38); c.textAlign = 'left'; c.restore();
+  const intro = seg.type === 'intro', e = ease(lt / 0.5), mx = CARD.x + CARD.w / 2, px = CARD.x + 48, pw = CARD.w - 96;
+  c.drawImage(P.bgs[intro ? 0 : P.qs.length - 1], 0, 0); header(c, P, '');
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c);
+  const cy = CARD.y + CARD.h / 2;
+  if (intro) {
+    const col = (SUBJ[P.subjId] || {c: INK}).c; c.fillStyle = col; rrect(c, mx - 90, cy - 330, 180, 180, 48); c.fill(); glyph(c, P.subjId, mx, cy - 240, 96, '#fff');
+    c.fillStyle = INK; drawLines(c, fitText(c, P.subj, pw, 200, 92, 52, '700', 1.15), mx, cy - 120, 200, 1.15, 'center');
+    c.fillStyle = '#3C4763'; c.font = '500 40px ' + FONT; c.textAlign = 'center';
+    const l1 = P.qs.length + ' questions  ·  ' + P.Ss[0] + ' seconds each'; c.fillText(l1, mx, cy + 120);
+    icon(c, 'chat', mx - 20, cy + 190, 40, MUTE, 2); c.fillStyle = MUTE; c.font = '500 34px ' + FONT; c.fillText('Comment your answers', mx, cy + 285); c.textAlign = 'left';
   } else {
-    const ae = ease((lt - S) / 0.35), ay = cy + 880, ah = 330; c.save(); c.globalAlpha = e * ae;
-    c.translate(mx, ay + ah / 2); c.scale(0.94 + 0.06 * ae, 0.94 + 0.06 * ae); c.translate(-mx, -(ay + ah / 2));
-    c.fillStyle = INK; rrect(c, px, ay, pw, ah, 44); c.fill();
-    c.strokeStyle = '#9FE3B8'; c.lineWidth = 7; c.lineCap = 'round'; c.lineJoin = 'round';
-    c.font = '500 34px ' + FONT; const aw = c.measureText('Answer').width, sx = mx - (aw + 50) / 2;
-    c.beginPath(); c.moveTo(sx, ay + 56); c.lineTo(sx + 12, ay + 68); c.lineTo(sx + 32, ay + 40); c.stroke();
-    c.fillStyle = '#9FE3B8'; c.fillText('Answer', sx + 50, ay + 68);
-    c.fillStyle = '#fff'; drawLines(c, fitText(c, q.a, pw - 60, 220, 84, 36, '600', 1.3), mx, ay + 90, 220, 1.3, 'center'); c.restore();
+    c.fillStyle = INK; drawLines(c, fitText(c, 'How many did you get right?', pw, 330, 84, 48, '700', 1.2), mx, cy - 250, 330, 1.2, 'center');
+    c.fillStyle = '#3C4763'; c.font = '500 40px ' + FONT; c.textAlign = 'center'; c.fillText('Follow for a new quiz every day', mx, cy + 130);
+    if (P.handle) { c.fillStyle = INK; c.font = '700 48px ' + FONT; c.fillText(P.handle, mx, cy + 210); } c.textAlign = 'left';
   }
   c.restore();
-  c.textAlign = 'center';
-  if (lt < S) { c.fillStyle = '#3A4768'; c.font = '500 36px ' + FONT; c.fillText('Comment your answer before time is up', W / 2, 1670); }
-  if (P.handle) { c.fillStyle = MUTE; c.font = '600 38px ' + FONT; c.fillText(P.handle, W / 2, 1735); }
-  c.textAlign = 'left';
+}
+function questionFrame(c, P, seg, lt) {
+  const W = REEL.W, S = P.Ss[seg.qi], q = P.qs[seg.qi], mc = !!q.o, rev = lt >= S, e = ease(lt / 0.5);
+  const cx = CARD.x, cy = CARD.y, px = cx + 48, pw = CARD.w - 96, mx = cx + CARD.w / 2;
+  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, (seg.qi + 1) + ' / ' + P.qs.length);
+  c.fillStyle = 'rgba(16,25,47,.12)'; rrect(c, 60, 350, W - 120, 8, 4); c.fill();
+  c.fillStyle = INK; rrect(c, 60, 350, Math.max(16, (W - 120) * ((seg.qi + Math.min(1, lt / S)) / P.qs.length)), 8, 4); c.fill();
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c);
+  // tag chip: icon tile + subject, then topic
+  const col = (SUBJ[P.subjId] || {c: INK}).c; c.font = '600 30px ' + FONT; const nw = c.measureText(P.subj).width, cw = 14 + 40 + 10 + nw + 18;
+  c.font = '500 30px ' + FONT; let tp = q.t; const room = pw - cw - 24; while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2); if (tp !== q.t) tp += '…';
+  const gx = mx - (cw + 16 + c.measureText(tp).width) / 2, ty = cy + 34;
+  c.fillStyle = INK; rrect(c, gx, ty, cw, 54, 16); c.fill(); c.fillStyle = col; rrect(c, gx + 7, ty + 7, 40, 40, 11); c.fill(); glyph(c, P.subjId, gx + 27, ty + 27, 24, '#fff');
+  c.fillStyle = '#fff'; c.font = '600 30px ' + FONT; c.fillText(P.subj, gx + 14 + 40 + 10, ty + 38); c.fillStyle = MUTE; c.font = '500 30px ' + FONT; c.fillText(tp, gx + cw + 16, ty + 38);
+  // question
+  const qh = mc ? 230 : 400; c.fillStyle = INK; drawLines(c, fitText(c, q.q, pw, qh, mc ? 52 : 64, 30, '600', 1.38), mx, cy + 110, qh, 1.38, 'center');
+  if (mc) {
+    const oy = cy + 350, oe = ease((lt - S) / 0.35);
+    q.o.forEach((o, k) => {
+      const y = oy + k * 88, right = k === q.i, hot = rev && right; c.save(); if (rev && !right) c.globalAlpha = e * (1 - 0.65 * oe);
+      c.fillStyle = hot ? INK : '#F2F5FB'; rrect(c, px, y, pw, 76, 22); c.fill(); c.strokeStyle = hot ? INK : '#DCE2EF'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = hot ? '#9FE3B8' : INK; c.beginPath(); c.arc(px + 42, y + 38, 24, 0, 7); c.fill();
+      c.fillStyle = hot ? INK : '#fff'; c.font = '600 28px ' + FONT; c.textAlign = 'center'; c.fillText('ABCD'[k], px + 42, y + 48);
+      c.fillStyle = hot ? '#fff' : INK; const fs = fit1(c, o, pw - 120, 36, 20, '500'); c.textAlign = 'left'; c.fillText(o, px + 86, y + 38 + fs * 0.35); c.restore();
+    });
+  }
+  const h = P.hints[seg.qi];
+  if (h && !rev) {
+    const he = ease((lt - 0.2) / 0.4); c.save(); c.globalAlpha = e * he; c.translate(0, (1 - he) * 14);
+    c.fillStyle = HI; rrect(c, px, cy + 520, pw, 130, 28); c.fill();
+    c.fillStyle = '#6B5A00'; c.font = '600 28px ' + FONT; const lab = 'Hint: ' + h[0].toLowerCase(), lw = c.measureText(lab).width; icon(c, 'bulb', mx - lw / 2 - 40, cy + 536, 30, '#6B5A00', 2.2); c.textAlign = 'left'; c.fillText(lab, mx - lw / 2 - 2, cy + 562);
+    fit1(c, h[1], pw - 40, 52, 26, '600'); c.fillStyle = INK; c.textAlign = 'center'; c.fillText(h[1], mx, cy + 626); c.textAlign = 'left'; c.restore();
+  }
+  const top = cy + (mc ? 720 : 690), ph = mc ? 270 : 300;
+  if (!rev) {
+    const rem = S - lt, my = top + ph / 2, r = 78, urgent = rem <= 3; c.save(); c.globalAlpha = e * (urgent ? 0.30 : 0.13);
+    c.lineWidth = 16; c.lineCap = 'round'; c.strokeStyle = '#9AA6C4'; c.beginPath(); c.arc(mx, my, r, 0, 7); c.stroke();
+    c.strokeStyle = urgent ? RED : INK; c.beginPath(); c.arc(mx, my, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (rem / S)); c.stroke();
+    c.fillStyle = urgent ? RED : INK; c.font = '600 84px ' + FONT; c.textAlign = 'center'; c.fillText(String(Math.ceil(rem)), mx, my + 30); c.textAlign = 'left'; c.restore();
+    c.font = '500 30px ' + FONT; const ct = 'Comment your answer before time is up', cw2 = c.measureText(ct).width, ix = mx - (cw2 + 44) / 2; icon(c, 'chat', ix, cy + 1010, 30, MUTE, 2); c.fillStyle = MUTE; c.fillText(ct, ix + 44, cy + 1036);
+  } else {
+    const ae = ease((lt - S) / 0.35), txt = mc ? q.s : q.a; c.save(); c.globalAlpha = e * ae; c.translate(mx, top + ph / 2); c.scale(0.94 + 0.06 * ae, 0.94 + 0.06 * ae); c.translate(-mx, -(top + ph / 2));
+    c.fillStyle = INK; rrect(c, px, top, pw, ph, 40); c.fill();
+    const lbl = mc ? 'Solution' : 'Answer'; c.font = '500 32px ' + FONT; const aw = c.measureText(lbl).width, sx = mx - (aw + 44) / 2; icon(c, 'check', sx, top + 26, 32, '#9FE3B8', 3); c.fillStyle = '#9FE3B8'; c.fillText(lbl, sx + 44, top + 54);
+    c.fillStyle = '#fff'; drawLines(c, mc ? fitText(c, txt, pw - 70, ph - 100, 38, 22, '500', 1.4) : fitText(c, txt, pw - 60, ph - 100, 76, 32, '600', 1.3), mx, top + 74, ph - 90, mc ? 1.4 : 1.3, 'center'); c.restore();
+  }
+  c.restore();
 }
 function drawFrame(c, P, t) {
   const seg = P.segs.find(s => t < s.start + s.dur) || P.segs[P.segs.length - 1], lt = Math.min(t - seg.start, seg.dur);
-  if (seg.type === 'q') questionFrame(c, P, seg, lt); else bookend(c, P, seg, lt);
-  return {seg, lt};
+  if (seg.type === 'q') questionFrame(c, P, seg, lt); else bookend(c, P, seg, lt); return {seg, lt};
 }
-function pickMime() {
-  const L = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
-  return L.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
-}
-function reelMsg(t) { $('reelMsg').textContent = t; }
+
+/* ============ video: recorder ============ */
+function pickMime() { const L = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']; return L.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || ''; }
+const reelMsg = t => { $('reelMsg').textContent = t; };
 async function startReel(arr, name) {
   if (RC) return;
-  if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome on Android or desktop.'); return; }
+  if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome or Edge.'); return; }
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
-  const n = CFG.reelN, S = CFG.secs, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
-  if (shuffle) qs = shuf(arr).slice(0, n);
-  else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
-  const P = {qs, S, subj: subj.name, handle: (CFG.handle || '').trim(), hintAt: Math.ceil(S / 2), hints: qs.map(q => makeHint(q.a)), segs: [], total: 0};
-  let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
-  add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', S + REEL.HOLD, qi)); add('outro', REEL.OUTRO); P.total = st;
-  try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
-
-  const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
+  const n = CFG.reelN, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
+  if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
+  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], total: 0, voice: '', note: ''};
+  P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
+  RC = {prep: true, cancelled: false, srcs: []}; const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
   $('reel').style.display = 'flex'; $('reelDone').style.display = 'none'; $('reelLive').style.display = 'flex'; cv.style.display = 'block';
+  c.fillStyle = '#fff'; c.fillRect(0, 0, REEL.W, REEL.H);
+  if (CFG.aiv && AC) {
+    P.voice = pickAiVoice();
+    for (let k = 0; k < qs.length; k++) {
+      if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…');
+      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.voice); } catch (e) { if (k === 0) break; }
+    }
+    if (RC.cancelled) { RC = null; return; }
+    if (!P.audio.some(Boolean)) { P.voice = ''; P.note = 'AI voice was unavailable, so this video has no voice.'; }
+  }
+  P.audio.forEach((b, k) => { if (b) P.Ss[k] = Math.max(P.Ss[k], Math.ceil(b.duration + 1.6)); });
+  let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
+  add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + (q.o ? 6 : REEL.HOLD), qi)); add('outro', REEL.OUTRO); P.total = st;
+  try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
   const stream = cv.captureStream(30), dest = AC ? AC.createMediaStreamDestination() : null; let mic = null;
   if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-  if (CFG.mic && dest) { try { mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); AC.createMediaStreamSource(mic).connect(dest); } catch (e) { reelMsg('Microphone blocked, recording without it.'); } }
+  if (CFG.mic && dest) { try { mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); AC.createMediaStreamSource(mic).connect(dest); } catch (e) { P.note += ' Microphone blocked.'; } }
   const mime = pickMime(), chunks = []; let rec;
   try { rec = new MediaRecorder(stream, mime ? {mimeType: mime, videoBitsPerSecond: 6000000} : {}); } catch (e) { rec = new MediaRecorder(stream); }
   rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
-  RC = {dest, rec, cancelled: false, raf: 0};
-  const cleanup = () => { cancelAnimationFrame(RC.raf); stream.getTracks().forEach(t => t.stop()); if (mic) mic.getTracks().forEach(t => t.stop()); try { wake && wake.release(); } catch (e) {} };
+  RC.prep = false; RC.dest = dest; RC.rec = rec;
+  const cleanup = () => { cancelAnimationFrame(RC.raf); RC.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); stream.getTracks().forEach(t => t.stop()); if (mic) mic.getTracks().forEach(t => t.stop()); try { wake && wake.release(); } catch (e) {} };
   rec.onstop = () => {
-    const was = RC; cleanup(); RC = null;
-    if (was.cancelled) { $('reel').style.display = 'none'; return; }
-    const type = (rec.mimeType || mime || 'video/webm').split(';')[0], ext = type.includes('mp4') ? 'mp4' : 'webm';
-    const url = URL.createObjectURL(new Blob(chunks, {type}));
-    $('reelVid').src = url; $('reelDl').href = url;
-    $('reelDl').download = 'quiz-reel-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '.' + ext;
-    cv.style.display = 'none'; $('reelLive').style.display = 'none'; $('reelDone').style.display = 'flex';
+    const was = RC; cleanup(); RC = null; if (was.cancelled) { $('reel').style.display = 'none'; return; }
+    const type = (rec.mimeType || mime || 'video/webm').split(';')[0], ext = type.includes('mp4') ? 'mp4' : 'webm', url = URL.createObjectURL(new Blob(chunks, {type}));
+    $('reelVid').src = url; $('reelDl').href = url; $('reelDl').download = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '.' + ext;
+    $('vNote').textContent = P.voice ? 'AI voice: ' + P.voice + '. Check the audio before posting.' : P.note;
+    cv.style.display = 'none'; $('reelLive').style.display = 'none'; $('reelDone').style.display = 'flex'; fillMeta(P, name, true);
     if (!shuffle) { try { localStorage.setItem(key, String((pos + qs.length) % arr.length)); } catch (e) {} }
   };
-  rec.start(); const t0 = performance.now(); let lastSec = -1, answered = -1;
+  rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1;
+  if (AC && dest) P.audio.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + 0.5); RC.srcs.push(src); });
   const loop = () => {
-    if (!RC) return;
-    const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
-    if (r.seg.type === 'q') {
-      if (r.lt < S) { const sec = Math.ceil(S - r.lt) + r.seg.qi * 1000; if (sec !== lastSec) { lastSec = sec; beep(Math.ceil(S - r.lt) <= 3 ? 880 : 520, 0.08); } }
-      else if (answered !== r.seg.qi) { answered = r.seg.qi; beep(300, 0.35); }
-    }
+    if (!RC) return; const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
+    if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi]; if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000; if (sec !== lastSec) { lastSec = sec; if (rem <= 3) beep(880, 0.08); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; beep(300, 0.35); } }
     reelMsg(r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording');
-    if (t >= P.total) { rec.stop(); return; }
-    RC.raf = requestAnimationFrame(loop);
+    if (t >= P.total) { rec.stop(); return; } RC.raf = requestAnimationFrame(loop);
   };
   loop();
 }
-function cancelReel() { if (RC) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else $('reel').style.display = 'none'; }
+function cancelReel() { if (RC && RC.rec) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else if (RC) RC.cancelled = true; else $('reel').style.display = 'none'; if (RC && RC.prep) $('reel').style.display = 'none'; }
 function closeReel() { $('reel').style.display = 'none'; $('reelVid').removeAttribute('src'); }
 
+/* ============ title and description ============ */
+const TAGS = {hindi: ['#Hindi', '#HindiGrammar'], english: ['#English', '#EnglishGrammar'], science: ['#GeneralScience', '#Science'], reasoning: ['#Reasoning', '#LogicalReasoning'], computer: ['#ComputerKnowledge', '#Computer'], maths: ['#Maths', '#MathsTricks', '#Aptitude']};
+const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+const snip = t => t.replace(/\s+/g, ' ').trim().slice(0, 55) + (t.length > 55 ? '…' : '');
+const chapters = P => '0:00 Intro\n' + P.segs.filter(s => s.type === 'q').map(s => fmtT(s.start) + ' Q' + (s.qi + 1) + ' ' + snip(P.qs[s.qi].q)).join('\n');
+function templateMeta(P, name) {
+  const n = P.qs.length, exam = (CFG.exam || 'MP Patwari').trim(), sj = P.subj, tp = (name && name !== 'All') ? name : '';
+  const titles = [n + ' ' + sj + ' Questions That Decide Your Selection | ' + exam, 'Can You Solve All ' + n + '? ' + sj + ' Quiz | ' + exam, sj + (tp ? ' ' + tp : ' Practice') + ' Quiz: ' + n + ' PYQs | ' + exam];
+  let title = titles[(new Date().getDate() + n) % 3]; if (title.length > 95) title = titles[0].slice(0, 95);
+  const tags = ['#' + exam.replace(/[^A-Za-z0-9]/g, ''), '#MPPEB', '#GovtExam', '#Quiz', '#DailyQuiz'].concat(TAGS[P.subjId] || []);
+  return {title, desc: n + ' ' + sj + ' questions for ' + exam + '. Pause, think, then check the answer.\nComment your score: how many did you get right?\n\nChapters:\n' + chapters(P) + '\n\n' + (P.handle ? 'Follow ' + P.handle + ' for a new quiz every day.\n\n' : '') + tags.join(' ')};
+}
+async function aiMeta(P, name) {
+  const exam = (CFG.exam || 'MP Patwari').trim(), sample = P.qs.slice(0, 5).map(q => snip(q.q)).join(' | ');
+  const prompt = 'Write YouTube Shorts metadata for an Indian government exam quiz video. Exam: ' + exam + '. Subject: ' + P.subj + '. Topic: ' + name + '. ' + P.qs.length + ' questions. Sample questions: ' + sample + '. Reply with ONLY compact JSON: {"title":"max 70 chars, curiosity hook, no emojis","description":"two short lines asking viewers to comment their score, then 6 relevant hashtags"}';
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt) + '?model=openai&seed=' + Math.floor(Math.random() * 1e6), {signal: ctl.signal});
+    const j = JSON.parse((await r.text()).match(/\{[\s\S]*\}/)[0]);
+    if (typeof j.title !== 'string' || typeof j.description !== 'string' || !j.title.trim()) throw new Error('bad');
+    return {title: j.title.trim().slice(0, 95), desc: j.description.trim() + '\n\nChapters:\n' + chapters(P) + (P.handle ? '\n\nFollow ' + P.handle + ' for a new quiz every day.' : '')};
+  } finally { clearTimeout(to); }
+}
+let META = null;
+async function fillMeta(P, name, useAi) {
+  META = {P, name}; const t = templateMeta(P, name); $('mTitle').value = t.title; $('mDesc').value = t.desc; $('mSrc').textContent = 'Template';
+  if (!(useAi && CFG.ai)) return; $('mSrc').textContent = 'Writing with AI…';
+  try { const a = await aiMeta(P, name); $('mTitle').value = a.title; $('mDesc').value = a.desc; $('mSrc').textContent = 'AI written. Check it before posting.'; } catch (e) { $('mSrc').textContent = 'AI unavailable, using the template.'; }
+}
+function regenMeta() { if (META) fillMeta(META.P, META.name, true); }
+function copyEl(id, btn) {
+  const el = $(id); el.select(); const done = () => { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1200); };
+  if (navigator.clipboard) navigator.clipboard.writeText(el.value).then(done, () => { document.execCommand('copy'); done(); }); else { document.execCommand('copy'); done(); }
+}
 init();
 </script>
 </body>
