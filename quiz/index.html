@@ -238,7 +238,11 @@ body.rec .paper{padding-bottom:26px}
     <div class="ghead">Video export</div>
     <div class="group">
       <div class="cell plain"><span class="lab">Questions per video</span><div class="seg" id="sReel"></div></div>
+      <div class="cell plain"><span class="lab">Videos in a row<span class="vsub">Recorded back to back, no tapping in between</span></span><div class="seg" id="sBatch"></div></div>
+      <div class="cell plain"><span class="lab">Save each video automatically<span class="vsub">Also saves a title and description text file</span></span><div class="switch" id="sAutoDl"></div></div>
       <div class="cell plain"><span class="lab">AI voice in video<span class="vsub">A different voice each video</span></span><div class="switch" id="sAiv"></div></div>
+      <div class="cell plain"><span class="lab">Google voice key<span class="vsub">Indian neural voices, free monthly quota. Paste a Text-to-Speech API key</span></span><input id="inGkey" type="text" placeholder="AIza..." autocomplete="off" spellcheck="false"></div>
+      <div class="cell plain"><span class="lab">If AI voice fails, use device voice<span class="vsub">Plays it aloud and records it through the mic</span></span><div class="switch" id="sDevMic"></div></div>
       <div class="cell plain"><span class="lab">Test AI voice<span class="vsub">Plays a sample and shows which service works</span></span><button class="chipbtn" onclick="testAiVoice()">Test</button></div>
       <div class="cell plain"><span class="lab">Record my microphone</span><div class="switch" id="sMic"></div></div>
       <div class="cell plain"><span class="lab">AI title and description</span><div class="switch" id="sAi"></div></div>
@@ -297,7 +301,7 @@ body.rec .paper{padding-bottom:26px}
 
 <div id="reel">
   <canvas id="reelCv"></canvas>
-  <div id="reelLive"><span id="reelMsg"></span><button class="chipbtn" onclick="cancelReel()">Cancel</button></div>
+  <div id="reelLive"><span id="reelMsg"></span><button class="chipbtn" onclick="cancelReel()">Stop</button></div>
   <div id="reelDone"><video id="reelVid" controls playsinline></video>
     <div style="display:flex;flex-direction:column;gap:12px;align-items:center"><div id="vNote" style="font-size:13px;opacity:.85;text-align:center"></div>
       <div id="metaBox"><h3>Title and description</h3>
@@ -317,7 +321,7 @@ body.rec .paper{padding-bottom:26px}
 </div>
 <script>
 /* ============ config ============ */
-const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 1, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
+const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 1, batch: 1, autoDl: true, gkey: '', devMic: true, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
 let CFG = Object.assign({}, DEF);
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('qr_cfg') || '{}')); } catch (e) {}
 const saveCfg = () => { try { localStorage.setItem('qr_cfg', JSON.stringify(CFG)); } catch (e) {} };
@@ -526,10 +530,11 @@ function seg(id, key, opts) {
 function sw(id, key) { const el = $(id); el.classList.toggle('on', !!CFG[key]); el.setAttribute('role', 'switch'); el.tabIndex = 0; el.onclick = () => { CFG[key] = !CFG[key]; saveCfg(); el.classList.toggle('on', CFG[key]); }; el.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.onclick(); } }; }
 function buildSettings() {
   seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]); seg('sMath', 'mathS', [['15', 15], ['20', 20], ['30', 30], ['45', 45]]);
-  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['1', 1], ['5', 5], ['10', 10], ['15', 15]]);
+  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['1', 1], ['5', 5], ['10', 10], ['15', 15]]); seg('sBatch', 'batch', [['1', 1], ['3', 3], ['5', 5], ['10', 10], ['20', 20]]);
   seg('sMode', 'mode', [['Play live', 'live'], ['Export video', 'reel']]);
-  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai']].forEach(([a, b]) => sw(a, b));
+  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai'], ['sAutoDl', 'autoDl'], ['sDevMic', 'devMic']].forEach(([a, b]) => sw(a, b));
   $('inExam').value = CFG.exam || ''; $('inExam').oninput = e => { CFG.exam = e.target.value; saveCfg(); };
+  $('inGkey').value = CFG.gkey || ''; $('inGkey').oninput = e => { CFG.gkey = e.target.value.trim(); VOICE_DEAD = false; saveCfg(); };
   $('inHandle').value = CFG.handle || ''; $('inHandle').oninput = e => { CFG.handle = e.target.value; saveCfg(); };
   fillVoiceSel();
 }
@@ -573,8 +578,8 @@ function segments(t) {
   });
   return out;
 }
-function speak(text, done) {
-  if (!CFG.voice || !window.speechSynthesis) { done && done(); return; }
+function speak(text, done, force) {
+  if ((!CFG.voice && !force) || !window.speechSynthesis) { done && done(); return; }
   const my = ++spkId; let fired = false; const fin = () => { if (!fired && my === spkId) { fired = true; done && done(); } };
   try {
     speechSynthesis.cancel(); const segs = segments(cleanSpeech(text)); if (!segs.length) { fin(); return; } let k = 0;
@@ -594,7 +599,8 @@ const AI_VOICES = ['nova', 'shimmer', 'alloy', 'echo', 'fable', 'onyx', 'coral',
 function pickAiVoice() {
   let last = '', lse = ''; try { last = localStorage.getItem('qr_lastv') || ''; lse = localStorage.getItem('qr_lastse') || ''; } catch (e) {}
   const L = AI_VOICES.filter(v => v !== last), pl = L[Math.floor(Math.random() * L.length)], se = lse === 'Raveena' ? 'Aditi' : 'Raveena';
-  try { localStorage.setItem('qr_lastv', pl); localStorage.setItem('qr_lastse', se); } catch (e) {} return {pl, se};
+  let lg = -1; try { lg = +localStorage.getItem('qr_lastg'); } catch (e) {} const g = [0, 1, 2, 3].filter(x => x !== lg)[Math.floor(Math.random() * 3)];
+  try { localStorage.setItem('qr_lastv', pl); localStorage.setItem('qr_lastse', se); localStorage.setItem('qr_lastg', String(g)); } catch (e) {} return {pl, se, g};
 }
 async function fetchAudio(url, ms) {
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
@@ -604,18 +610,30 @@ async function fetchAudio(url, ms) {
     return await AC.decodeAudioData(await r.arrayBuffer());
   } finally { clearTimeout(to); }
 }
-// Indian-accent voices first (Amazon Polly Aditi/Raveena through StreamElements, no key), Pollinations as the backup
+// Order: your Google key (Indian Neural2 voices), then two keyless services that now often refuse (HTTP 401/402)
+const G_VOICES = {hi: ['hi-IN-Neural2-A', 'hi-IN-Neural2-B', 'hi-IN-Neural2-C', 'hi-IN-Neural2-D'], en: ['en-IN-Neural2-A', 'en-IN-Neural2-B', 'en-IN-Neural2-C', 'en-IN-Neural2-D']};
+async function googleTts(text, v) {
+  const hi = DEV.test(text), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + encodeURIComponent(CFG.gkey), {method: 'POST', headers: {'Content-Type': 'application/json'}, signal: ctl.signal,
+      body: JSON.stringify({input: {text}, voice: {languageCode: hi ? 'hi-IN' : 'en-IN', name: G_VOICES[hi ? 'hi' : 'en'][v.g % 4]}, audioConfig: {audioEncoding: 'MP3', speakingRate: 0.98}})});
+    if (!r.ok) { let m = ''; try { m = (await r.json()).error.message; } catch (e) {} throw new Error('HTTP ' + r.status + (m ? ' ' + m.slice(0, 90) : '')); }
+    const bin = atob((await r.json()).audioContent), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return await AC.decodeAudioData(u8.buffer);
+  } finally { clearTimeout(to); }
+}
 async function fetchTts(text, v, errs) {
-  const seV = DEV.test(text) ? 'Aditi' : v.se;
-  const tries = [['StreamElements', 'https://api.streamelements.com/kappa/v2/speech?voice=' + seV + '&text=' + encodeURIComponent(text)], ['Pollinations', 'https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + v.pl]];
-  for (const [nm, u] of tries) { try { const b = await fetchAudio(u, 15000); fetchTts.used = nm; return b; } catch (e) { if (errs) errs.push(nm + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message)); } }
+  const seV = DEV.test(text) ? 'Aditi' : v.se, tries = [];
+  if (CFG.gkey) tries.push(['Google', () => googleTts(text, v)]);
+  tries.push(['StreamElements', () => fetchAudio('https://api.streamelements.com/kappa/v2/speech?voice=' + seV + '&text=' + encodeURIComponent(text), 10000)], ['Pollinations', () => fetchAudio('https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + v.pl, 10000)]);
+  for (const [nm, fn] of tries) { try { const b = await fn(); fetchTts.used = nm; return b; } catch (e) { if (errs) errs.push(nm + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message)); } }
   throw new Error('no voice service');
 }
 async function testAiVoice() {
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
   toast('Testing voice services\u2026'); const errs = [];
-  try { const b = await fetchTts('\u0928\u092e\u0938\u094d\u0924\u0947, \u092f\u0939 \u0906\u0935\u093e\u091c\u093c \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0939\u0948. This is a voice test.', {pl: 'nova', se: 'Aditi'}, errs); const sr = AC.createBufferSource(); sr.buffer = b; sr.connect(AC.destination); sr.start(); toast('Voice works via ' + fetchTts.used + (errs.length ? ' (' + errs.join('; ') + ')' : '')); }
-  catch (e) { toast('No voice service reachable. ' + errs.join(' | ')); }
+  try { const b = await fetchTts('\u0928\u092e\u0938\u094d\u0924\u0947, \u092f\u0939 \u0906\u0935\u093e\u091c\u093c \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0939\u0948. This is a voice test.', {pl: 'nova', se: 'Aditi', g: 0}, errs); const sr = AC.createBufferSource(); sr.buffer = b; sr.connect(AC.destination); sr.start(); toast('Voice works via ' + fetchTts.used + (VOICE_DEAD = false, errs.length ? ' (' + errs.join('; ') + ')' : '')); }
+  catch (e) { toast('No AI voice worked. ' + errs.join(' | ') + (CFG.gkey ? '' : '. Add a Google voice key, or rely on the device-voice fallback.')); }
 }
 const ansText = q => cleanSpeech(q.o ? 'Option ' + 'ABCD'[q.i] + ', ' + q.a : q.a);
 
@@ -920,20 +938,22 @@ function drawFrame(c, P, t) {
 /* ============ video: recorder ============ */
 function pickMime() { const L = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']; return L.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || ''; }
 const reelMsg = t => { $('reelMsg').textContent = t; };
-let LASTREEL = null;
+let LASTREEL = null, BATCH = {left: 1, total: 1, done: 0}, MIC = null, VOICE_DEAD = false;
+function saveUrl(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 800); }
 function nextVideo() { if (LASTREEL) { closeReel(); startReel(LASTREEL.arr, LASTREEL.name); } }
-async function startReel(arr, name) {
-  if (RC) return; LASTREEL = {arr, name};
+async function startReel(arr, name, cont) {
+  if (RC) return; LASTREEL = {arr, name}; if (!cont) { const nb = Math.max(1, CFG.batch || 1); BATCH = {left: nb, total: nb, done: 0}; }
   if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome or Edge.'); return; }
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
   const n = CFG.reelN, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
   if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
-  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], audioA: [], errs: [], total: 0, voice: '', note: ''};
+  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], audioA: [], devA: [], errs: [], dev: false, total: 0, voice: '', note: ''};
   P.vecs = qs.map(q => vecFor(q, subj.id)); P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
   RC = {prep: true, cancelled: false, srcs: []}; const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
   $('reel').style.display = 'flex'; $('reelDone').style.display = 'none'; $('reelLive').style.display = 'flex'; cv.style.display = 'block';
   c.fillStyle = '#fff'; c.fillRect(0, 0, REEL.W, REEL.H);
-  if (CFG.aiv && AC) {
+  if (CFG.aiv && VOICE_DEAD) P.note = 'AI voice was skipped because it failed earlier in this session. Tap \u201cTest AI voice\u201d to retry.';
+  if (CFG.aiv && AC && !VOICE_DEAD) {
     P.vobj = pickAiVoice(); P.voice = P.vobj.se + ' / ' + P.vobj.pl;
     for (let k = 0; k < qs.length; k++) {
       if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…');
@@ -941,41 +961,51 @@ async function startReel(arr, name) {
       try { P.audioA[k] = await fetchTts(ansText(qs[k]).slice(0, 200), P.vobj, P.errs); } catch (e) {}
     }
     if (RC.cancelled) { RC = null; return; }
-    if (!P.audio.some(Boolean)) { P.voice = ''; P.note = 'AI voice could not load (' + P.errs.slice(0, 2).join('; ') + '). Turn on \u201cRecord my microphone\u201d and speak, or try another network.'; }
+    P.src = fetchTts.used;
+    if (!P.audio.some(Boolean)) { P.voice = ''; VOICE_DEAD = true; P.note = 'AI voice could not load (' + P.errs.slice(0, 2).join('; ') + '). Turn on \u201cRecord my microphone\u201d and speak, or try another network.'; }
   }
+  P.dev = CFG.aiv && !P.voice && CFG.devMic && !!window.speechSynthesis;
+  if (P.dev) P.note = 'AI voice unavailable, so the device voice is played aloud and recorded through your microphone. Keep the volume up and the room quiet.';
+  if (CFG.aiv && !P.voice && !CFG.mic && !P.dev && BATCH.total > 1) { reelMsg('Stopped: no voice available, so the batch would be silent. ' + P.note); BATCH.left = 0; RC = null; return; }
   P.audio.forEach((b, k) => { if (b) P.Ss[k] = Math.max(P.Ss[k], Math.ceil(b.duration + 1.6)); });
+  if (P.dev) qs.forEach((q, k) => { P.Ss[k] = Math.max(P.Ss[k], Math.ceil(cleanSpeech(speechText(q)).length / 12 + 2)); P.devA[k] = Math.ceil(cleanSpeech(ansText(q)).length / 12 + 1.5); });
   let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
-  if (qs.length > 1) add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + Math.max(q.o ? 6 : REEL.HOLD, P.audioA[qi] ? P.audioA[qi].duration + 1.2 : 0), qi)); if (qs.length > 1) add('outro', REEL.OUTRO); P.total = st;
+  if (qs.length > 1) add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + Math.max(q.o ? 6 : REEL.HOLD, P.audioA[qi] ? P.audioA[qi].duration + 1.2 : 0, P.devA[qi] || 0), qi)); if (qs.length > 1) add('outro', REEL.OUTRO); P.total = st;
   try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
   const stream = cv.captureStream(30), dest = AC ? AC.createMediaStreamDestination() : null; let mic = null;
   if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-  if (CFG.mic && dest) { try { mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); AC.createMediaStreamSource(mic).connect(dest); } catch (e) { P.note += ' Microphone blocked.'; } }
+  if ((CFG.mic || P.dev) && dest) { try { mic = (MIC && MIC.active) ? MIC : await navigator.mediaDevices.getUserMedia({audio: P.dev ? {echoCancellation: false, noiseSuppression: false, autoGainControl: true} : {echoCancellation: true, noiseSuppression: true}}); MIC = mic; AC.createMediaStreamSource(mic).connect(dest); } catch (e) { P.note += ' Microphone blocked.'; } }
   const mime = pickMime(), chunks = []; let rec;
   try { rec = new MediaRecorder(stream, mime ? {mimeType: mime, videoBitsPerSecond: 6000000} : {}); } catch (e) { rec = new MediaRecorder(stream); }
   rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
   RC.prep = false; RC.dest = dest; RC.rec = rec;
-  const cleanup = () => { cancelAnimationFrame(RC.raf); RC.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); stream.getTracks().forEach(t => t.stop()); if (mic) mic.getTracks().forEach(t => t.stop()); try { wake && wake.release(); } catch (e) {} };
+  const cleanup = () => { try { speechSynthesis.cancel(); } catch (e) {} cancelAnimationFrame(RC.raf); RC.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); stream.getTracks().forEach(t => t.stop()); if (mic && !(BATCH.left > 1)) { mic.getTracks().forEach(t => t.stop()); MIC = null; } try { wake && wake.release(); } catch (e) {} };
   rec.onstop = () => {
     const was = RC; cleanup(); RC = null; if (was.cancelled) { $('reel').style.display = 'none'; return; }
     const type = (rec.mimeType || mime || 'video/webm').split(';')[0], ext = type.includes('mp4') ? 'mp4' : 'webm', url = URL.createObjectURL(new Blob(chunks, {type}));
-    $('reelVid').src = url; $('reelDl').href = url; $('reelDl').download = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '.' + ext;
-    $('vNote').textContent = P.voice ? 'AI voice: ' + P.voice + '. Check the audio before posting.' : P.note;
-    cv.style.display = 'none'; $('reelLive').style.display = 'none'; $('reelDone').style.display = 'flex'; fillMeta(P, name, true);
+    const fname = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '-q' + (pos + 1);
     if (!shuffle) { try { localStorage.setItem(key, String((pos + qs.length) % arr.length)); } catch (e) {} }
+    BATCH.done++; BATCH.left--;
+    if (CFG.autoDl) { saveUrl(url, fname + '.' + ext); const m = templateMeta(P, name); setTimeout(() => saveUrl(URL.createObjectURL(new Blob([m.title + '\n\n' + m.desc], {type: 'text/plain'})), fname + '.txt'), 900); }
+    if (BATCH.left > 0) { let c3 = CFG.mic ? 4 : 2; const wait = () => { if (BATCH.left <= 0) return; if (c3 > 0) { reelMsg('Saved ' + BATCH.done + ' of ' + BATCH.total + '. Next video in ' + c3 + '\u2026'); c3--; setTimeout(wait, 1000); } else startReel(arr, name, true); }; wait(); return; }
+    $('reelVid').src = url; $('reelDl').href = url; $('reelDl').download = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '.' + ext;
+    $('vNote').textContent = (P.voice ? 'AI voice (' + (P.src || '') + '). Check the audio before posting.' : P.note) + (CFG.autoDl ? ' Saved automatically' + (BATCH.done > 1 ? ' (' + BATCH.done + ' videos in this run).' : '.') : '');
+    cv.style.display = 'none'; $('reelLive').style.display = 'none'; $('reelDone').style.display = 'flex'; fillMeta(P, name, true);
   };
-  rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1;
+  rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1, spokeQ = -1, spokeA = -1;
   if (AC && dest) P.audio.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + 0.5); RC.srcs.push(src); });
   if (AC && dest) P.audioA.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + P.Ss[k] + 0.6); RC.srcs.push(src); });
   const loop = () => {
     if (!RC) return; const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
-    if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi]; if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
-    reelMsg(r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording');
+    if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi];
+      if (P.dev) { if (r.lt >= 0.5 && r.lt < Sq && spokeQ !== r.seg.qi) { spokeQ = r.seg.qi; speak(speechText(P.qs[r.seg.qi]), null, true); } if (r.lt >= Sq + 0.6 && spokeA !== r.seg.qi) { spokeA = r.seg.qi; speak(ansText(P.qs[r.seg.qi]), null, true); } } if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
+    reelMsg((r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording') + (BATCH.total > 1 ? ' \u00b7 video ' + (BATCH.done + 1) + ' of ' + BATCH.total : '') + (!P.voice && !CFG.mic && !P.dev ? ' \u00b7 no voice' : ''));
     if (t >= P.total) { rec.stop(); return; } RC.raf = requestAnimationFrame(loop);
   };
   loop();
 }
-function cancelReel() { if (RC && RC.rec) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else if (RC) RC.cancelled = true; else $('reel').style.display = 'none'; if (RC && RC.prep) $('reel').style.display = 'none'; }
+function cancelReel() { BATCH.left = 0; if (RC && RC.rec) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else if (RC) RC.cancelled = true; else $('reel').style.display = 'none'; if (RC && RC.prep) $('reel').style.display = 'none'; }
 function closeReel() { $('reel').style.display = 'none'; $('reelVid').removeAttribute('src'); }
 
 /* ============ title and description ============ */
