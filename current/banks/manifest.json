@@ -1,0 +1,8 @@
+[
+ {"id":"hindi","name":"Hindi","file":"hindi.json","count":1264,"format":"qa"},
+ {"id":"english","name":"English","file":"english.json","count":1563,"format":"qa"},
+ {"id":"science","name":"General Science","file":"science.json","count":1829,"format":"qa"},
+ {"id":"reasoning","name":"Reasoning","file":"reasoning.json","count":791,"format":"qa"},
+ {"id":"computer","name":"Computer","file":"computer.json","count":1320,"format":"qa"},
+ {"id":"maths","name":"Maths","file":"maths.json","count":949,"format":"opts"}
+]
