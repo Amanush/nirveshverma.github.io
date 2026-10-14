@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Daily Quiz</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#CFE8FF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
 <style>
 @font-face{font-family:Poppins;font-weight:500;src:url(fonts/poppins-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
 @font-face{font-family:Poppins;font-weight:600;src:url(fonts/poppins-latin-600-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
@@ -180,7 +188,93 @@ body{background:transparent}
 .ans{background:#D8F3DF;border:2px solid #2E9E5B;color:#0F3D24;margin-top:10px}
 .ans small{display:flex;width:fit-content;margin:0 auto 8px;background:#1F7A45;color:#fff;padding:3px 16px;border-radius:4px;transform:skewX(-8deg);font-weight:800;letter-spacing:.3px}
 .cta{display:flex;align-items:center;gap:10px;color:#3A2F00;font-weight:700;font-size:18px;padding:12px 22px;border:2px solid #E0A800;border-radius:30px;background:#FFF3C4}
+.emblem{position:absolute;right:14px;top:-34px;width:68px;height:68px;border-radius:50%;background:#FFFDF5;border:4px solid #FFC815;display:grid;place-items:center;color:var(--acc);box-shadow:0 8px 18px -6px rgba(40,20,0,.5);font-size:36px;animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+.emblem svg{width:1em;height:1em;stroke-width:1.9}
+.q{min-height:96px}
+.mid{min-height:132px;margin-top:10px}
+.hint.gone{visibility:hidden}
+.tbar b{display:none;position:absolute;left:12px;top:0;bottom:0;display:flex;align-items:center;font:800 14px var(--stage);color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;z-index:1}
+#recTools{position:fixed;top:max(8px,env(safe-area-inset-top));right:8px;display:flex;gap:6px;z-index:30;opacity:.3;transition:opacity .2s}
+#recTools:hover,#recTools:active{opacity:.95}
+#recTools button{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.7);display:grid;place-items:center;font-size:16px;color:#1D2433}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(20,16,38,.92);color:#fff;font-size:14px;line-height:1.4;padding:10px 16px;border-radius:14px;max-width:min(90vw,380px);text-align:center;z-index:40;display:none}
+body.rec{overflow:hidden}
+body.rec .tbar b{display:flex}
+body.rec #app{max-width:min(100vw,calc(100dvh * 9 / 16));height:100dvh;min-height:0;padding:max(5dvh,env(safe-area-inset-top)) 14px max(12dvh,env(safe-area-inset-bottom))}
+body.rec #quiz{height:100%;justify-content:center}
+body.rec #quiz>.topbar,body.rec #quiz>.side,body.rec #prev,body.rec #next,body.rec .navbar{display:none!important}
+body.rec .ctrl{min-height:0;margin-top:10px;justify-content:center}
+body.rec .paper{padding-bottom:26px}
+@media (min-width:1000px){body.rec #quiz:not(.hide){display:flex}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== answer takes the hint's slot: no jump, no gap ===== */
+.mid{display:grid!important;grid-template-columns:minmax(0,1fr);align-items:start;justify-items:stretch;min-height:0!important;margin-top:14px!important}
+.mid>*{grid-area:1/1}
+.pre{display:flex;flex-direction:column;align-items:center;gap:12px}
+.pre .hint{width:100%;margin-top:0}
+.mid .ans{margin-top:0}
+
+/* ===== v2: bright, chunky menus (outlined cards, sunburst, pastel sky) ===== */
+:root{--ink:#14213D;--ink2:#3B4668;--mute:#66708C;--line:rgba(20,33,61,.12);--peri:#7C9CF5;--yel:#FFC815;--chunk:0 4px 0 #14213D;--disp:"Baloo 2","Poppins","Noto Sans Devanagari",system-ui,sans-serif}
+html{background:linear-gradient(180deg,#CFE8FF 0%,#EAF4FF 48%,#FFF4D6 100%) fixed}
+body{background:transparent}
+html:has(body.inq){background:#2B3A67}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 22%,rgba(255,255,255,.75) 0 6deg,rgba(255,255,255,0) 6deg 12deg)}
+body.inq::before{display:none}
+body:not(.inq) .bg{display:none}
+body:not(.inq) .title{color:var(--ink);text-shadow:none;font-family:var(--disp);font-weight:800;font-size:46px;letter-spacing:-.5px;line-height:1.02;margin:0}
+.title mark{background:linear-gradient(transparent 56%,var(--yel) 56% 92%,transparent 92%);color:inherit;padding:0 4px}
+body:not(.inq) .sub,body:not(.inq) .note{color:var(--ink2);text-shadow:none}
+body:not(.inq) .ghead{color:var(--ink);text-shadow:none;font:800 15px var(--disp);margin:22px 8px 8px}
+body:not(.inq) #topics>.cell.plain .lab{color:var(--ink)!important;text-shadow:none}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px 20px 22px;margin:6px 0 20px;border:2px solid var(--ink);border-radius:28px;box-shadow:var(--chunk);background:linear-gradient(135deg,#A9C2FF,#7C9CF5);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-60%;background:repeating-conic-gradient(from 0deg at 82% 50%,rgba(255,255,255,.24) 0 6deg,rgba(255,255,255,0) 6deg 12deg)}
+.hero>*{position:relative}
+.hero .sub{margin:8px 0 0;color:var(--ink)!important;font-weight:500;font-size:15px}
+.trophy{width:92px;height:92px;flex:none;filter:drop-shadow(0 5px 0 rgba(20,33,61,.22));animation:float 3.2s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-5px) rotate(2deg)}}
+.group{background:#fff;border:2px solid var(--ink);border-radius:24px;box-shadow:var(--chunk)}
+.cell+.cell::before{background:var(--line)}
+.cell .tile{border:2px solid var(--ink);border-radius:13px;width:38px;height:38px}
+.cell .cnt{background:#EEF3FF;border-radius:999px;padding:2px 11px;font-weight:700;color:var(--ink2);font-size:14px}
+.cell .chev{color:var(--ink)}
+button.cell:hover{background:#F6F9FF}
+.seg{background:#EEF3FF;border:2px solid var(--ink);border-radius:13px;padding:2px}
+.seg button{border-radius:9px;font-weight:700}
+.seg button.on{background:var(--yel);color:var(--ink);box-shadow:none}
+.switch{box-sizing:border-box;width:54px;height:32px;border:2px solid var(--ink);background:#D3DAEC;border-radius:16px}
+.switch::after{top:2px;left:2px;width:24px;height:24px;box-shadow:0 2px 0 rgba(20,33,61,.35);border:2px solid var(--ink);box-sizing:border-box}
+.switch.on{background:#2E9E5B}
+.switch.on::after{transform:translateX(22px)}
+input[type=text],select{background:#fff;border:2px solid var(--ink);border-radius:11px;font-weight:600}
+.chipbtn,.circle{background:#fff;border:2px solid var(--ink);box-shadow:var(--chunk);backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .1s,box-shadow .1s,background .15s}
+.chipbtn{height:40px;padding:0 16px;font-weight:700;border-radius:999px}
+.circle:active,.chipbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.chipbtn.pri{background:var(--peri);color:var(--ink)}
+.chipbtn.on,.circle.on{background:var(--yel);color:var(--ink)}
+#showBtn{background:#fff;border:2px solid var(--ink);box-shadow:var(--chunk);backdrop-filter:none;height:46px;padding:0 24px;border-radius:999px;font-weight:800;color:var(--ink)}
+#toast{border:2px solid var(--ink)}
+/* quiz screen */
+.paper{border:2px solid rgba(20,33,61,.18)}
+.q{min-height:64px!important;padding:4px 0 2px}
+.bigrec{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;height:58px;margin-top:16px;border-radius:20px;background:#E5484D;color:#fff;font:800 19px var(--disp);letter-spacing:.2px;border:2px solid var(--ink);box-shadow:var(--chunk);transition:transform .1s,box-shadow .1s}
+.bigrec:hover{background:#EE5A5F}
+.bigrec:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.bigrec i{width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35);animation:rp 1.6s ease-in-out infinite}
+@keyframes rp{50%{box-shadow:0 0 0 7px rgba(255,255,255,0)}}
+.bigrec kbd{font:700 13px var(--stage);background:rgba(255,255,255,.22);border-radius:7px;padding:2px 8px}
+body.rec .bigrec{display:none}
+#reel{background:rgba(20,33,61,.97)}
+.chipbtn,.circle{color:var(--ink)}
+@media (min-width:1000px){
+  #home .hero{grid-column:1/-1}
+  #quiz>.bigrec{grid-column:1}
+  #quiz>.side{grid-row:1/6}
+  body:not(.inq) .title{font-size:56px}
+  .trophy{width:116px;height:116px}
+}
+@media (max-width:420px){body:not(.inq) .title{font-size:40px}.trophy{width:76px;height:76px}}
 </style>
 </head>
 <body>
@@ -189,8 +283,10 @@ body{background:transparent}
 
 <div id="home">
   <div class="navbar"><span></span></div>
-  <div class="title">Daily Quiz</div>
-  <p class="sub">Choose a subject to practise or record.</p>
+  <div class="hero">
+    <div><div class="title">Daily <mark>Quiz</mark></div><p class="sub">Pick a subject, then record one question at a time.</p></div>
+    <svg class="trophy" viewBox="0 0 120 120" aria-hidden="true"><g stroke="#14213D" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M34 18h52v26c0 18-12 30-26 30S34 62 34 44z" fill="#FFC815"/><path d="M34 26H18c0 16 6 26 20 30M86 26h16c0 16-6 26-20 30" fill="none"/><path d="M60 74v14" fill="none"/><path d="M42 102h36l-4-14H46z" fill="#F5A300"/><path d="M60 28l4.5 9.5 10 1.3-7.4 7 2 10-9.1-5-9.1 5 2-10-7.4-7 10-1.3z" fill="#fff"/></g></svg>
+  </div>
   <div>
     <div class="group" id="subjects"></div>
   </div>
@@ -214,8 +310,14 @@ body{background:transparent}
     </div>
     <div class="ghead">Video export</div>
     <div class="group">
-      <div class="cell plain"><span class="lab">Questions per video</span><div class="seg" id="sReel"></div></div>
+      <div class="cell plain"><span class="lab">Videos in a row<span class="vsub">One question per video, next question starts by itself</span></span><div class="seg" id="sBatch"></div></div>
+      <div class="cell plain"><span class="lab">Save each video automatically<span class="vsub">Also saves a title and description text file</span></span><div class="switch" id="sAutoDl"></div></div>
       <div class="cell plain"><span class="lab">AI voice in video<span class="vsub">A different voice each video</span></span><div class="switch" id="sAiv"></div></div>
+      <div class="cell plain"><span class="lab">Free Indian voice, offline (Piper)<span class="vsub">No key needed. First use downloads about 90 MB, then it works offline. English voice is British</span></span><div class="switch" id="sPiper"></div></div>
+      <div class="cell plain"><span class="lab">Gemini voice key (free)<span class="vsub">Free, no card. Create one at aistudio.google.com/apikey</span></span><input id="inGemkey" type="text" placeholder="AIza..." autocomplete="off" spellcheck="false"></div>
+      <div class="cell plain"><span class="lab">Google Cloud voice key<span class="vsub">Indian neural voices, free monthly quota. Paste a Text-to-Speech API key</span></span><input id="inGkey" type="text" placeholder="AIza..." autocomplete="off" spellcheck="false"></div>
+      <div class="cell plain"><span class="lab">If AI voice fails, use device voice<span class="vsub">Plays it aloud and records it through the mic</span></span><div class="switch" id="sDevMic"></div></div>
+      <div class="cell plain"><span class="lab">Test AI voice<span class="vsub">Plays a sample and shows which service works</span></span><button class="chipbtn" onclick="testAiVoice()">Test</button></div>
       <div class="cell plain"><span class="lab">Record my microphone</span><div class="switch" id="sMic"></div></div>
       <div class="cell plain"><span class="lab">AI title and description</span><div class="switch" id="sAi"></div></div>
       <div class="cell plain"><span class="lab">Exam name</span><input id="inExam" type="text" placeholder="MP Patwari" maxlength="30"></div>
@@ -237,18 +339,22 @@ body{background:transparent}
     <button class="circle" onclick="showTopics()" aria-label="Back" data-ic="chevL"></button>
     <div class="progress"><div class="lbl" id="prog"></div><div class="track"><i id="trk"></i></div></div>
     <button class="circle" id="shufBtn" onclick="toggleShuffle()" aria-label="Shuffle" data-ic="shuffle"></button>
+    <button class="circle" id="recBtn" onclick="enterRec()" aria-label="Screen-record mode" title="Screen-record mode" data-ic="rec"></button>
   </div>
-  <div class="tbar" aria-hidden="true"><i id="tfill"></i><span id="tnum"></span></div>
+  <div class="tbar" aria-hidden="true"><i id="tfill"></i><b id="tcnt"></b><span id="tnum"></span></div>
   <div class="paper">
+    <div class="emblem" id="emblem" aria-hidden="true"></div>
     <div class="tag" id="tag"></div>
     <div class="q" id="qText"></div>
     <div class="opts" id="opts"></div>
-    <div class="hint" id="hint"></div>
     <div class="mid">
-      <div class="cta" id="cta"><span data-ic="chat"></span>Comment your answer!</div>
-      <div class="ring" id="ring">
-        <svg viewBox="0 0 116 116"><circle cx="58" cy="58" r="51" fill="none" stroke="#E4E9F3" stroke-width="8"/><circle id="arc" cx="58" cy="58" r="51" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="0"/></svg>
-        <div class="n" id="num">7</div>
+      <div class="pre" id="pre">
+        <div class="hint" id="hint"></div>
+        <div class="cta" id="cta"><span data-ic="chat"></span>Comment your answer!</div>
+        <div class="ring" id="ring">
+          <svg viewBox="0 0 116 116"><circle cx="58" cy="58" r="51" fill="none" stroke="#E4E9F3" stroke-width="8"/><circle id="arc" cx="58" cy="58" r="51" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="0"/></svg>
+          <div class="n" id="num">7</div>
+        </div>
       </div>
       <div class="ans" id="ans"><small><span data-ic="check"></span><span id="ansLbl">Answer</span></small><span id="ansT"></span></div>
     </div>
@@ -258,6 +364,7 @@ body{background:transparent}
     <div class="mid2"><button id="showBtn" onclick="reveal()"><span data-ic="eye"></span>Show answer</button></div>
     <button class="circle sm" id="next" onclick="step(1)" aria-label="Next" data-ic="chevR"></button>
   </div>
+  <button class="bigrec" id="recQ" onclick="recordCurrent()"><i></i>Record this question<kbd>R</kbd></button>
   <div class="side">
     <button class="chipbtn" onclick="toggleEdit()"><span data-ic="pencil"></span>Rewrite question</button>
     <div id="edBox">
@@ -265,13 +372,13 @@ body{background:transparent}
       <div class="acts"><button class="chipbtn pri" onclick="saveEdit()">Save</button><button class="chipbtn" onclick="resetEdit()">Restore</button><button class="chipbtn" onclick="exportJson()">Download JSON</button></div>
       <small id="edInfo"></small>
     </div>
-    <div class="keys">Space shows the answer, then moves on. Arrow keys move between questions.</div>
+    <div class="keys">Space shows the answer, then moves on. Arrow keys move between questions. R records this question.</div>
   </div>
 </div>
 
 <div id="reel">
   <canvas id="reelCv"></canvas>
-  <div id="reelLive"><span id="reelMsg"></span><button class="chipbtn" onclick="cancelReel()">Cancel</button></div>
+  <div id="reelLive"><span id="reelMsg"></span><button class="chipbtn" onclick="cancelReel()">Stop</button></div>
   <div id="reelDone"><video id="reelVid" controls playsinline></video>
     <div style="display:flex;flex-direction:column;gap:12px;align-items:center"><div id="vNote" style="font-size:13px;opacity:.85;text-align:center"></div>
       <div id="metaBox"><h3>Title and description</h3>
@@ -280,19 +387,22 @@ body{background:transparent}
         <span id="mSrc"></span>
         <div class="acts"><button class="chipbtn" onclick="copyEl('mTitle',this)">Copy title</button><button class="chipbtn" onclick="copyEl('mDesc',this)">Copy description</button><button class="chipbtn" onclick="regenMeta()">Rewrite with AI</button></div>
       </div>
-      <div class="acts"><a id="reelDl" class="chipbtn pri" style="text-decoration:none">Download video</a><button class="chipbtn" onclick="closeReel()">Done</button></div>
+      <div class="acts"><a id="reelDl" class="chipbtn pri" style="text-decoration:none">Download video</a><button class="chipbtn pri" id="nextBtn" onclick="nextVideo()">Record next question</button><button class="chipbtn" onclick="doneReel()">Done</button></div>
     </div>
   </div>
 </div>
 <canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
+<div id="recTools" class="hide"><button onclick="toggleFs()" aria-label="Full screen" data-ic="fs"></button><button onclick="exitRec()" aria-label="Exit recording mode" data-ic="close"></button></div>
+<div id="toast"></div>
 <div id="err"></div>
 </div>
 <script>
 /* ============ config ============ */
-const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 10, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
+const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 1, batch: 1, piper: true, autoDl: true, gkey: '', gemkey: '', devMic: true, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
 let CFG = Object.assign({}, DEF);
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('qr_cfg') || '{}')); } catch (e) {}
 const saveCfg = () => { try { localStorage.setItem('qr_cfg', JSON.stringify(CFG)); } catch (e) {} };
+if ((CFG.cfgv || 0) < 2) { CFG.reelN = 1; CFG.cfgv = 2; saveCfg(); }
 const $ = id => document.getElementById(id);
 let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, aux = null, shuffle = false, AC = null, RC = null;
 
@@ -310,6 +420,133 @@ const IC = {
   list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', layers: 'M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5'
 };
 const svg = n => '<svg class="ic" viewBox="0 0 24 24"><path d="' + IC[n] + '"/></svg>';
+/* ============ vector emblems: picked from the question's own words, drawn offline ============ */
+const VEC = {
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
+  atom: 'M12 12h.01M2.5 12A9.5 3.6 0 1 0 21.5 12 9.5 3.6 0 1 0 2.5 12M7.25 3.77A9.5 3.6 60 1 0 16.75 20.23 9.5 3.6 60 1 0 7.25 3.77M7.25 20.23A9.5 3.6 120 1 0 16.75 3.77 9.5 3.6 120 1 0 7.25 20.23',
+  dna: 'M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9M9 6.5h6M9 12h6M9 17.5h6',
+  leaf: 'M5 19c0-9 5-14 15-14 0 10-5 15-14 15M5 19l8-8', tree: 'M12 22v-7M12 15c-5 0-7-4-5-7-2-3 0-6 3-6 1-1 3-1 4 0 3 0 5 3 3 6 2 3 0 7-5 7z',
+  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8',
+  moon: 'M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z',
+  planet: 'M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM3.2 15.5c-1.2-2 3-6 9-8.5s10-2.7 9-.7M20.8 8.5c1.2 2-3 6-9 8.5s-10 2.7-9 .7',
+  rocket: 'M12 2c4 2 6 6 5 11l-3 3h-4l-3-3C6 8 8 4 12 2zM9 16l-2 5 4-2M15 16l2 5-4-2M12 8h.01',
+  bolt: 'M13 2L4 14h7l-1 8 9-12h-7l1-8z', magnet: 'M6 3v8a6 6 0 0 0 12 0V3h-4v8a2 2 0 0 1-4 0V3H6zM6 7h4M14 7h4',
+  fire: 'M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z', drop: 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z',
+  waves: 'M3 8c3-3 6 3 9 0s6 3 9 0M3 13c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0', mountain: 'M3 19l6-11 4 6 3-4 5 9H3zM8 11l1.2 2',
+  book: 'M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-17zM4 19.5A2.5 2.5 0 0 1 6.5 17H20M9 7h7',
+  feather: 'M20 4c-7 0-13 5-13 12l-3 4M20 4c0 7-5 12-12 12M10 14h6', letterA: 'M5 20L12 4l7 16M8 14h8',
+  keyboard: 'M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10',
+  mouse: 'M12 2a6 6 0 0 0-6 6v8a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6zM12 2v7', folder: 'M3 6a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z',
+  file: 'M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v5h5M8 13h8M8 17h8',
+  chip: 'M7 7h10v10H7zM10 10h4v4h-4zM9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4', wifi: 'M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01',
+  lock: 'M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4M12 15v2', mail: 'M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM2.5 6.5l9.5 7 9.5-7',
+  calendar: 'M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM3 10h18M8 2v4M16 2v4', rupee: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 8h7M8.5 11h7M9 8c4 0 5 4 0 4l5 4',
+  bank: 'M3 9l9-6 9 6H3zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18M3 18.5h18', flag: 'M5 21V3M5 4h13l-2.5 4 2.5 4H5', crown: 'M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z',
+  scales: 'M12 3v18M7 21h10M4 7h16M4 7l-2.5 7a3.5 3 0 0 0 5 0L4 7zM20 7l-2.5 7a3.5 3 0 0 0 5 0L20 7z', map: 'M3 6l6-2.5 6 2.5 6-2.5v14.5L15 20.5 9 18 3 20.5V6zM9 3.5V18M15 6v14.5',
+  compass: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5 5-2z', temple: 'M12 2v2.5M7 11a5 5 0 0 1 10 0M5 11h14M6.5 11v10M17.5 11v10M10 21v-5a2 2 0 0 1 4 0v5M3 21h18',
+  people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16.5 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6 6 0 0 1 3.5 6', heart: 'M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z',
+  brain: 'M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3V4z', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20.5 20.5L16 16',
+  camera: 'M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+  music: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z', trophy: 'M8 3h8v6a4 4 0 0 1-8 0V3zM8 5H4v1a4 4 0 0 0 4 4M16 5h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9.5 17h5',
+  wrench: 'M14.7 6.3a4 4 0 0 0 5 5l-9 9a2.1 2.1 0 0 1-3-3l9-9a4 4 0 0 0-2-2z', triangle: 'M3 20L12 4l9 16H3zM8 20v-3M12 20v-3M16 20v-3', chart: 'M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-8M20 16v-3',
+  percent: 'M19 5L5 19M7.5 4a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.5 13a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z', pi: 'M4 6h16M8 6v13M16 6c0 8 0 11 3 13',
+  code: 'M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16', cloud: 'M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 10a4 4 0 0 1-.5 8H7z', sword: 'M20 3l-9 9M20 3v5M20 3h-5M11 12l-6 6M5 18l-2 3 3-2M9 14l2 2',
+  speaker: 'M4 9h4l5-4v14l-5-4H4V9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11', paw: 'M12 13c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5 1 0 1.5-.5 2-.5s1 .5 2 .5c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5zM5.5 10m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M9 6.5m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M15 6.5m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M18.5 10m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0',
+  close: 'M6 6l12 12M18 6L6 18', fs: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5', rec: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0'
+};
+Object.assign(IC, VEC);
+// [english words, Hindi fragments, icon] - first match wins; topic and question text are searched
+const VRULES = [
+  ['direction|north|south|east|west|compass', 'दिशा|उत्तर दिशा|दक्षिण दिशा|पूर्व दिशा|पश्चिम दिशा', 'compass'],
+  ['antivirus|malware|firewall|password|encrypt|hacker|cyber|security|phishing', 'सुरक्षा|साइबर|पासवर्ड', 'lock'],
+  ['river|lake|dam|ocean|sea|water|rain|glacier|ganga|yamuna|narmada|tapti|chambal|betwa', 'नदी|झील|बांध|समुद्र|सागर|जल|वर्षा|हिमनद|गंगा|यमुना|नर्मदा|ताप्ती|चंबल|बेतवा', 'waves'],
+  ['mountain|himalaya|plateau|peak|hill|satpura|vindhya', 'पर्वत|पहाड़|हिमालय|पठार|शिखर|सतपुड़ा|विंध्य', 'mountain'],
+  ['dna|gene|genes|chromosome|heredity|cell|cells|bacteria|biology', 'जीन|गुणसूत्र|आनुवंशिक|कोशिका|जीवाणु|जीव विज्ञान', 'dna'],
+  ['atom|atomic|electron|proton|neutron|molecule|element|periodic|nuclear', 'परमाणु|इलेक्ट्रॉन|प्रोटॉन|न्यूट्रॉन|अणु|तत्व|आवर्त', 'atom'],
+  ['acid|base|chemistry|chemical|reaction|compound|solution|salt|metal|alloy', 'अम्ल|क्षार|रसायन|अभिक्रिया|यौगिक|लवण|धातु|मिश्र धातु', 'flask'],
+  ['electric|electricity|current|voltage|battery|resistance|circuit|watt', 'विद्युत|धारा|वोल्ट|बैटरी|प्रतिरोध|परिपथ|वाट', 'bolt'],
+  ['magnet|magnetic', 'चुंबक', 'magnet'],
+  ['heat|temperature|fire|combustion|fuel|thermal', 'ऊष्मा|ताप|आग|दहन|ईंधन', 'fire'],
+  ['moon|lunar|eclipse', 'चंद्रमा|चन्द्रमा|ग्रहण', 'moon'],
+  ['isro|rocket|satellite|space|chandrayaan|mission|launch', 'इसरो|रॉकेट|उपग्रह|अंतरिक्ष|चंद्रयान|मिशन', 'rocket'],
+  ['planet|earth|mars|jupiter|saturn|venus|mercury|galaxy|solar system|star', 'ग्रह|पृथ्वी|मंगल|बृहस्पति|शनि|शुक्र|बुध|आकाशगंगा|सौरमंडल|तारा', 'planet'],
+  ['sun|solar|light|ray|rays|lens|optics|reflection|refraction', 'सूर्य|सौर|प्रकाश|किरण|लेंस|परावर्तन|अपवर्तन', 'sun'],
+  ['blood|heart|pulse|vitamin|disease|medicine|health|body|human|organ|digestion', 'रक्त|हृदय|विटामिन|रोग|दवा|स्वास्थ्य|शरीर|मानव|अंग|पाचन', 'heart'],
+  ['plant|plants|tree|forest|leaf|photosynthesis|crop|agriculture|botany|flower|soil', 'पौधा|पौधे|पेड़|वृक्ष|वन्य|जंगल|पत्ती|प्रकाश संश्लेषण|फसल|कृषि|वनस्पति|फूल|मिट्टी', 'leaf'],
+  ['animal|animals|bird|fish|wildlife|tiger|lion|elephant|peacock|sanctuary|national park', 'पशु|जानवर|पक्षी|मछली|वन्यजीव|बाघ|शेर|हाथी|मोर|अभयारण्य|राष्ट्रीय उद्यान', 'paw'],
+  ['force|energy|pressure|friction|motion|newton|gravity|mass|density|machine|engine|velocity|acceleration', 'बल|ऊर्जा|दाब|घर्षण|न्यूटन|गुरुत्व|द्रव्यमान|घनत्व|मशीन|इंजन|वेग|त्वरण', 'wrench'],
+  ['keyboard|shortcut|ctrl|function key', 'कीबोर्ड|शॉर्टकट', 'keyboard'],
+  ['mouse|cursor|click', 'माउस|कर्सर|क्लिक', 'mouse'],
+  ['email|mail|inbox', 'ईमेल|ई-मेल|मेल', 'mail'],
+  ['internet|network|wifi|wi-fi|web|browser|website|url|http|www|online|router|lan|wan', 'इंटरनेट|नेटवर्क|वेब|ब्राउज़र|वेबसाइट|ऑनलाइन|राउटर', 'wifi'],
+  ['file|files|folder|file extension|ms word|ms excel|excel|powerpoint|ppt|spreadsheet|ms office|docx', 'फाइल|फोल्डर|एक्सटेंशन|एक्सेल|पावरपॉइंट', 'file'],
+  ['program|programming|code|coding|html|python|java|compiler|algorithm|binary|software|language translator', 'प्रोग्राम|कोड|एल्गोरिथ्म|बाइनरी|सॉफ्टवेयर|कंपाइलर', 'code'],
+  ['cloud|saas|iaas', 'क्लाउड', 'cloud'],
+  ['computer|computers|hardware|cpu|processor|memory|ram|rom|chip|generation|input|output|storage', 'कंप्यूटर|हार्डवेयर|प्रोसेसर|मेमोरी|चिप|पीढ़ी|इनपुट|आउटपुट|स्टोरेज', 'chip'],
+  ['percent|percentage', 'प्रतिशत|%', 'percent'],
+  ['profit|loss|interest|price|discount|rupee|cost|salary|tax|money|rate|sales|installment|emi|wage', 'लाभ|हानि|ब्याज|मूल्य|छूट|रुपये|लागत|वेतन|धन|दर|किस्त|मजदूरी', 'rupee'],
+  ['triangle|circle|area|perimeter|angle|geometry|square|rectangle|volume|cube|sphere|cylinder|cone|polygon', 'त्रिभुज|वृत्त|क्षेत्रफल|परिमाप|कोण|ज्यामिति|वर्ग|आयत|आयतन|घन|गोला|बेलन|शंकु', 'triangle'],
+  ['average|ratio|proportion|data|graph|chart|mean|median|mode|probability|statistics|table', 'औसत|अनुपात|समानुपात|आंकड़े|आलेख|माध्य|माध्यिका|बहुलक|प्रायिकता|सांख्यिकी', 'chart'],
+  ['time|speed|distance|clock|pipe|pipes|tank|train|boat|stream|age|ages|work|works|hours|minutes', 'समय|चाल|दूरी|घड़ी|नल|टंकी|रेलगाड़ी|नाव|आयु|उम्र|कार्य|काम|घंटे|मिनट', 'clock'],
+  ['constitution|article|law|court|judge|supreme|right|rights|justice|act|bill|amendment|duty|duties|fundamental', 'संविधान|अनुच्छेद|कानून|न्यायालय|न्यायाधीश|उच्चतम|अधिकार|न्याय|अधिनियम|विधेयक|संशोधन|कर्तव्य|मौलिक', 'scales'],
+  ['king|emperor|dynasty|empire|maurya|gupta|mughal|akbar|ashoka|queen|rani|sultan|chola|rajput|maratha|shivaji', 'राजा|सम्राट|राजवंश|साम्राज्य|मौर्य|गुप्त|मुगल|अकबर|अशोक|रानी|सुल्तान|चोल|राजपूत|मराठा|शिवाजी', 'crown'],
+  ['war|battle|army|military|revolt|1857|panipat|independence|freedom|movement|satyagraha|quit india', 'युद्ध|लड़ाई|सेना|सैन्य|विद्रोह|पानीपत|स्वतंत्रता|आज़ादी|आंदोलन|सत्याग्रह|भारत छोड़ो', 'sword'],
+  ['temple|religion|buddhist|buddha|jain|hindu|festival|god|sanchi|khajuraho|ujjain|mahakal|omkareshwar|fort|monument|heritage', 'मंदिर|धर्म|बौद्ध|बुद्ध|जैन|हिंदू|त्योहार|देवता|भगवान|सांची|खजुराहो|उज्जैन|महाकाल|ओंकारेश्वर|किला|स्मारक|धरोहर|विरासत', 'temple'],
+  ['bank|rbi|economy|gdp|budget|finance|inflation|gst|currency|nabard|sebi|fiscal|monetary', 'बैंक|आरबीआई|अर्थव्यवस्था|बजट|वित्त|मुद्रास्फीति|मुद्रा|नाबार्ड|सेबी|राजकोषीय|मौद्रिक', 'bank'],
+  ['president|prime minister|minister|governor|parliament|lok sabha|rajya sabha|election|vote|government|panchayat|flag|national|chief minister|cabinet', 'राष्ट्रपति|प्रधानमंत्री|मंत्री|राज्यपाल|संसद|लोकसभा|राज्यसभा|चुनाव|मतदान|सरकार|पंचायत|ध्वज|राष्ट्रीय|मुख्यमंत्री|मंत्रिमंडल', 'flag'],
+  ['map|latitude|longitude|border|district|state|capital|city|india|madhya pradesh|bhopal|indore|region|geography|divisions?', 'मानचित्र|अक्षांश|देशांतर|सीमा|जिला|राज्य|राजधानी|शहर|भारत|मध्य प्रदेश|भोपाल|इंदौर|क्षेत्र|भूगोल|संभाग', 'map'],
+  ['calendar|date|month|year|day|week|century|history|era', 'कैलेंडर|तिथि|माह|महीना|वर्ष|दिन|सप्ताह|शताब्दी|इतिहास|युग', 'calendar'],
+  ['sports|sport|olympic|cricket|medal|award|prize|winner|champion|trophy|cup|player|stadium', 'खेल|ओलंपिक|क्रिकेट|पदक|पुरस्कार|विजेता|चैंपियन|ट्रॉफी|कप|खिलाड़ी|स्टेडियम', 'trophy'],
+  ['music|song|raga|dance|instrument|singer|film|cinema', 'संगीत|गीत|राग|नृत्य|वाद्य|गायक|फिल्म|सिनेमा', 'music'],
+  ['poem|poet|author|writer|novel|book|story|literature|kavya|chhand|alankar|autobiography', 'कविता|कवि|लेखक|रचनाकार|उपन्यास|पुस्तक|कहानी|साहित्य|काव्य|छंद|अलंकार|आत्मकथा|रचना', 'feather'],
+  ['grammar|noun|verb|adjective|adverb|pronoun|tense|synonym|antonym|idiom|phrase|proverb|spelling|vowel|consonant|preposition|article|sentence|word|alphabet|voice|narration|conjunction', 'व्याकरण|संज्ञा|क्रिया|विशेषण|सर्वनाम|काल|पर्यायवाची|विलोम|मुहावरा|लोकोक्ति|वर्तनी|स्वर|व्यंजन|वाक्य|शब्द|वर्ण|संधि|समास|प्रत्यय|उपसर्ग|वचन|लिंग|कारक|अव्यय', 'letterA'],
+  ['sound|echo|noise|frequency|pitch', 'ध्वनि|प्रतिध्वनि|आवृत्ति|स्वर', 'speaker'],
+  ['camera|photo|image|picture|video', 'कैमरा|फोटो|चित्र|वीडियो', 'camera'],
+  ['people|population|census|tribe|caste|society|family|women|child|community', 'लोग|जनसंख्या|जनगणना|जनजाति|जाति|समाज|परिवार|महिला|बच्चे|समुदाय', 'people'],
+  ['discover|invented|invention|scientist|research|experiment', 'खोज|आविष्कार|वैज्ञानिक|अनुसंधान|प्रयोग', 'search'],
+  ['logic|reasoning|series|puzzle|analogy|coding-decoding|venn|syllogism|blood relation|ranking|seating', 'तर्क|श्रृंखला|पहेली|सादृश्य|वेन|न्याय निगमन|रक्त संबंध|क्रम', 'brain']
+].map(([a, d, n]) => [new RegExp('\\b(?:' + a + ')\\b', 'i'), new RegExp(d), n]);
+const VDEF = {hindi: 'feather', english: 'letterA', science: 'atom', reasoning: 'brain', computer: 'chip', maths: 'pi'};
+const LANGV = new Set(['feather', 'letterA', 'speaker']);
+/* Lucide icons from a public CDN (jsDelivr). Used for topics the built-in rules do not cover; cached in this browser, so it works offline after the first load. */
+const LUB = 'https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/';
+const LUX = [[/biodegradable|recycl|waste|landfill|pollut/i, 'recycle'], [/sewage|wastewater|sanitation|purif/i, 'droplets'], [/forest|ecolog|environment|biodiversity|ecosystem/i, 'trees'], [/fossil|dinosaur|extinct|skeleton|bone/i, 'bone'], [/sponge|coral|marine|jellyfish|aquatic|dolphin|whale|octopus|starfish/i, 'fish'], [/vaccin|immuni|antibod|injection/i, 'syringe'], [/virus|bacteri|infect|germ|pathogen|disease/i, 'bug'], [/scientist|discover|invent|nobel|microscope/i, 'microscope'], [/farm|crop|plough|tractor|harvest/i, 'tractor'], [/brain|nerve|neuron/i, 'brain'], [/\beye\b|vision|retina/i, 'eye'], [/\begg\b|reproduc|embryo|fertili/i, 'egg'], [/milk|dairy/i, 'milk'], [/telescope|astronom/i, 'telescope']];
+const LUT = [[/ecology|environment/i, 'trees'], [/scientists|discover/i, 'microscope'], [/units|instrument/i, 'ruler'], [/non-verbal|figure/i, 'shapes'], [/odd one|classif/i, 'puzzle'], [/coded arith/i, 'sigma'], [/coded subst/i, 'replace'], [/windows|operating/i, 'app-window'], [/cyber/i, 'shield-check'], [/abbrev|full form/i, 'spell-check'], [/database|dbms|access/i, 'database'], [/artificial|emerging/i, 'bot'], [/simplif/i, 'divide'], [/algebra/i, 'variable'], [/equation/i, 'equal'], [/permutation|combination/i, 'shuffle'], [/number system/i, 'hash'], [/ap, gp|progression/i, 'trending-up'], [/lcm|hcf/i, 'binary'], [/trigono/i, 'triangle-right'], [/chain rule/i, 'link'], [/race/i, 'timer'], [/mensuration/i, 'box'], [/mixture|alligation/i, 'beaker']];
+const LUS = {}, LUFAIL = {}; try { Object.assign(LUS, JSON.parse(localStorage.getItem('qr_lu') || '{}')); } catch (e) {} Object.keys(LUS).forEach(k => { IC['lu:' + k] = LUS[k]; });
+function luName(q, subjId) {
+  if (subjId === 'hindi' || subjId === 'english') return null;
+  for (const [re, n] of LUX) if (re.test(q.q || '')) return n;
+  for (const [re, n] of LUT) if (re.test(q.t || '')) return n;
+  return null;
+}
+function svgToPath(txt) {                              // Lucide files hold several shapes; join them into one path string
+  const doc = new DOMParser().parseFromString(txt, 'image/svg+xml'), out = [], g = (e, a) => parseFloat(e.getAttribute(a)) || 0;
+  doc.documentElement.querySelectorAll('path,circle,ellipse,rect,line,polyline,polygon').forEach(e => {
+    const t = e.tagName.toLowerCase();
+    if (t === 'path') out.push(e.getAttribute('d'));
+    else if (t === 'circle' || t === 'ellipse') { const cx = g(e, 'cx'), cy = g(e, 'cy'), rx = t === 'circle' ? g(e, 'r') : g(e, 'rx'), ry = t === 'circle' ? rx : g(e, 'ry'); out.push('M' + (cx - rx) + ' ' + cy + 'a' + rx + ' ' + ry + ' 0 1 0 ' + 2 * rx + ' 0a' + rx + ' ' + ry + ' 0 1 0 ' + -2 * rx + ' 0'); }
+    else if (t === 'rect') { const x = g(e, 'x'), y = g(e, 'y'), w = g(e, 'width'), h = g(e, 'height'), r = Math.min(g(e, 'rx'), w / 2, h / 2); out.push(r ? 'M' + (x + r) + ' ' + y + 'h' + (w - 2 * r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r + 'v' + (h - 2 * r) + 'a' + r + ' ' + r + ' 0 0 1 ' + -r + ' ' + r + 'h' + -(w - 2 * r) + 'a' + r + ' ' + r + ' 0 0 1 ' + -r + ' ' + -r + 'v' + -(h - 2 * r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + -r + 'z' : 'M' + x + ' ' + y + 'h' + w + 'v' + h + 'h' + -w + 'z'); }
+    else if (t === 'line') out.push('M' + g(e, 'x1') + ' ' + g(e, 'y1') + 'L' + g(e, 'x2') + ' ' + g(e, 'y2'));
+    else { const pts = (e.getAttribute('points') || '').trim().split(/[\s,]+/); if (pts.length >= 4) { let d = 'M' + pts[0] + ' ' + pts[1]; for (let k = 2; k + 1 < pts.length; k += 2) d += 'L' + pts[k] + ' ' + pts[k + 1]; out.push(d + (t === 'polygon' ? 'z' : '')); } }
+  });
+  return out.join(' ');
+}
+async function luLoad(n) {
+  if (!n || IC['lu:' + n] || LUFAIL[n]) return;
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 6000);
+  try {
+    const r = await fetch(LUB + n + '.svg', {signal: ctl.signal}); if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = svgToPath(await r.text()); if (!d) throw new Error('empty'); IC['lu:' + n] = LUS[n] = d; try { localStorage.setItem('qr_lu', JSON.stringify(LUS)); } catch (e) {}
+  } catch (e) { LUFAIL[n] = 1; } finally { clearTimeout(to); }
+}
+const luWarm = (qs, subjId) => Promise.all(qs.map(q => luLoad(luName(q, subjId))));
+function vecFor(q, subjId) {
+  const txt = (q.t || '') + ' ' + (q.q || ''), lang = subjId === 'hindi' || subjId === 'english';
+  for (const [ra, rd, n] of VRULES) if ((!lang || LANGV.has(n)) && (ra.test(txt) || rd.test(txt))) return n;
+  const lu = luName(q, subjId); if (lu && IC['lu:' + lu]) return 'lu:' + lu;
+  return VDEF[subjId] || 'bulb';
+}
+
 document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = svg(el.dataset.ic));
 const SUBJ = {hindi: {c: '#E5484D', t: 'अ'}, english: {c: '#2F6BFF', t: 'Aa'}, science: {c: '#1F9D6B', p: 'flask'}, reasoning: {c: '#8E4EC6', p: 'target'}, computer: {c: '#0F8BA8', p: 'monitor'}, maths: {c: '#F08A1C', p: 'calc'}};
 const subjGlyph = id => { const s = SUBJ[id] || {p: 'help'}; return s.t ? s.t : svg(s.p); };
@@ -403,10 +640,12 @@ function seg(id, key, opts) {
 function sw(id, key) { const el = $(id); el.classList.toggle('on', !!CFG[key]); el.setAttribute('role', 'switch'); el.tabIndex = 0; el.onclick = () => { CFG[key] = !CFG[key]; saveCfg(); el.classList.toggle('on', CFG[key]); }; el.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.onclick(); } }; }
 function buildSettings() {
   seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]); seg('sMath', 'mathS', [['15', 15], ['20', 20], ['30', 30], ['45', 45]]);
-  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['5', 5], ['10', 10], ['15', 15]]);
+  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sBatch', 'batch', [['1', 1], ['3', 3], ['5', 5], ['10', 10], ['20', 20]]);
   seg('sMode', 'mode', [['Play live', 'live'], ['Export video', 'reel']]);
-  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai']].forEach(([a, b]) => sw(a, b));
+  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai'], ['sAutoDl', 'autoDl'], ['sDevMic', 'devMic'], ['sPiper', 'piper']].forEach(([a, b]) => sw(a, b));
   $('inExam').value = CFG.exam || ''; $('inExam').oninput = e => { CFG.exam = e.target.value; saveCfg(); };
+  $('inGemkey').value = CFG.gemkey || ''; $('inGemkey').oninput = e => { CFG.gemkey = e.target.value.trim(); VOICE_DEAD = false; saveCfg(); };
+  $('inGkey').value = CFG.gkey || ''; $('inGkey').oninput = e => { CFG.gkey = e.target.value.trim(); VOICE_DEAD = false; saveCfg(); };
   $('inHandle').value = CFG.handle || ''; $('inHandle').oninput = e => { CFG.handle = e.target.value; saveCfg(); };
   fillVoiceSel();
 }
@@ -450,8 +689,8 @@ function segments(t) {
   });
   return out;
 }
-function speak(text, done) {
-  if (!CFG.voice || !window.speechSynthesis) { done && done(); return; }
+function speak(text, done, force) {
+  if ((!CFG.voice && !force) || !window.speechSynthesis) { done && done(); return; }
   const my = ++spkId; let fired = false; const fin = () => { if (!fired && my === spkId) { fired = true; done && done(); } };
   try {
     speechSynthesis.cancel(); const segs = segments(cleanSpeech(text)); if (!segs.length) { fin(); return; } let k = 0;
@@ -469,25 +708,148 @@ function testVoice() { const was = CFG.voice; CFG.voice = true; speak('Which pla
 /* ============ AI voice (recordable) ============ */
 const AI_VOICES = ['nova', 'shimmer', 'alloy', 'echo', 'fable', 'onyx', 'coral', 'sage'];
 function pickAiVoice() {
-  let last = ''; try { last = localStorage.getItem('qr_lastv') || ''; } catch (e) {}
-  const L = AI_VOICES.filter(v => v !== last), v = L[Math.floor(Math.random() * L.length)];
-  try { localStorage.setItem('qr_lastv', v); } catch (e) {} return v;
+  let last = '', lse = ''; try { last = localStorage.getItem('qr_lastv') || ''; lse = localStorage.getItem('qr_lastse') || ''; } catch (e) {}
+  const L = AI_VOICES.filter(v => v !== last), pl = L[Math.floor(Math.random() * L.length)], se = lse === 'Raveena' ? 'Aditi' : 'Raveena';
+  let lg = -1; try { lg = +localStorage.getItem('qr_lastg'); } catch (e) {} const g = [0, 1, 2, 3].filter(x => x !== lg)[Math.floor(Math.random() * 3)];
+  try { localStorage.setItem('qr_lastv', pl); localStorage.setItem('qr_lastse', se); localStorage.setItem('qr_lastg', String(g)); } catch (e) {} let lgv = ''; try { lgv = localStorage.getItem('qr_lastgv') || ''; } catch (e) {} const gv = GEM_VOICES.filter(x => x !== lgv)[Math.floor(Math.random() * (GEM_VOICES.length - 1))]; try { localStorage.setItem('qr_lastgv', gv); } catch (e) {}
+  return {pl, se, g, gv, pp: Math.floor(Math.random() * 3)};
 }
-async function fetchTts(text, voice) {
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+async function fetchAudio(url, ms) {
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
   try {
-    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + voice, {signal: ctl.signal});
-    if (!r.ok || !/audio|octet/.test(r.headers.get('content-type') || '')) throw new Error('no audio');
+    const r = await fetch(url, {signal: ctl.signal}); if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!/audio|octet/.test(r.headers.get('content-type') || '')) throw new Error('not audio');
     return await AC.decodeAudioData(await r.arrayBuffer());
   } finally { clearTimeout(to); }
 }
+// Order: your Google key (Indian Neural2 voices), then two keyless services that now often refuse (HTTP 401/402)
+const G_VOICES = {hi: ['hi-IN-Neural2-A', 'hi-IN-Neural2-B', 'hi-IN-Neural2-C', 'hi-IN-Neural2-D'], en: ['en-IN-Neural2-A', 'en-IN-Neural2-B', 'en-IN-Neural2-C', 'en-IN-Neural2-D']};
+/* ============ free Indian voice in the browser: Piper (Hindi + English), no key ============ */
+const PIPER = {
+  ORT: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
+  PHON: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize',
+  HF: 'https://huggingface.co/rhasspy/piper-voices/resolve/main/',
+  hi: ['hi/hi_IN/pratham/medium/hi_IN-pratham-medium', 'hi/hi_IN/priyamvada/medium/hi_IN-priyamvada-medium', 'hi/hi_IN/rohan/medium/hi_IN-rohan-medium'],
+  en: ['en/en_GB/alba/medium/en_GB-alba-medium', 'en/en_GB/alan/medium/en_GB-alan-medium']
+};
+let PIPER_UI = null, PIPER_READY = null; const PIPER_SESS = {};
+const pui = t => { try { PIPER_UI && PIPER_UI(t); } catch (e) {} };
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('could not load ' + src)); document.head.appendChild(s); });
+async function piperInit() {
+  if (!PIPER_READY) PIPER_READY = (async () => {
+    pui('Loading voice engine…'); await loadScript('vendor/ort.wasm.min.js'); await loadScript('vendor/piper_phonemize.js');
+    ort.env.wasm.numThreads = 1; ort.env.wasm.wasmPaths = PIPER.ORT;
+  })().catch(e => { PIPER_READY = null; throw e; });
+  return PIPER_READY;
+}
+async function piperBytes(url, label) {
+  let cache = null; try { cache = await caches.open('piper-v1'); } catch (e) {}
+  if (cache) { const m = await cache.match(url); if (m) return new Uint8Array(await m.arrayBuffer()); }
+  const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + url.split('/').pop());
+  const total = +r.headers.get('content-length') || 0, rd = r.body && r.body.getReader(), parts = []; let got = 0;
+  if (rd) for (;;) { const {done, value} = await rd.read(); if (done) break; parts.push(value); got += value.length; if (total) pui(label + ' ' + Math.round(got / total * 100) + '% (one time only)'); }
+  const blob = rd ? new Blob(parts) : await r.blob();
+  if (cache) { try { await cache.put(url, new Response(blob)); } catch (e) {} }
+  return new Uint8Array(await blob.arrayBuffer());
+}
+async function piperLoad(path) {
+  if (PIPER_SESS[path]) return PIPER_SESS[path];
+  await piperInit();
+  const cfg = JSON.parse(new TextDecoder().decode(await piperBytes(PIPER.HF + path + '.onnx.json', 'Voice settings')));
+  const model = await piperBytes(PIPER.HF + path + '.onnx', 'Downloading Indian voice');
+  pui('Starting voice…');
+  return PIPER_SESS[path] = {cfg, session: await ort.InferenceSession.create(model.buffer, {executionProviders: ['wasm']})};
+}
+function phonemize(text, voice) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const m = await createPiperPhonemize({print: d => { try { resolve(JSON.parse(d).phoneme_ids); } catch (e) { reject(e); } }, printErr: () => {},
+        locateFile: u => u.endsWith('.wasm') ? PIPER.PHON + '.wasm' : u.endsWith('.data') ? PIPER.PHON + '.data' : u});
+      m.callMain(['-l', voice, '--input', JSON.stringify([{text}]), '--espeak_data', '/espeak-ng-data']);
+    } catch (e) { reject(e); }
+  });
+}
+async function piperChunk(text, path) {
+  const {cfg, session} = await piperLoad(path), ids = await phonemize(text, cfg.espeak.voice);
+  if (!ids || !ids.length) return {pcm: new Float32Array(0), sr: cfg.audio.sample_rate};
+  const feeds = {input: new ort.Tensor('int64', ids, [1, ids.length]), input_lengths: new ort.Tensor('int64', [ids.length]), scales: new ort.Tensor('float32', [cfg.inference.noise_scale, cfg.inference.length_scale * 1.05, cfg.inference.noise_w])};
+  if (Object.keys(cfg.speaker_id_map || {}).length) feeds.sid = new ort.Tensor('int64', [0]);
+  return {pcm: (await session.run(feeds)).output.data, sr: cfg.audio.sample_rate};
+}
+function resamplePcm(x, a, b) { const n = Math.round(x.length * b / a), y = new Float32Array(n); for (let i = 0; i < n; i++) { const t = i * a / b, i0 = Math.floor(t), f = t - i0; y[i] = x[i0] * (1 - f) + x[Math.min(i0 + 1, x.length - 1)] * f; } return y; }
+async function piperTts(text, v) {
+  const to = AC.sampleRate, gap = Math.round(to * 0.14), pcs = [];
+  for (const sg of segments(cleanSpeech(text))) {
+    const list = sg.lang === 'hi' ? PIPER.hi : PIPER.en, path = list[(v.pp || 0) % list.length];
+    for (const sent of sg.t.split(/(?<=[।.?!])\s+/)) { if (!/[\p{L}\p{N}]/u.test(sent)) continue; pui('Speaking…'); const r = await piperChunk(sent.trim(), path); pcs.push(r.sr === to ? r.pcm : resamplePcm(r.pcm, r.sr, to)); }
+  }
+  const n = pcs.reduce((a, p) => a + p.length + gap, 0); if (!n) throw new Error('nothing to say');
+  const buf = AC.createBuffer(1, n, to), ch = buf.getChannelData(0); let o = 0, pk = 0; pcs.forEach(p => { ch.set(p, o); o += p.length + gap; });
+  for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(ch[i])); if (pk > 0 && pk < 0.7) { const g = 0.9 / pk; for (let i = 0; i < n; i++) ch[i] *= g; }
+  return buf;
+}
+const GEM_VOICES = ['Kore', 'Leda', 'Aoede', 'Zephyr', 'Sulafat', 'Puck', 'Charon', 'Fenrir', 'Achird', 'Gacrux'];
+function findData(o) { if (!o || typeof o !== 'object') return ''; if (typeof o.data === 'string' && o.data.length > 200) return o.data; for (const k in o) { const r = findData(o[k]); if (r) return r; } return ''; }
+async function decodeB64(b64) {
+  const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  if (String.fromCharCode(u8[0], u8[1], u8[2], u8[3]) === 'RIFF') return AC.decodeAudioData(u8.buffer);
+  const n = u8.length >> 1, buf = AC.createBuffer(1, n, 24000), ch = buf.getChannelData(0), dv = new DataView(u8.buffer); for (let i = 0; i < n; i++) ch[i] = dv.getInt16(i * 2, true) / 32768; return buf;
+}
+async function geminiTts(text, v) {
+  const call = async (withStyle) => {
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 40000);
+    try {
+      const t = {type: 'text', text}; if (withStyle) t.annotations = [{type: 'speech_metadata', style: 'warm, clear and friendly Indian teacher, natural pace'}];
+      return await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {method: 'POST', signal: ctl.signal, headers: {'Content-Type': 'application/json', 'x-goog-api-key': CFG.gemkey},
+        body: JSON.stringify({model: 'gemini-3.8-flash-tts', input: [{type: 'user_input', content: [t]}], response_format: {type: 'audio'}, generation_config: {speech_config: [{voice: v.gv || 'Kore'}]}})});
+    } finally { clearTimeout(to); }
+  };
+  let r = await call(true);
+  if (r.status === 400) r = await call(false);
+  for (let k = 0; k < 2 && r.status === 429; k++) { await new Promise(res => setTimeout(res, 21000)); r = await call(false); }
+  if (!r.ok) { let m = ''; try { m = (await r.json()).error.message; } catch (e) {} throw new Error('HTTP ' + r.status + (m ? ' ' + m.slice(0, 90) : '')); }
+  const d = findData(await r.json()); if (!d) throw new Error('no audio in reply'); return decodeB64(d);
+}
+async function googleTts(text, v) {
+  const hi = DEV.test(text), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + encodeURIComponent(CFG.gkey), {method: 'POST', headers: {'Content-Type': 'application/json'}, signal: ctl.signal,
+      body: JSON.stringify({input: {text}, voice: {languageCode: hi ? 'hi-IN' : 'en-IN', name: G_VOICES[hi ? 'hi' : 'en'][v.g % 4]}, audioConfig: {audioEncoding: 'MP3', speakingRate: 0.98}})});
+    if (!r.ok) { let m = ''; try { m = (await r.json()).error.message; } catch (e) {} throw new Error('HTTP ' + r.status + (m ? ' ' + m.slice(0, 90) : '')); }
+    const bin = atob((await r.json()).audioContent), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return await AC.decodeAudioData(u8.buffer);
+  } finally { clearTimeout(to); }
+}
+async function fetchTts(text, v, errs) {
+  const seV = DEV.test(text) ? 'Aditi' : v.se, tries = [];
+  if (CFG.gemkey) tries.push(['Gemini', () => geminiTts(text, v)]);
+  if (CFG.gkey) tries.push(['Google Cloud', () => googleTts(text, v)]);
+  if (CFG.piper) tries.push(['Piper', () => piperTts(text, v)]);
+  tries.push(['StreamElements', () => fetchAudio('https://api.streamelements.com/kappa/v2/speech?voice=' + seV + '&text=' + encodeURIComponent(text), 10000)], ['Pollinations', () => fetchAudio('https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + v.pl, 10000)]);
+  for (const [nm, fn] of tries) { try { const b = await fn(); fetchTts.used = nm; return b; } catch (e) { if (errs) errs.push(nm + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message)); } }
+  throw new Error('no voice service');
+}
+async function testAiVoice() {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
+  toast('Testing voice services\u2026'); const errs = []; PIPER_UI = t => toast(t);
+  try { const b = await fetchTts('\u0928\u092e\u0938\u094d\u0924\u0947, \u092f\u0939 \u0906\u0935\u093e\u091c\u093c \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0939\u0948. This is a voice test.', {pl: 'nova', se: 'Aditi', g: 0, gv: 'Kore', pp: 0}, errs); const sr = AC.createBufferSource(); sr.buffer = b; sr.connect(AC.destination); sr.start(); toast('Voice works via ' + fetchTts.used + (VOICE_DEAD = false, errs.length ? ' (' + errs.join('; ') + ')' : '')); }
+  catch (e) { toast('No AI voice worked. ' + errs.join(' | ') + (CFG.gemkey || CFG.gkey ? '' : '. Add a free Gemini voice key, or rely on the device-voice fallback.')); }
+}
+const ansText = q => cleanSpeech(q.o ? 'Option ' + 'ABCD'[q.i] + ', ' + q.a : q.a);
 
 /* ============ screens ============ */
-function show(id) { ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
+function show(id) { document.body.classList.toggle('inq', id === 'quiz'); if (id !== 'quiz' && REC) exitRec(); ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
+let QDP = null;                                        // opened by double-click (file://) the browser blocks fetch, so data.js carries the same files
+function getJson(f) {
+  return fetch(f).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).catch(e => {
+    QDP = QDP || new Promise(res => { if (window.QDATA) return res(); const sc = document.createElement('script'); sc.src = 'data.js'; sc.onload = sc.onerror = () => res(); document.head.appendChild(sc); });
+    return QDP.then(() => { if (window.QDATA && window.QDATA[f]) return window.QDATA[f]; throw e; });
+  });
+}
 async function init() {
   buildSettings(); setBg(Date.now());
-  try { MAN = await (await fetch('manifest.json')).json(); } catch (e) { $('err').textContent = 'Serve this folder with a web server. ' + e; return; }
-  await Promise.all(MAN.map(async m => { try { CACHE[m.id] = norm(await (await fetch(m.file)).json(), m.id); } catch (e) { CACHE[m.id] = []; } m.count = CACHE[m.id].length; }));
+  try { MAN = await getJson('manifest.json'); } catch (e) { $('err').textContent = 'Could not load the question files. Keep data.js and the .json files next to index.html. ' + e; return; }
+  await Promise.all(MAN.map(async m => { try { CACHE[m.id] = norm(await getJson(m.file), m.id); } catch (e) { CACHE[m.id] = []; } m.count = CACHE[m.id].length; }));
   showHome();
 }
 function cell(tileHtml, tileColor, label, count, onclick, off) {
@@ -529,6 +891,7 @@ function chime() { [[659, 0], [880, 0.09], [1175, 0.18], [1568, 0.28]].forEach((
 const CONF = ['#FF5A5F', '#FFB400', '#2F6BFF', '#1F9D6B', '#8E4EC6', '#00B8D9', '#FF8A3D'];
 function burst(x, y) {
   if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  if (window.confetti) { try { confetti({particleCount: 70, spread: 70, startVelocity: 42, angle: 90, origin: {x: x / innerWidth, y: y / innerHeight}, ticks: 190, zIndex: 15, colors: CONF, scalar: 1.05}); confetti({particleCount: 40, spread: 120, startVelocity: 28, origin: {x: x / innerWidth, y: y / innerHeight}, ticks: 170, zIndex: 15, colors: CONF, shapes: ['circle'], scalar: 0.9}); return; } catch (e) {} }
   const cv = $('confetti'), c = cv.getContext('2d'), dpr = window.devicePixelRatio || 1; cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; c.scale(dpr, dpr);
   const P = Array.from({length: 90}, (_, k) => { const a = -Math.PI / 2 + (Math.random() - .5) * 2.4, sp = 6 + Math.random() * 11; return {x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: Math.random() * 6, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, col: CONF[k % CONF.length], round: k % 4 === 0}; });
   const t0 = performance.now();
@@ -539,8 +902,8 @@ function burst(x, y) {
   })(t0);
 }
 function fit(el, text, big) {
-  const n = text.length;
-  el.style.fontSize = (big ? (n <= 45 ? 32 : n <= 90 ? 28 : n <= 150 ? 24 : n <= 240 ? 21 : 18) : (n <= 20 ? 32 : n <= 60 ? 26 : n <= 120 ? 22 : 18)) + 'px';
+  const n = text.length, k = REC ? 1.14 : 1;
+  el.style.fontSize = k * (big ? (n <= 45 ? 32 : n <= 90 ? 28 : n <= 150 ? 24 : n <= 240 ? 21 : 18) : (n <= 20 ? 32 : n <= 60 ? 26 : n <= 120 ? 22 : 18)) + 'px';
 }
 function makeHint(a) {
   const mode = CFG.hint; if (mode === 'off') return null;
@@ -552,7 +915,7 @@ function makeHint(a) {
 }
 function render() {
   stop(); document.documentElement.style.setProperty('--acc', (SUBJ[subj.id] || {c: '#2F6BFF'}).c); const q = set[i], mc = !!q.o, S = mc ? CFG.mathS : CFG.secs; setBg(Date.now() + i * 977);
-  $('prog').textContent = (i + 1) + ' / ' + set.length; $('trk').style.width = ((i + 1) / set.length * 100) + '%';
+  $('prog').textContent = $('tcnt').textContent = (i + 1) + ' / ' + set.length; $('emblem').innerHTML = svg(vecFor(q, subj.id)); luWarm([q], subj.id).then(() => { if (set[i] === q) $('emblem').innerHTML = svg(vecFor(q, subj.id)); }); $('pre').style.visibility = ''; $('trk').style.width = ((i + 1) / set.length * 100) + '%';
   $('tag').innerHTML = '<span class="sj"><i class="si" style="display:inline-flex;font-style:normal"></i><span class="sn"></span></span><span class="tp"></span>';
   $('tag').querySelector('.si').innerHTML = subjGlyph(subj.id); $('tag').querySelector('.sn').textContent = subj.name; $('tag').querySelector('.tp').textContent = q.t;
   const badge = txt => { const b = document.createElement('span'); b.className = 'badge'; b.textContent = txt; $('tag').appendChild(b); };
@@ -567,7 +930,7 @@ function render() {
   const pp = document.querySelector('.paper'); pp.classList.remove('enter'); void pp.offsetWidth; pp.classList.add('enter');
   $('edTa').value = q.q; $('edInfo').textContent = q.q !== q.oq ? 'Original: ' + q.oq : 'Edits stay in this browser. Download the JSON and replace the file in your folder to keep them for good.';
   $('ring').classList.remove('urgent'); $('prev').disabled = i === 0; $('next').disabled = i === set.length - 1;
-  $('ans').style.display = 'none'; $('showBtn').style.display = 'none'; $('cta').style.display = 'flex'; $('tfill').style.transition = 'none'; tick(S, S); void $('tfill').offsetWidth; $('tfill').style.transition = ''; window.scrollTo(0, 0);
+  $('ans').style.display = 'none'; $('showBtn').style.display = 'none'; $('tfill').style.transition = 'none'; tick(S, S); void $('tfill').offsetWidth; $('tfill').style.transition = ''; window.scrollTo(0, 0);
   speak(speechText(q), () => {
     let t = S;
     tmr = setInterval(() => {
@@ -578,17 +941,44 @@ function render() {
 }
 function tick(t, S) { const f = t / S, fl = $('tfill'); fl.style.width = (f * 100) + '%'; fl.style.background = 'hsl(' + Math.round(150 * f) + ',95%,55%)'; fl.style.color = fl.style.background; $('tnum').textContent = t + 's'; $('num').textContent = t; $('arc').setAttribute('stroke-dashoffset', (320.4 * (1 - t / S)).toFixed(1)); }
 function reveal() {
-  $('showBtn').style.display = 'none'; $('cta').style.display = 'none'; $('ans').style.display = 'block'; $('hint').classList.remove('show');
+  $('showBtn').style.display = 'none'; $('pre').style.visibility = 'hidden'; $('ans').style.display = 'block';
   const x = set[i]; if (x.o) [...$('opts').children].forEach((el, k) => el.classList.add(k === x.i ? 'right' : 'dim'));
   chime(); const tg = x.o ? $('opts').children[x.i] : $('ans'), bb = tg.getBoundingClientRect(); burst(bb.left + bb.width / 2, bb.top + bb.height / 2);
   speak(x.o ? 'Option ' + 'ABCD'[x.i] + ', ' + x.a : x.a, () => { if (CFG.auto && i < set.length - 1) aux = setTimeout(() => step(1), 3500); });
 }
 function step(d) { const n = i + d; if (n >= 0 && n < set.length) { i = n; render(); } }
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && REC) { exitRec(); return; }
   if (/TEXTAREA|INPUT|SELECT/.test((e.target || {}).tagName || '') || $('quiz').classList.contains('hide') || $('reel').style.display === 'flex') return;
-  if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1);
+  if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1); else if (e.key === 'r' || e.key === 'R') recordCurrent();
   else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if ($('showBtn').style.display === 'inline-flex') reveal(); else if ($('ans').style.display === 'block') step(1); }
 });
+
+
+/* ============ recording mode ============ */
+let REC = false, RWL = null, toastT = 0;
+function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 7000); }
+function inFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function toggleFs() {
+  const el = document.documentElement;
+  if (inFs()) { (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document); return; }
+  const f = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!f) { toast('This browser cannot go full screen. Install the page to your Home Screen to open it without the address bar.'); return; }
+  try { const r = f.call(el); if (r && r.catch) r.catch(() => toast('Full screen was blocked. Tap the full-screen icon again.')); } catch (e) {}
+}
+function enterRec() {
+  REC = true; document.body.classList.add('rec'); $('recTools').classList.remove('hide'); toggleFsIfNeeded();
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { RWL = l; }).catch(() => {}); } catch (e) {}
+  render();
+}
+function toggleFsIfNeeded() { if (!inFs()) toggleFs(); }
+function exitRec() {
+  REC = false; document.body.classList.remove('rec'); $('recTools').classList.add('hide');
+  if (inFs()) (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
+  try { if (RWL) RWL.release(); } catch (e) {} RWL = null; if (!$('quiz').classList.contains('hide')) render();
+}
+document.querySelector('.paper').addEventListener('click', () => { if (REC && $('ans').style.display === 'block') step(1); });
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 /* ============ rewrite box ============ */
 function toggleEdit() { const b = $('edBox'); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
@@ -658,8 +1048,8 @@ function paperPath(c, x, y, w, h, seed) {
   for (let px = x + 4; px < x + w - 4; px += 18) c.lineTo(Math.min(px + 18, x + w - 4), y + r() * 9 - 2);
   c.lineTo(x + w, y + R); c.arcTo(x + w, y + h, x, y + h, R); c.arcTo(x, y + h, x, y, R); c.closePath();
 }
-function cardShell(c, P) {
-  c.save(); c.shadowColor = 'rgba(40,20,0,.45)'; c.shadowBlur = 56; c.shadowOffsetY = 22; c.fillStyle = '#FBF8EF'; paperPath(c, CARD.x, CARD.y, CARD.w, CARD.h, 5); c.fill(); c.restore();
+function cardShell(c, P, r) {
+  r = r || CARD; c.save(); c.shadowColor = 'rgba(40,20,0,.45)'; c.shadowBlur = 56; c.shadowOffsetY = 22; c.fillStyle = '#FBF8EF'; paperPath(c, r.x, r.y, r.w, r.h, 5); c.fill(); c.restore();
 }
 function timerBar(c, f, rev, e) {
   const x = 60, y = 366, w = 800, h = 22, col = rev ? '#35C27A' : 'hsl(' + Math.round(150 * f) + ',90%,50%)';
@@ -686,15 +1076,30 @@ function bookend(c, P, seg, lt) {
   }
   c.restore();
 }
+function qLayout(c, P, qi) {                           // card sized to its content: answer sits right under the question
+  P.lay = P.lay || []; if (P.lay[qi]) return P.lay[qi];
+  const q = P.qs[qi], mc = !!q.o, pw = CARD.w - 88, h = P.hints[qi], txt = mc ? q.s : q.a; let L = null;
+  for (let k = 1; k >= 0.4; k -= 0.04) {
+    const qs = Math.max(26, Math.round((mc ? 50 : 66) * k / 2) * 2), as = Math.max(24, Math.round((mc ? 38 : 72) * k / 2) * 2), alh = mc ? 1.4 : 1.3;
+    c.font = '700 ' + qs + 'px ' + FONT; const qf = {s: qs, L: wrapLines(c, q.q, pw)};
+    c.font = (mc ? '600 ' : '700 ') + as + 'px ' + FONT; const af = {s: as, L: wrapLines(c, txt, pw - 56)};
+    const qH = Math.max(mc ? 96 : 140, Math.round(qf.L.length * qs * 1.36 + 16)), ah = Math.max(168, Math.round(66 + af.L.length * as * alh + 34));
+    const optH = mc ? 82 * q.o.length : 0, preH = (h ? 152 : 0) + 112, slot = Math.max(preH, ah + 38);
+    const H = 138 + qH + 34 + (mc ? optH + 30 : 0) + slot + 50;
+    L = {qf, af, qH, ah, optH, slot, H, alh, hh: h ? 130 : 0}; if (H <= 1000) break;
+  }
+  L.y = Math.round(480 + (990 - Math.min(L.H, 990)) * 0.38); return P.lay[qi] = L;
+}
 function questionFrame(c, P, seg, lt) {
-  const S = P.Ss[seg.qi], q = P.qs[seg.qi], mc = !!q.o, rev = lt >= S, e = ease(lt / 0.5), col = acc(P);
-  const cx = CARD.x, cy = CARD.y, px = cx + 44, pw = CARD.w - 88, mx = cx + CARD.w / 2;
-  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, 'QUESTION ' + (seg.qi + 1) + ' / ' + P.qs.length);
+  const S = P.Ss[seg.qi], q = P.qs[seg.qi], mc = !!q.o, rev = lt >= S, e = ease(lt / 0.5), col = acc(P), L = qLayout(c, P, seg.qi);
+  const cx = CARD.x, cy = L.y, px = cx + 44, pw = CARD.w - 88, mx = cx + CARD.w / 2;
+  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, P.qs.length === 1 ? 'DAILY QUESTION' : 'QUESTION ' + (seg.qi + 1) + ' / ' + P.qs.length);
   const rem = Math.max(0, S - lt); timerBar(c, rem / S, rev, e);
   c.save(); c.globalAlpha = e; c.textAlign = 'right'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 12;
   if (rev) icon(c, 'check', 972, 360, 46, '#fff', 3.6); else { c.fillStyle = '#fff'; c.font = '800 50px ' + FONT; c.fillText(String(Math.ceil(rem)), 1020, 404); }
   c.restore(); c.textAlign = 'left';
-  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P);
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P, {x: cx, y: cy, w: CARD.w, h: L.H});
+  { const ex = cx + CARD.w - 88, ey = cy + 4; c.save(); c.shadowColor = 'rgba(40,20,0,.4)'; c.shadowBlur = 24; c.shadowOffsetY = 10; c.fillStyle = '#FFFDF5'; c.beginPath(); c.arc(ex, ey, 62, 0, 7); c.fill(); c.restore(); c.strokeStyle = '#FFC815'; c.lineWidth = 8; c.beginPath(); c.arc(ex, ey, 62, 0, 7); c.stroke(); drawEmblem(c, P, seg.qi, ex, ey, 64, col); }
   brush(c, cx + 10, cy - 46, 330, 84, '#FFC815', 7); ital(c, 'QUESTION', cx + 175, cy + 12, '800 48px ' + FONT, '#1A1A1A');
   c.font = '700 28px ' + FONT; const nw = c.measureText(P.subj).width, cw = 14 + 40 + 10 + nw + 22;
   c.font = '500 28px ' + FONT; let tp = q.t; const room = pw - cw - 24; while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2); if (tp !== q.t) tp += '…';
@@ -702,51 +1107,53 @@ function questionFrame(c, P, seg, lt) {
   c.fillStyle = col; rrect(c, gx, ty, cw, 52, 26); c.fill();
   c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.arc(gx + 27, ty + 26, 20, 0, 7); c.fill(); glyph(c, P.subjId, gx + 27, ty + 26, 24, '#fff');
   c.fillStyle = '#fff'; c.font = '700 28px ' + FONT; c.fillText(P.subj, gx + 14 + 40 + 10, ty + 37); c.fillStyle = MUTE; c.font = '500 28px ' + FONT; c.fillText(tp, gx + cw + 16, ty + 37);
-  const qh = mc ? 220 : 360; c.fillStyle = INK; drawLines(c, fitText(c, q.q, pw, qh, mc ? 52 : 66, 30, '700', 1.36), mx, cy + 150, qh, 1.36, 'center');
+  const qy = cy + 138; c.fillStyle = INK; c.font = '700 ' + L.qf.s + 'px ' + FONT; drawLines(c, L.qf, mx, qy, L.qH, 1.36, 'center');
+  let y = qy + L.qH + 34, oy = y;
   if (mc) {
-    const oy = cy + 390, oe = ease((lt - S) / 0.35);
+    const oe = ease((lt - S) / 0.35);
     q.o.forEach((o, k) => {
-      const y = oy + k * 82, right = k === q.i, hot = rev && right; c.save(); if (rev && !right) c.globalAlpha = e * (1 - 0.6 * oe);
+      const yy = oy + k * 82, right = k === q.i, hot = rev && right; c.save(); if (rev && !right) c.globalAlpha = e * (1 - 0.6 * oe);
       if (hot) { c.shadowColor = 'rgba(46,158,91,.6)'; c.shadowBlur = 24; c.shadowOffsetY = 8; }
-      c.fillStyle = hot ? '#2E9E5B' : '#F3EEE0'; rrect(c, px, y, pw, 72, 22); c.fill(); c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; c.strokeStyle = hot ? '#2E9E5B' : '#DDD5BE'; c.lineWidth = 2; c.stroke();
-      c.fillStyle = hot ? '#fff' : col; c.beginPath(); c.arc(px + 40, y + 36, 23, 0, 7); c.fill();
-      c.fillStyle = hot ? '#2E9E5B' : '#fff'; c.font = '700 27px ' + FONT; c.textAlign = 'center'; c.fillText('ABCD'[k], px + 40, y + 46);
-      c.fillStyle = hot ? '#fff' : INK; const fs = fit1(c, o, pw - 110, 34, 20, '600'); c.textAlign = 'left'; c.fillText(o, px + 82, y + 36 + fs * 0.35); c.restore();
+      c.fillStyle = hot ? '#2E9E5B' : '#F3EEE0'; rrect(c, px, yy, pw, 72, 22); c.fill(); c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; c.strokeStyle = hot ? '#2E9E5B' : '#DDD5BE'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = hot ? '#fff' : col; c.beginPath(); c.arc(px + 40, yy + 36, 23, 0, 7); c.fill();
+      c.fillStyle = hot ? '#2E9E5B' : '#fff'; c.font = '700 27px ' + FONT; c.textAlign = 'center'; c.fillText('ABCD'[k], px + 40, yy + 46);
+      c.fillStyle = hot ? '#fff' : INK; const fs = fit1(c, o, pw - 110, 34, 20, '600'); c.textAlign = 'left'; c.fillText(o, px + 82, yy + 36 + fs * 0.35); c.restore();
     });
+    y += L.optH + 30;
   }
-  const h = P.hints[seg.qi];
-  if (h && !rev) {
+  const slot = y, hnt = P.hints[seg.qi];
+  if (hnt && !rev) {
     const he = ease((lt - 0.2) / 0.4); c.save(); c.globalAlpha = e * he; c.translate(0, (1 - he) * 14);
-    c.fillStyle = '#FFF1B8'; rrect(c, px, cy + 520, pw, 130, 28); c.fill(); c.strokeStyle = '#E3B100'; c.lineWidth = 3; c.stroke();
-    c.fillStyle = '#7A5A00'; c.font = '600 28px ' + FONT; const lab = 'Hint: ' + h[0].toLowerCase(), lw = c.measureText(lab).width; icon(c, 'bulb', mx - lw / 2 - 40, cy + 536, 30, '#7A5A00', 2.2); c.textAlign = 'left'; c.fillText(lab, mx - lw / 2 - 2, cy + 562);
-    fit1(c, h[1], pw - 40, 52, 26, '700'); c.fillStyle = '#2B2200'; c.textAlign = 'center'; c.fillText(h[1], mx, cy + 626); c.textAlign = 'left'; c.restore();
+    c.fillStyle = '#FFF1B8'; rrect(c, px, slot, pw, 130, 28); c.fill(); c.strokeStyle = '#E3B100'; c.lineWidth = 3; c.stroke();
+    c.fillStyle = '#7A5A00'; c.font = '600 28px ' + FONT; const lab = 'Hint: ' + hnt[0].toLowerCase(), lw = c.measureText(lab).width; icon(c, 'bulb', mx - lw / 2 - 40, slot + 16, 30, '#7A5A00', 2.2); c.textAlign = 'left'; c.fillText(lab, mx - lw / 2 - 2, slot + 42);
+    fit1(c, hnt[1], pw - 40, 52, 26, '700'); c.fillStyle = '#2B2200'; c.textAlign = 'center'; c.fillText(hnt[1], mx, slot + 106); c.textAlign = 'left'; c.restore();
   }
-  const top = cy + (mc ? 740 : 700), ph = mc ? 270 : 280;
+  const top = slot + 38, ph = L.ah;
   if (!rev) {
-    const my = top + ph / 2; c.save(); c.globalAlpha = e;
+    const my = slot + (hnt ? 152 : 0) + 56; c.save(); c.globalAlpha = e;
     c.font = '700 44px ' + FONT; const t1 = 'Comment your answer', bw = c.measureText(t1).width + 130, bx = mx - bw / 2;
     c.fillStyle = '#FFF3C4'; rrect(c, bx, my - 54, bw, 108, 54); c.fill(); c.strokeStyle = '#E0A800'; c.lineWidth = 3; c.stroke();
-    icon(c, 'chat', bx + 36, my - 24, 48, '#B07A00', 2.4); c.fillStyle = '#3A2F00'; c.textAlign = 'left'; c.fillText(t1, bx + 100, my + 15);
-    c.fillStyle = MUTE; c.font = '500 28px ' + FONT; c.textAlign = 'center'; c.fillText('Answer appears when the bar ends', mx, my + 104); c.textAlign = 'left'; c.restore();
+    icon(c, 'chat', bx + 36, my - 24, 48, '#B07A00', 2.4); c.fillStyle = '#3A2F00'; c.textAlign = 'left'; c.fillText(t1, bx + 100, my + 15); c.restore();
   } else {
     const ae = ease((lt - S) / 0.35), txt = mc ? q.s : q.a; c.save(); c.globalAlpha = e * ae; c.translate(mx, top + ph / 2); c.scale(0.94 + 0.06 * ae, 0.94 + 0.06 * ae); c.translate(-mx, -(top + ph / 2));
     c.fillStyle = '#D8F3DF'; rrect(c, px, top, pw, ph, 36); c.fill(); c.strokeStyle = '#2E9E5B'; c.lineWidth = 3; c.stroke();
     brush(c, px - 4, top - 34, mc ? 290 : 250, 66, '#1F7A45', 17); ital(c, mc ? 'SOLUTION' : 'ANSWER', px - 4 + (mc ? 145 : 125), top + 14, '800 38px ' + FONT, '#fff');
-    c.fillStyle = '#0F3D24'; drawLines(c, mc ? fitText(c, txt, pw - 60, ph - 90, 38, 22, '600', 1.4) : fitText(c, txt, pw - 50, ph - 90, 76, 32, '700', 1.3), mx, top + 54, ph - 70, mc ? 1.4 : 1.3, 'center'); c.restore();
+    c.fillStyle = '#0F3D24'; c.font = (mc ? '600 ' : '700 ') + L.af.s + 'px ' + FONT; drawLines(c, L.af, mx, top + 44, ph - 44 - 14, L.alh, 'center'); c.restore();
   }
   c.restore();
   if (rev) {                                           // confetti burst, computed from time so every frame is exact
     const tt = lt - S; if (tt < 1.9) {
-      const ox = mx, oy = mc ? cy + 390 + q.i * 82 + 36 : top + ph / 2, rg = rng(P.seed + seg.qi * 31);
+      const ox = mx, cyy = mc ? oy + q.i * 82 + 36 : top + ph / 2, rg = rng(P.seed + seg.qi * 31);
       for (let k = 0; k < 90; k++) {
         const a = -Math.PI / 2 + (rg() - .5) * 2.4, sp = 560 + rg() * 900, w = 14 + rg() * 14, hh = 9 + rg() * 11, r0 = rg() * 6, vr = (rg() - .5) * 14, rnd = k % 4 === 0;
-        const x = ox + Math.cos(a) * sp * tt * Math.pow(0.5, tt * 1.2), y = oy + Math.sin(a) * sp * tt * Math.pow(0.5, tt * 1.2) + 900 * tt * tt;
-        c.save(); c.globalAlpha = Math.max(0, 1 - Math.max(0, tt - 1.2) / 0.7); c.translate(x, y); c.rotate(r0 + vr * tt); c.fillStyle = CONF[k % CONF.length];
+        const x = ox + Math.cos(a) * sp * tt * Math.pow(0.5, tt * 1.2), yy = cyy + Math.sin(a) * sp * tt * Math.pow(0.5, tt * 1.2) + 900 * tt * tt;
+        c.save(); c.globalAlpha = Math.max(0, 1 - Math.max(0, tt - 1.2) / 0.7); c.translate(x, yy); c.rotate(r0 + vr * tt); c.fillStyle = CONF[k % CONF.length];
         if (rnd) { c.beginPath(); c.arc(0, 0, w / 2, 0, 7); c.fill(); } else c.fillRect(-w / 2, -hh / 2, w, hh); c.restore();
       }
     }
   }
 }
+function drawEmblem(c, P, qi, cx, cy, size, col) { icon(c, P.vecs[qi], cx - size / 2, cy - size / 2, size, col, 1.9); }
 function drawFrame(c, P, t) {
   const seg = P.segs.find(s => t < s.start + s.dur) || P.segs[P.segs.length - 1], lt = Math.min(t - seg.start, seg.dur);
   if (seg.type === 'q') questionFrame(c, P, seg, lt); else bookend(c, P, seg, lt); return {seg, lt};
@@ -755,58 +1162,78 @@ function drawFrame(c, P, t) {
 /* ============ video: recorder ============ */
 function pickMime() { const L = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']; return L.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || ''; }
 const reelMsg = t => { $('reelMsg').textContent = t; };
-async function startReel(arr, name) {
-  if (RC) return;
+let LASTREEL = null, BATCH = {left: 1, total: 1, done: 0}, MIC = null, VOICE_DEAD = false;
+function saveUrl(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 800); }
+function nextOne(arr, o) { const k = (o.idx + 1) % arr.length; i = k; return {q: arr[k], idx: k}; }
+function nextVideo() { if (!LASTREEL) return; const L = LASTREEL; closeReel(); startReel(L.arr, L.name, false, L.one ? nextOne(L.arr, L.one) : undefined); }
+function recordCurrent() { if (RC || !set.length || $('quiz').classList.contains('hide')) return; stop(); if (REC) exitRec(); startReel(set, 'Q', false, {q: set[i], idx: i}); }
+function doneReel() { closeReel(); if (LASTREEL && LASTREEL.one && !$('quiz').classList.contains('hide')) render(); }
+async function startReel(arr, name, cont, one) {
+  if (RC) return; LASTREEL = {arr, name, one}; if (!cont) { const nb = Math.max(1, CFG.batch || 1); BATCH = {left: nb, total: nb, done: 0}; }
   if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome or Edge.'); return; }
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
-  const n = CFG.reelN, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
-  if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
-  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], total: 0, voice: '', note: ''};
-  P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
+  const n = 1, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
+  if (one) { qs = [one.q]; pos = one.idx; } else if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
+  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], audioA: [], devA: [], errs: [], dev: false, total: 0, voice: '', note: ''};
+  try { await luWarm(qs, subj.id); } catch (e) {} P.vecs = qs.map(q => vecFor(q, subj.id)); P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
   RC = {prep: true, cancelled: false, srcs: []}; const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
   $('reel').style.display = 'flex'; $('reelDone').style.display = 'none'; $('reelLive').style.display = 'flex'; cv.style.display = 'block';
   c.fillStyle = '#fff'; c.fillRect(0, 0, REEL.W, REEL.H);
-  if (CFG.aiv && AC) {
-    P.voice = pickAiVoice();
+  if (CFG.aiv && VOICE_DEAD) P.note = 'AI voice was skipped because it failed earlier in this session. Tap \u201cTest AI voice\u201d to retry.';
+  if (CFG.aiv && AC && !VOICE_DEAD) {
+    P.vobj = pickAiVoice(); P.voice = P.vobj.se + ' / ' + P.vobj.pl;
     for (let k = 0; k < qs.length; k++) {
-      if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…');
-      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.voice); } catch (e) { if (k === 0) break; }
+      if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…'); PIPER_UI = t => reelMsg(t);
+      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.vobj, P.errs); } catch (e) { if (k === 0) break; continue; }
+      try { P.audioA[k] = await fetchTts(ansText(qs[k]).slice(0, 200), P.vobj, P.errs); } catch (e) {}
     }
     if (RC.cancelled) { RC = null; return; }
-    if (!P.audio.some(Boolean)) { P.voice = ''; P.note = 'AI voice was unavailable, so this video has no voice.'; }
+    P.src = fetchTts.used;
+    if (!P.audio.some(Boolean)) { P.voice = ''; VOICE_DEAD = true; P.note = 'AI voice could not load (' + P.errs.slice(0, 2).join('; ') + '). Turn on \u201cRecord my microphone\u201d and speak, or try another network.'; }
   }
+  P.dev = CFG.aiv && !P.voice && CFG.devMic && !!window.speechSynthesis;
+  if (P.dev) P.note = 'AI voice unavailable, so the device voice is played aloud and recorded through your microphone. Keep the volume up and the room quiet.';
+  if (CFG.aiv && !P.voice && !CFG.mic && !P.dev && BATCH.total > 1) { reelMsg('Stopped: no voice available, so the batch would be silent. ' + P.note); BATCH.left = 0; RC = null; return; }
   P.audio.forEach((b, k) => { if (b) P.Ss[k] = Math.max(P.Ss[k], Math.ceil(b.duration + 1.6)); });
+  if (P.dev) qs.forEach((q, k) => { P.Ss[k] = Math.max(P.Ss[k], Math.ceil(cleanSpeech(speechText(q)).length / 12 + 2)); P.devA[k] = Math.ceil(cleanSpeech(ansText(q)).length / 12 + 1.5); });
   let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
-  add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + (q.o ? 6 : REEL.HOLD), qi)); add('outro', REEL.OUTRO); P.total = st;
+  if (qs.length > 1) add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + Math.max(q.o ? 6 : REEL.HOLD, P.audioA[qi] ? P.audioA[qi].duration + 1.2 : 0, P.devA[qi] || 0), qi)); if (qs.length > 1) add('outro', REEL.OUTRO); P.total = st;
   try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
-  const stream = cv.captureStream(30), dest = AC ? AC.createMediaStreamDestination() : null; let mic = null;
+  const stream = cv.captureStream(30), dest = AC ? AC.createMediaStreamDestination() : null; let mic = null, micAn = null, micPeak = 0, micBuf = null;
   if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-  if (CFG.mic && dest) { try { mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); AC.createMediaStreamSource(mic).connect(dest); } catch (e) { P.note += ' Microphone blocked.'; } }
+  if ((CFG.mic || P.dev) && dest) { try { mic = (MIC && MIC.active) ? MIC : await navigator.mediaDevices.getUserMedia({audio: P.dev ? {echoCancellation: false, noiseSuppression: false, autoGainControl: true} : {echoCancellation: true, noiseSuppression: true}}); MIC = mic; const ms = AC.createMediaStreamSource(mic); ms.connect(dest); micAn = AC.createAnalyser(); micAn.fftSize = 1024; ms.connect(micAn); } catch (e) { P.note += ' Microphone blocked.'; } }
   const mime = pickMime(), chunks = []; let rec;
   try { rec = new MediaRecorder(stream, mime ? {mimeType: mime, videoBitsPerSecond: 6000000} : {}); } catch (e) { rec = new MediaRecorder(stream); }
   rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
   RC.prep = false; RC.dest = dest; RC.rec = rec;
-  const cleanup = () => { cancelAnimationFrame(RC.raf); RC.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); stream.getTracks().forEach(t => t.stop()); if (mic) mic.getTracks().forEach(t => t.stop()); try { wake && wake.release(); } catch (e) {} };
+  const cleanup = () => { try { speechSynthesis.cancel(); } catch (e) {} cancelAnimationFrame(RC.raf); RC.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); stream.getTracks().forEach(t => t.stop()); if (mic && !(BATCH.left > 1)) { mic.getTracks().forEach(t => t.stop()); MIC = null; } try { wake && wake.release(); } catch (e) {} };
   rec.onstop = () => {
     const was = RC; cleanup(); RC = null; if (was.cancelled) { $('reel').style.display = 'none'; return; }
     const type = (rec.mimeType || mime || 'video/webm').split(';')[0], ext = type.includes('mp4') ? 'mp4' : 'webm', url = URL.createObjectURL(new Blob(chunks, {type}));
+    const fname = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '-q' + (pos + 1);
+    if (!shuffle && !one) { try { localStorage.setItem(key, String((pos + qs.length) % arr.length)); } catch (e) {} }
+    BATCH.done++; BATCH.left--;
+    if (CFG.autoDl) { saveUrl(url, fname + '.' + ext); const m = templateMeta(P, name); setTimeout(() => saveUrl(URL.createObjectURL(new Blob([m.title + '\n\n' + m.desc], {type: 'text/plain'})), fname + '.txt'), 900); }
+    if (BATCH.left > 0) { let c3 = CFG.mic ? 4 : 2; const wait = () => { if (BATCH.left <= 0) return; if (c3 > 0) { reelMsg('Saved ' + BATCH.done + ' of ' + BATCH.total + '. Next video in ' + c3 + '\u2026'); c3--; setTimeout(wait, 1000); } else startReel(arr, name, true, one ? nextOne(arr, one) : undefined); }; wait(); return; }
     $('reelVid').src = url; $('reelDl').href = url; $('reelDl').download = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '.' + ext;
-    $('vNote').textContent = P.voice ? 'AI voice: ' + P.voice + '. Check the audio before posting.' : P.note;
+    $('vNote').textContent = (P.voice ? 'AI voice (' + (P.src || '') + '). Check the audio before posting.' : P.note) + (mic && micPeak < 0.02 ? ' WARNING: the microphone captured almost no sound, so this video has no voice. Check the mic permission and volume.' : '') + (CFG.autoDl ? ' Saved automatically' + (BATCH.done > 1 ? ' (' + BATCH.done + ' videos in this run).' : '.') : '');
     cv.style.display = 'none'; $('reelLive').style.display = 'none'; $('reelDone').style.display = 'flex'; fillMeta(P, name, true);
-    if (!shuffle) { try { localStorage.setItem(key, String((pos + qs.length) % arr.length)); } catch (e) {} }
   };
-  rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1;
+  rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1, spokeQ = -1, spokeA = -1;
   if (AC && dest) P.audio.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + 0.5); RC.srcs.push(src); });
+  if (AC && dest) P.audioA.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + P.Ss[k] + 0.6); RC.srcs.push(src); });
   const loop = () => {
-    if (!RC) return; const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
-    if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi]; if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
-    reelMsg(r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording');
+    if (!RC) return;
+    if (micAn) { micBuf = micBuf || new Uint8Array(micAn.fftSize); micAn.getByteTimeDomainData(micBuf); let pk = 0; for (let i = 0; i < micBuf.length; i++) pk = Math.max(pk, Math.abs(micBuf[i] - 128) / 128); micPeak = Math.max(micPeak, pk); RC.mlev = pk; } const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
+    if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi];
+      if (P.dev) { if (r.lt >= 0.5 && r.lt < Sq && spokeQ !== r.seg.qi) { spokeQ = r.seg.qi; speak(speechText(P.qs[r.seg.qi]), null, true); } if (r.lt >= Sq + 0.6 && spokeA !== r.seg.qi) { spokeA = r.seg.qi; speak(ansText(P.qs[r.seg.qi]), null, true); } } if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
+    reelMsg((r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording') + (BATCH.total > 1 ? ' \u00b7 video ' + (BATCH.done + 1) + ' of ' + BATCH.total : '') + (!P.voice && !CFG.mic && !P.dev ? ' \u00b7 no voice' : '') + (micAn ? ' \u00b7 mic ' + (RC.mlev > 0.04 ? 'hearing sound' : 'quiet') : ''));
     if (t >= P.total) { rec.stop(); return; } RC.raf = requestAnimationFrame(loop);
   };
   loop();
 }
-function cancelReel() { if (RC && RC.rec) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else if (RC) RC.cancelled = true; else $('reel').style.display = 'none'; if (RC && RC.prep) $('reel').style.display = 'none'; }
+function cancelReel() { BATCH.left = 0; if (RC && RC.rec) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else if (RC) RC.cancelled = true; else $('reel').style.display = 'none'; if (RC && RC.prep) $('reel').style.display = 'none'; }
 function closeReel() { $('reel').style.display = 'none'; $('reelVid').removeAttribute('src'); }
 
 /* ============ title and description ============ */
@@ -815,6 +1242,7 @@ const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart
 const snip = t => t.replace(/\s+/g, ' ').trim().slice(0, 55) + (t.length > 55 ? '…' : '');
 const chapters = P => '0:00 Intro\n' + P.segs.filter(s => s.type === 'q').map(s => fmtT(s.start) + ' Q' + (s.qi + 1) + ' ' + snip(P.qs[s.qi].q)).join('\n');
 function templateMeta(P, name) {
+  if (P.qs.length === 1) { const q = P.qs[0], ex = (CFG.exam || 'MP Patwari').trim(), tags = ['#' + ex.replace(/[^A-Za-z0-9]/g, ''), '#MPPEB', '#GovtExam', '#Quiz', '#DailyQuiz', '#Shorts'].concat(TAGS[P.subjId] || []); return {title: 'Can You Answer This ' + P.subj + ' Question? | ' + ex, desc: q.q.replace(/\s+/g, ' ').trim() + '\n\nComment your answer, then watch the reveal.\n' + (P.handle ? 'Follow ' + P.handle + ' for a new question every day.\n' : '') + '\n' + tags.join(' ')}; }
   const n = P.qs.length, exam = (CFG.exam || 'MP Patwari').trim(), sj = P.subj, tp = (name && name !== 'All') ? name : '';
   const titles = [n + ' ' + sj + ' Questions That Decide Your Selection | ' + exam, 'Can You Solve All ' + n + '? ' + sj + ' Quiz | ' + exam, sj + (tp ? ' ' + tp : ' Practice') + ' Quiz: ' + n + ' PYQs | ' + exam];
   let title = titles[(new Date().getDate() + n) % 3]; if (title.length > 95) title = titles[0].slice(0, 95);
