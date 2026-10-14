@@ -1,234 +1,1028 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nirvesh - Visual Designer</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link id="theme-style" rel="stylesheet" href="light-theme.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Daily Quiz</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2B3A67">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+@font-face{font-family:Poppins;font-weight:500;src:url(fonts/poppins-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Poppins;font-weight:600;src:url(fonts/poppins-latin-600-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Poppins;font-weight:700;src:url(fonts/poppins-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Poppins;font-weight:500;src:url(fonts/poppins-devanagari-500-normal.woff2) format("woff2");unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+25CC,U+A830-A839,U+A8E0-A8FF;font-display:swap}
+@font-face{font-family:Poppins;font-weight:600;src:url(fonts/poppins-devanagari-600-normal.woff2) format("woff2");unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+25CC,U+A830-A839,U+A8E0-A8FF;font-display:swap}
+@font-face{font-family:Poppins;font-weight:700;src:url(fonts/poppins-devanagari-700-normal.woff2) format("woff2");unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+25CC,U+A830-A839,U+A8E0-A8FF;font-display:swap}
+:root{
+  --ink:#10192F; --ink2:#3C4763; --mute:#6E7893; --line:rgba(16,25,47,.10); --card:#fff;
+  --blue:#2F6BFF; --hi:#FFE27A; --red:#D93F36; --green:#1F9D6B;
+  --glass:rgba(255,255,255,.72);
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Google Sans","Segoe UI",Roboto,system-ui,sans-serif;
+  --stage:"Poppins","Noto Sans Devanagari","Segoe UI",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(16,25,47,.05),0 12px 32px -14px rgba(16,25,47,.25);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;background:#EEF2FA}
+body{min-height:100vh;display:flex;justify-content:center}
+.bg{position:fixed;inset:0;z-index:-1;opacity:0;transition:opacity .8s ease}
+.bg.on{opacity:1}
+#app{width:100%;max-width:480px;padding:max(16px,env(safe-area-inset-top)) 16px 28px;display:flex;flex-direction:column;min-height:100vh}
+button{font-family:inherit;cursor:pointer;color:inherit;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hide{display:none!important}
+svg.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* large-title screens */
+.navbar{display:flex;align-items:center;justify-content:space-between;min-height:40px;margin-bottom:4px}
+.title{font-size:34px;font-weight:700;letter-spacing:-.8px;margin:6px 0 2px}
+.sub{font-size:15px;color:var(--mute);margin:0 0 18px}
+.circle{width:40px;height:40px;border-radius:50%;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;place-items:center;font-size:20px;box-shadow:0 1px 2px rgba(16,25,47,.08);transition:transform .12s,opacity .2s}
+.circle:active{transform:scale(.92)}
+.circle:disabled{opacity:.3}
+.circle.sm{width:36px;height:36px;font-size:18px}
+.chipbtn{height:34px;padding:0 14px;border-radius:17px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(16,25,47,.08)}
+.chipbtn.on{background:var(--ink);color:#fff}
+.chipbtn.pri{background:var(--blue);color:#fff}
+
+/* grouped lists */
+.group{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.group+.group{margin-top:20px}
+.ghead{font-size:13px;color:var(--mute);font-weight:600;margin:22px 8px 8px}
+.cell{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 16px;font-size:17px;font-weight:500;min-height:56px;position:relative;transition:background .15s}
+.cell+.cell::before{content:"";position:absolute;left:62px;right:0;top:0;height:1px;background:var(--line)}
+.cell.plain+.cell.plain::before{left:16px}
+button.cell:active{background:rgba(16,25,47,.05)}
+.cell.off{opacity:.4;pointer-events:none}
+.cell .tile{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:19px;font-weight:700;color:#fff;flex:none}
+.cell .lab{flex:1;min-width:0}
+.cell .cnt{color:var(--mute);font-size:15px;font-variant-numeric:tabular-nums}
+.cell .chev{color:#B4BBCD;font-size:16px}
+.cell .vsub{display:block;font-size:12px;color:var(--mute);font-weight:400;margin-top:1px}
+
+/* controls */
+.seg{display:inline-flex;background:rgba(118,126,153,.14);border-radius:9px;padding:2px;gap:1px}
+.seg button{padding:6px 12px;border-radius:7px;font-size:14px;font-weight:600;color:var(--ink2);transition:background .15s,color .15s,box-shadow .15s}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(16,25,47,.18)}
+.switch{width:51px;height:31px;border-radius:16px;background:rgba(118,126,153,.3);position:relative;transition:background .2s;flex:none}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:transform .2s}
+.switch.on{background:#34C759}
+.switch.on::after{transform:translateX(20px)}
+input[type=text],select{font:inherit;font-size:15px;color:var(--ink);background:rgba(118,126,153,.14);border:0;border-radius:9px;padding:8px 10px;max-width:58%;min-width:0}
+.note{font-size:12.5px;color:var(--mute);line-height:1.5;margin:8px 10px 0}
+
+/* quiz */
+#quiz{display:flex;flex:1;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.progress{flex:1;min-width:0}
+.progress .lbl{font-size:13px;font-weight:600;color:var(--ink2);text-align:center;margin-bottom:5px;font-variant-numeric:tabular-nums}
+.track{height:5px;background:rgba(16,25,47,.1);border-radius:3px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--ink);border-radius:3px;transition:width .35s}
+.paper{background:var(--card);border-radius:26px;box-shadow:var(--shadow);padding:18px 20px 22px;font-family:var(--stage)}
+.paper.enter{animation:rise .42s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.tag{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:500;color:var(--mute);margin-bottom:12px;flex-wrap:wrap}
+.tag .sj{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;border-radius:9px;padding:3px 10px 3px 8px;font-weight:600}
+.tag .badge{font-size:11px;font-weight:600;color:#6B5A00;background:var(--hi);border-radius:6px;padding:1px 7px}
+.q{font-weight:600;line-height:1.45;min-height:130px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word;color:var(--ink)}
+.q.mc{min-height:70px}
+.opts{display:none;flex-direction:column;gap:8px;margin-top:12px}
+.opts.on{display:flex}
+.opt{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:#F2F5FB;border:1.5px solid var(--line);font-weight:500;font-size:17px;line-height:1.3;transition:background .3s,color .3s,opacity .3s}
+.opt b{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:14px;flex:none}
+.opt.right{background:var(--ink);color:#fff;border-color:var(--ink)}
+.opt.right b{background:#9FE3B8;color:var(--ink)}
+.opt.dim{opacity:.35}
+.hint{display:none;margin-top:12px;padding:10px 14px;border-radius:14px;background:var(--hi);text-align:center;font-weight:700;letter-spacing:5px;font-size:24px;word-break:break-word;animation:pop .3s ease-out}
+.hint.show{display:block}
+.hint small{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;letter-spacing:0;font-weight:600;color:#6B5A00;margin-bottom:2px}
+.mid{min-height:128px;display:flex;align-items:center;justify-content:center;margin-top:12px}
+.ring{position:relative;width:92px;height:92px;opacity:.16;transition:opacity .3s}
+.ring.urgent{opacity:.42}
+.ring svg{transform:rotate(-90deg);display:block;width:92px;height:92px}
+.ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:600;font-variant-numeric:tabular-nums}
+#arc{stroke:var(--ink);transition:stroke-dashoffset 1s linear,stroke .2s}
+.ring.urgent #arc{stroke:var(--red)}
+.ring.urgent .n{color:var(--red)}
+.ans{display:none;width:100%;border-radius:20px;padding:16px 16px 18px;background:var(--ink);color:#fff;font-weight:700;line-height:1.35;text-align:center;word-break:break-word;animation:bounce .55s cubic-bezier(.2,1.4,.4,1)}
+@keyframes bounce{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.05);opacity:1}100%{transform:none}}
+.opt.right{animation:bounce .55s cubic-bezier(.2,1.4,.4,1)}
+.ans.mc{font-weight:500}
+.ans small{display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px;font-weight:600;color:#9FE3B8;margin-bottom:6px}
+.ctrl{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;min-height:44px}
+.ctrl .mid2{flex:1;display:flex;justify-content:center}
+#showBtn{display:none;height:40px;padding:0 20px;border-radius:20px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:15px;font-weight:600;color:var(--ink2);align-items:center;gap:8px;box-shadow:0 1px 2px rgba(16,25,47,.1)}
+.side{margin-top:16px;text-align:center}
+#edBox{display:none;margin-top:10px;text-align:left}
+#edBox textarea{width:100%;min-height:96px;font:inherit;font-size:15px;line-height:1.45;border:0;border-radius:14px;padding:12px;color:var(--ink);background:var(--glass);resize:vertical}
+#edBox .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#edBox small{display:block;margin-top:8px;color:var(--ink2);font-size:12px;line-height:1.4}
+.keys{font-size:12px;color:var(--ink2);margin-top:12px;line-height:1.5;opacity:.8}
+
+/* export overlay */
+#reel{overflow:auto;position:fixed;inset:0;background:rgba(16,25,47,.92);display:none;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;z-index:20;padding:16px;color:#fff}
+#reel>*{margin-top:auto;margin-bottom:auto}
+#reelCv{height:72vh;max-width:100%;aspect-ratio:9/16;border-radius:14px;background:#fff}
+#reelLive{display:flex;align-items:center;gap:14px;font-size:15px}
+#reelDone{display:none;flex-direction:column;align-items:center;gap:14px}
+#reelVid{height:min(72vh,640px);max-width:100%;border-radius:14px;background:#000}
+#metaBox{background:#fff;color:var(--ink);border-radius:18px;padding:14px;width:min(100%,420px);display:flex;flex-direction:column;gap:8px}
+#metaBox h3{margin:0;font-size:16px}
+#metaBox input,#metaBox textarea{font:inherit;font-size:14px;width:100%;max-width:100%;border:0;border-radius:10px;padding:9px 10px;color:var(--ink);background:rgba(118,126,153,.14)}
+#metaBox textarea{min-height:170px;resize:vertical;line-height:1.45}
+#metaBox .acts,#reelDone .acts{display:flex;gap:8px;flex-wrap:wrap}
+#mSrc{font-size:12px;color:var(--mute)}
+#err{color:var(--red);font-size:13px;margin-top:10px}
+
+@media (min-width:720px){
+  #app{max-width:680px}
+  #topicList{display:grid;grid-template-columns:1fr 1fr}
+  #topicList .cell:nth-child(2n)::before{left:0}
+}
+@media (min-width:900px){#reelDone{flex-direction:row;align-items:flex-start;gap:24px}}
+@media (min-width:1000px){
+  #app{max-width:1040px;padding-top:28px}
+  #home:not(.hide){display:grid;grid-template-columns:1fr 400px;column-gap:32px;align-items:start}
+  #home .navbar,#home .title,#home .sub{grid-column:1/-1}
+  #home .settings .ghead:first-child{margin-top:0}
+  #topicList{grid-template-columns:1fr 1fr 1fr}
+  #quiz:not(.hide){display:grid;grid-template-columns:minmax(0,540px) 320px;column-gap:32px;justify-content:center;align-content:start}
+  #quiz>.topbar,#quiz>.paper,#quiz>.ctrl{grid-column:1}
+  #quiz>.side{grid-column:2;grid-row:1/5;align-self:start;margin-top:0;padding-top:54px}
+  .q{min-height:190px}
+  #quiz>.tbar{grid-column:1}
+}
+
+/* ===== warm scenic theme ===== */
+:root{--ink:#1D2433;--ink2:#4A5368;--mute:#6F7686;--line:rgba(29,36,51,.10);--card:#FBF8EF;--acc:#2F6BFF;--hi:#FFC815;--shadow:0 1px 2px rgba(40,20,0,.08),0 16px 36px -14px rgba(40,20,0,.45)}
+html{background:#2B3A67}
+body{background:transparent}
+.title{color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.4)}
+.sub,.ghead,.note,.keys,#prog{color:rgba(255,255,255,.92);text-shadow:0 1px 8px rgba(0,0,0,.5)}
+#topics>.cell.plain .lab{color:#fff!important;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.seg button.on{background:#FFC815;color:#1A1A1A}
+.chipbtn.on{background:var(--acc);color:#fff}
+.track{background:rgba(255,255,255,.3)}
+.track i{background:#FFC815}
+.tbar{position:relative;height:28px;border-radius:14px;background:rgba(255,255,255,.35);overflow:hidden;margin-bottom:14px}
+.tbar i{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:14px;background:hsl(150 90% 50%);box-shadow:0 2px 8px rgba(0,0,0,.25);transition:width 1s linear}
+.tbar span{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font:800 14px var(--stage);color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
+#ring{display:none!important}
+.paper{position:relative;margin-top:26px;padding-top:30px;border-radius:26px}
+.paper::before{content:"QUESTION";position:absolute;left:12px;top:-22px;background:#FFC815;color:#1A1A1A;font:800 italic 17px var(--stage);letter-spacing:.3px;padding:7px 20px;clip-path:polygon(0 18%,3% 0,50% 8%,97% 0,100% 45%,98% 100%,50% 92%,2% 100%);transform:rotate(-2deg)}
+@keyframes rise{0%{opacity:0;transform:translateY(28px) scale(.95)}60%{opacity:1;transform:translateY(-4px) scale(1.01)}100%{transform:none}}
+.tag .sj{background:var(--acc);color:#fff}
+.q{font-weight:700}
+.opt{background:#F3EEE0;border-color:#DDD5BE}
+.opt b{background:var(--acc);color:#fff}
+.opt.right{background:#2E9E5B;color:#fff;border-color:#2E9E5B;box-shadow:0 8px 20px -8px rgba(46,158,91,.8)}
+.opt.right b{background:#fff;color:#2E9E5B}
+.hint{background:#FFF1B8;border:2px solid #E3B100;color:#2B2200}
+.hint small{color:#7A5A00}
+.ans{background:#D8F3DF;border:2px solid #2E9E5B;color:#0F3D24;margin-top:10px}
+.ans small{display:flex;width:fit-content;margin:0 auto 8px;background:#1F7A45;color:#fff;padding:3px 16px;border-radius:4px;transform:skewX(-8deg);font-weight:800;letter-spacing:.3px}
+.cta{display:flex;align-items:center;gap:10px;color:#3A2F00;font-weight:700;font-size:18px;padding:12px 22px;border:2px solid #E0A800;border-radius:30px;background:#FFF3C4}
+.emblem{position:absolute;right:14px;top:-34px;width:68px;height:68px;border-radius:50%;background:#FFFDF5;border:4px solid #FFC815;display:grid;place-items:center;color:var(--acc);box-shadow:0 8px 18px -6px rgba(40,20,0,.5);font-size:36px;animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+.emblem svg{width:1em;height:1em;stroke-width:1.9}
+.q{min-height:96px}
+.mid{min-height:132px;margin-top:10px}
+.hint.gone{visibility:hidden}
+.tbar b{display:none;position:absolute;left:12px;top:0;bottom:0;display:flex;align-items:center;font:800 14px var(--stage);color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;z-index:1}
+#recTools{position:fixed;top:max(8px,env(safe-area-inset-top));right:8px;display:flex;gap:6px;z-index:30;opacity:.3;transition:opacity .2s}
+#recTools:hover,#recTools:active{opacity:.95}
+#recTools button{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.7);display:grid;place-items:center;font-size:16px;color:#1D2433}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(20,16,38,.92);color:#fff;font-size:14px;line-height:1.4;padding:10px 16px;border-radius:14px;max-width:min(90vw,380px);text-align:center;z-index:40;display:none}
+body.rec{overflow:hidden}
+body.rec .tbar b{display:flex}
+body.rec #app{max-width:min(100vw,calc(100dvh * 9 / 16));height:100dvh;min-height:0;padding:max(5dvh,env(safe-area-inset-top)) 14px max(12dvh,env(safe-area-inset-bottom))}
+body.rec #quiz{height:100%;justify-content:center}
+body.rec #quiz>.topbar,body.rec #quiz>.side,body.rec #prev,body.rec #next,body.rec .navbar{display:none!important}
+body.rec .ctrl{min-height:0;margin-top:10px;justify-content:center}
+body.rec .paper{padding-bottom:26px}
+@media (min-width:1000px){body.rec #quiz:not(.hide){display:flex}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
-
 <body>
-  <header class="hero text-white text-center">
-    <div class="container">
-      <h1>NIRVESH VERMA</h1>
-      <p id="designation">Visual Designer | Software Engineer</p>
-      <div class="social-icons">
-        <a href="https://www.twitter.com/nirveshverma" target="_blank"><i class="fab fa-twitter"></i></a>
-        <a href="https://www.linkedin.com/in/nirveshverma" target="_blank"><i class="fab fa-linkedin"></i></a>
-        <a href="https://www.github.com/Amanush" target="_blank"><i class="fab fa-github"></i></a>
-       <a href="https://www.behance.net/nirveshverma" target="_blank"><i class="fab fa-behance"></i></a>
-      </div>
-      <div class="container text-center text-light">
-       <!--- https://github.com/Amanush/nirveshverma.github.io/blob/main/Resume_2023.pdf--->
-        
-        <a href="https://github.com/Amanush/nirveshverma.github.io/blob/main/resume-nirvesh_verma.pdf" 
-        class="btn  btn-lg bg-dark text-white" style="margin-top:5rem;">Download Resume PDF</a>
-      </div>
-       
+<div class="bg" id="bgA"></div><div class="bg" id="bgB"></div>
+<div id="app">
 
-      
+<div id="home">
+  <div class="navbar"><span></span></div>
+  <div class="title">Daily Quiz</div>
+  <p class="sub">Choose a subject to practise or record.</p>
+  <div>
+    <div class="group" id="subjects"></div>
+  </div>
+  <div class="settings">
+    <div class="ghead">Playback</div>
+    <div class="group">
+      <div class="cell plain"><span class="lab">Timer, seconds</span><div class="seg" id="sTimer"></div></div>
+      <div class="cell plain"><span class="lab">Maths timer, seconds</span><div class="seg" id="sMath"></div></div>
+      <div class="cell plain"><span class="lab">Hint</span><div class="seg" id="sHint"></div></div>
+      <div class="cell plain"><span class="lab">Skip questions that need options</span><div class="switch" id="sSkip"></div></div>
+      <div class="cell plain"><span class="lab">Auto-play</span><div class="switch" id="sAuto"></div></div>
+      <div class="cell plain"><span class="lab">Tick sound every second + reveal chime</span><div class="switch" id="sBeep"></div></div>
+    </div>
+    <div class="ghead">Device voice (play live only)</div>
+    <div class="group">
+      <div class="cell plain"><span class="lab">Read question aloud</span><div class="switch" id="sVoice"></div></div>
+      <div class="cell plain"><span class="lab">Change voice every question</span><div class="switch" id="sVary"></div></div>
+      <div class="cell plain"><span class="lab">English voice</span><select id="selEn"></select></div>
+      <div class="cell plain"><span class="lab">Hindi voice</span><select id="selHi"></select></div>
+      <div class="cell plain"><span class="lab">Hear a sample</span><button class="chipbtn" onclick="testVoice()">Play</button></div>
+    </div>
+    <div class="ghead">Video export</div>
+    <div class="group">
+      <div class="cell plain"><span class="lab">Questions per video</span><div class="seg" id="sReel"></div></div>
+      <div class="cell plain"><span class="lab">Videos in a row<span class="vsub">Recorded back to back, no tapping in between</span></span><div class="seg" id="sBatch"></div></div>
+      <div class="cell plain"><span class="lab">Save each video automatically<span class="vsub">Also saves a title and description text file</span></span><div class="switch" id="sAutoDl"></div></div>
+      <div class="cell plain"><span class="lab">AI voice in video<span class="vsub">A different voice each video</span></span><div class="switch" id="sAiv"></div></div>
+      <div class="cell plain"><span class="lab">Test AI voice<span class="vsub">Plays a sample and shows which service works</span></span><button class="chipbtn" onclick="testAiVoice()">Test</button></div>
+      <div class="cell plain"><span class="lab">Record my microphone</span><div class="switch" id="sMic"></div></div>
+      <div class="cell plain"><span class="lab">AI title and description</span><div class="switch" id="sAi"></div></div>
+      <div class="cell plain"><span class="lab">Exam name</span><input id="inExam" type="text" placeholder="MP Patwari" maxlength="30"></div>
+      <div class="cell plain"><span class="lab">Channel name</span><input id="inHandle" type="text" placeholder="@yourchannel" maxlength="40"></div>
+    </div>
+    <p class="note">The device voice cannot be recorded into a video. AI voice and your microphone can.</p>
+  </div>
+</div>
+
+<div id="topics" class="hide">
+  <div class="navbar"><button class="circle" onclick="showHome()" aria-label="Back" data-ic="chevL"></button><span class="chipbtn" id="tSubj"></span></div>
+  <div class="title">Choose a topic</div>
+  <div class="cell plain" style="padding:0 0 14px;min-height:0"><span class="lab" style="font-size:15px;color:var(--mute)">What to do</span><div class="seg" id="sMode"></div></div>
+  <div class="group" id="topicList"></div>
+</div>
+
+<div id="quiz" class="hide">
+  <div class="topbar">
+    <button class="circle" onclick="showTopics()" aria-label="Back" data-ic="chevL"></button>
+    <div class="progress"><div class="lbl" id="prog"></div><div class="track"><i id="trk"></i></div></div>
+    <button class="circle" id="shufBtn" onclick="toggleShuffle()" aria-label="Shuffle" data-ic="shuffle"></button>
+    <button class="circle" id="recBtn" onclick="enterRec()" aria-label="Recording mode" data-ic="rec"></button>
+  </div>
+  <div class="tbar" aria-hidden="true"><i id="tfill"></i><b id="tcnt"></b><span id="tnum"></span></div>
+  <div class="paper">
+    <div class="emblem" id="emblem" aria-hidden="true"></div>
+    <div class="tag" id="tag"></div>
+    <div class="q" id="qText"></div>
+    <div class="opts" id="opts"></div>
+    <div class="hint" id="hint"></div>
+    <div class="mid">
+      <div class="cta" id="cta"><span data-ic="chat"></span>Comment your answer!</div>
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 116 116"><circle cx="58" cy="58" r="51" fill="none" stroke="#E4E9F3" stroke-width="8"/><circle id="arc" cx="58" cy="58" r="51" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="320.4" stroke-dashoffset="0"/></svg>
+        <div class="n" id="num">7</div>
+      </div>
+      <div class="ans" id="ans"><small><span data-ic="check"></span><span id="ansLbl">Answer</span></small><span id="ansT"></span></div>
     </div>
   </div>
-</section>
-
-
+  <div class="ctrl">
+    <button class="circle sm" id="prev" onclick="step(-1)" aria-label="Previous" data-ic="chevL"></button>
+    <div class="mid2"><button id="showBtn" onclick="reveal()"><span data-ic="eye"></span>Show answer</button></div>
+    <button class="circle sm" id="next" onclick="step(1)" aria-label="Next" data-ic="chevR"></button>
+  </div>
+  <div class="side">
+    <button class="chipbtn" onclick="toggleEdit()"><span data-ic="pencil"></span>Rewrite question</button>
+    <div id="edBox">
+      <textarea id="edTa" placeholder="Rewrite so it makes sense without options"></textarea>
+      <div class="acts"><button class="chipbtn pri" onclick="saveEdit()">Save</button><button class="chipbtn" onclick="resetEdit()">Restore</button><button class="chipbtn" onclick="exportJson()">Download JSON</button></div>
+      <small id="edInfo"></small>
     </div>
-  </header>
+    <div class="keys">Space shows the answer, then moves on. Arrow keys move between questions.</div>
+  </div>
+</div>
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark"  id="navbar">
-    <div class="container" >
-      <a class="navbar-brand text-uppercase font-weight-bold" href="#">Nirvesh Verma</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link text-uppercase font-weight-bold" href="#skills">Skills</a>
-          </li>
-          <li class="nav-item ">
-            <a class="nav-link text-uppercase font-weight-bold" href="#experience">Experience</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-uppercase font-weight-bold" href="#projects">Basic Projects</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-uppercase font-weight-bold" href="#resume">Download Resume</a>
-          </li>
-        </ul>
-
+<div id="reel">
+  <canvas id="reelCv"></canvas>
+  <div id="reelLive"><span id="reelMsg"></span><button class="chipbtn" onclick="cancelReel()">Stop</button></div>
+  <div id="reelDone"><video id="reelVid" controls playsinline></video>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center"><div id="vNote" style="font-size:13px;opacity:.85;text-align:center"></div>
+      <div id="metaBox"><h3>Title and description</h3>
+        <input id="mTitle" type="text" aria-label="Video title">
+        <textarea id="mDesc" aria-label="Video description"></textarea>
+        <span id="mSrc"></span>
+        <div class="acts"><button class="chipbtn" onclick="copyEl('mTitle',this)">Copy title</button><button class="chipbtn" onclick="copyEl('mDesc',this)">Copy description</button><button class="chipbtn" onclick="regenMeta()">Rewrite with AI</button></div>
       </div>
-    </div>
-  </nav>
-
-<!-- Skills Section -->
-<section id="skills" class="py-5">
-  <div class="container">
-    <h2 class="text-center mb-4" style="font-size: 48px;">Skills</h2>
-    <div class="row">
-      <div class="col-md-3" style="text-align: center;">
-        <h4>Graphic Design</h4>
-        <ul class="custom-list text-muted" >
-          <li>Adobe Photoshop</li>
-          <li>Adobe Illustrator</li>
-          <li>Adobe XD</li>
-          <li>FIGMA</li>
-          <li>Adobe Premier Pro</li>
-          <li>Filmora Wondershare</li>
-          <li>Corel Draw</li>
-
-        </ul>
-      </div>
-      <div class="col-md-3"  style="text-align: center;">
-        <h4>Front-end</h4>
-        <ul class="custom-list text-muted">
-          <li>HTML</li>
-          <li>CSS</li>
-          <li>JavaScript</li>
-          <li>React Js</li>
-          <li>Redux</li>
-          <li>SASS</li>
-          <li>BootStrap</li>
-        </ul>
-      </div>
-      <div class="col-md-3" style="text-align: center;">
-        <h4>Back-end</h4>
-        <ul class="custom-list text-muted">
-          <li>Node.js</li>
-          <li>Express.js</li>
-          <li>Mongo DB</li>
-          <li>Postgresql</li>
-          <li>Python</li>
-
-
-        </ul>
-      </div>
-      <div class="col-md-3" style="text-align: center;">
-        <h4>DevOps & Misc</h4>
-        <ul class="custom-list text-muted">
-          <li>Git</li>
-          <li>Jenkins</li>
-          <li>Docker</li>
-          <li>Linux</li>
-          <li>Bash</li>
-          <li>MS Excel</li>
-          <li>MS Access</li>
-          <li>MS Word</li>
-          <li>MS Powerpoint</li>
-
-        </ul>
-      </div>
-
-      </div>
+      <div class="acts"><a id="reelDl" class="chipbtn pri" style="text-decoration:none">Download video</a><button class="chipbtn pri" onclick="nextVideo()">Next video</button><button class="chipbtn" onclick="closeReel()">Done</button></div>
     </div>
   </div>
-</section>
+</div>
+<canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
+<div id="recTools" class="hide"><button onclick="toggleFs()" aria-label="Full screen" data-ic="fs"></button><button onclick="exitRec()" aria-label="Exit recording mode" data-ic="close"></button></div>
+<div id="toast"></div>
+<div id="err"></div>
+</div>
+<script>
+/* ============ config ============ */
+const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 1, batch: 1, autoDl: true, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
+let CFG = Object.assign({}, DEF);
+try { Object.assign(CFG, JSON.parse(localStorage.getItem('qr_cfg') || '{}')); } catch (e) {}
+const saveCfg = () => { try { localStorage.setItem('qr_cfg', JSON.stringify(CFG)); } catch (e) {} };
+if ((CFG.cfgv || 0) < 2) { CFG.reelN = 1; CFG.cfgv = 2; saveCfg(); }
+const $ = id => document.getElementById(id);
+let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, aux = null, shuffle = false, AC = null, RC = null;
 
-<!-- Experience Section -->
-<section id="experience" class="bg-light py-5">
-  <div class="container">
-    <h2 class="text-center mb-4">Experience</h2>
+/* ============ icons ============ */
+const IC = {
+  chevL: 'M15 5l-7 7 7 7', chevR: 'M9 5l7 7-7 7', eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  shuffle: 'M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5', check: 'M4.5 12.5l5 5 10-11',
+  bulb: 'M9 18h6M10 21.5h4M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.6.5.8 1.2.8 1.7h6c0-.5.2-1.2.8-1.7A6.5 6.5 0 0 0 12 2.5z',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3.2 2', help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.3 9.3a2.8 2.8 0 1 1 4 2.5c-.9.5-1.3 1.1-1.3 2M12 17.2h.01',
+  flask: 'M9.5 3h5M10.5 3v6.2L4.6 19a2 2 0 0 0 1.7 3h11.4a2 2 0 0 0 1.7-3l-5.9-9.8V3M7.5 15h9',
+  monitor: 'M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 21h8M12 17v4',
+  calc: 'M7 2.5h10a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-15a2 2 0 0 1 2-2zM8.5 6.5h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h.01M15.5 18h.01',
+  target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM12 11.5h.01',
+  chat: 'M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', pencil: 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4',
+  list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', layers: 'M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5'
+};
+const svg = n => '<svg class="ic" viewBox="0 0 24 24"><path d="' + IC[n] + '"/></svg>';
+/* ============ vector emblems: picked from the question's own words, drawn offline ============ */
+const VEC = {
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
+  atom: 'M12 12h.01M2.5 12A9.5 3.6 0 1 0 21.5 12 9.5 3.6 0 1 0 2.5 12M7.25 3.77A9.5 3.6 60 1 0 16.75 20.23 9.5 3.6 60 1 0 7.25 3.77M7.25 20.23A9.5 3.6 120 1 0 16.75 3.77 9.5 3.6 120 1 0 7.25 20.23',
+  dna: 'M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9M9 6.5h6M9 12h6M9 17.5h6',
+  leaf: 'M5 19c0-9 5-14 15-14 0 10-5 15-14 15M5 19l8-8', tree: 'M12 22v-7M12 15c-5 0-7-4-5-7-2-3 0-6 3-6 1-1 3-1 4 0 3 0 5 3 3 6 2 3 0 7-5 7z',
+  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8',
+  moon: 'M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z',
+  planet: 'M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM3.2 15.5c-1.2-2 3-6 9-8.5s10-2.7 9-.7M20.8 8.5c1.2 2-3 6-9 8.5s-10 2.7-9 .7',
+  rocket: 'M12 2c4 2 6 6 5 11l-3 3h-4l-3-3C6 8 8 4 12 2zM9 16l-2 5 4-2M15 16l2 5-4-2M12 8h.01',
+  bolt: 'M13 2L4 14h7l-1 8 9-12h-7l1-8z', magnet: 'M6 3v8a6 6 0 0 0 12 0V3h-4v8a2 2 0 0 1-4 0V3H6zM6 7h4M14 7h4',
+  fire: 'M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z', drop: 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z',
+  waves: 'M3 8c3-3 6 3 9 0s6 3 9 0M3 13c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0', mountain: 'M3 19l6-11 4 6 3-4 5 9H3zM8 11l1.2 2',
+  book: 'M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-17zM4 19.5A2.5 2.5 0 0 1 6.5 17H20M9 7h7',
+  feather: 'M20 4c-7 0-13 5-13 12l-3 4M20 4c0 7-5 12-12 12M10 14h6', letterA: 'M5 20L12 4l7 16M8 14h8',
+  keyboard: 'M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10',
+  mouse: 'M12 2a6 6 0 0 0-6 6v8a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6zM12 2v7', folder: 'M3 6a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z',
+  file: 'M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v5h5M8 13h8M8 17h8',
+  chip: 'M7 7h10v10H7zM10 10h4v4h-4zM9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4', wifi: 'M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01',
+  lock: 'M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4M12 15v2', mail: 'M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM2.5 6.5l9.5 7 9.5-7',
+  calendar: 'M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM3 10h18M8 2v4M16 2v4', rupee: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 8h7M8.5 11h7M9 8c4 0 5 4 0 4l5 4',
+  bank: 'M3 9l9-6 9 6H3zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18M3 18.5h18', flag: 'M5 21V3M5 4h13l-2.5 4 2.5 4H5', crown: 'M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z',
+  scales: 'M12 3v18M7 21h10M4 7h16M4 7l-2.5 7a3.5 3 0 0 0 5 0L4 7zM20 7l-2.5 7a3.5 3 0 0 0 5 0L20 7z', map: 'M3 6l6-2.5 6 2.5 6-2.5v14.5L15 20.5 9 18 3 20.5V6zM9 3.5V18M15 6v14.5',
+  compass: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5 5-2z', temple: 'M12 2v2.5M7 11a5 5 0 0 1 10 0M5 11h14M6.5 11v10M17.5 11v10M10 21v-5a2 2 0 0 1 4 0v5M3 21h18',
+  people: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16.5 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6 6 0 0 1 3.5 6', heart: 'M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z',
+  brain: 'M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3V4zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3V4z', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20.5 20.5L16 16',
+  camera: 'M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z',
+  music: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z', trophy: 'M8 3h8v6a4 4 0 0 1-8 0V3zM8 5H4v1a4 4 0 0 0 4 4M16 5h4v1a4 4 0 0 1-4 4M12 13v4M8 21h8M9.5 17h5',
+  wrench: 'M14.7 6.3a4 4 0 0 0 5 5l-9 9a2.1 2.1 0 0 1-3-3l9-9a4 4 0 0 0-2-2z', triangle: 'M3 20L12 4l9 16H3zM8 20v-3M12 20v-3M16 20v-3', chart: 'M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-8M20 16v-3',
+  percent: 'M19 5L5 19M7.5 4a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM16.5 13a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z', pi: 'M4 6h16M8 6v13M16 6c0 8 0 11 3 13',
+  code: 'M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16', cloud: 'M7 18a4.5 4.5 0 0 1-.5-9A6 6 0 0 1 18 10a4 4 0 0 1-.5 8H7z', sword: 'M20 3l-9 9M20 3v5M20 3h-5M11 12l-6 6M5 18l-2 3 3-2M9 14l2 2',
+  speaker: 'M4 9h4l5-4v14l-5-4H4V9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11', paw: 'M12 13c-3 0-5 2.5-5 4.5 0 1.7 1.5 2.5 3 2.5 1 0 1.5-.5 2-.5s1 .5 2 .5c1.5 0 3-.8 3-2.5 0-2-2-4.5-5-4.5zM5.5 10m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M9 6.5m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M15 6.5m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0M18.5 10m-1.8 0a1.8 2.4 0 1 0 3.6 0a1.8 2.4 0 1 0-3.6 0',
+  close: 'M6 6l12 12M18 6L6 18', fs: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5', rec: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0'
+};
+Object.assign(IC, VEC);
+// [english words, Hindi fragments, icon] - first match wins; topic and question text are searched
+const VRULES = [
+  ['direction|north|south|east|west|compass', 'दिशा|उत्तर दिशा|दक्षिण दिशा|पूर्व दिशा|पश्चिम दिशा', 'compass'],
+  ['antivirus|malware|firewall|password|encrypt|hacker|cyber|security|phishing', 'सुरक्षा|साइबर|पासवर्ड', 'lock'],
+  ['river|lake|dam|ocean|sea|water|rain|glacier|ganga|yamuna|narmada|tapti|chambal|betwa', 'नदी|झील|बांध|समुद्र|सागर|जल|वर्षा|हिमनद|गंगा|यमुना|नर्मदा|ताप्ती|चंबल|बेतवा', 'waves'],
+  ['mountain|himalaya|plateau|peak|hill|satpura|vindhya', 'पर्वत|पहाड़|हिमालय|पठार|शिखर|सतपुड़ा|विंध्य', 'mountain'],
+  ['dna|gene|genes|chromosome|heredity|cell|cells|bacteria|biology', 'जीन|गुणसूत्र|आनुवंशिक|कोशिका|जीवाणु|जीव विज्ञान', 'dna'],
+  ['atom|atomic|electron|proton|neutron|molecule|element|periodic|nuclear', 'परमाणु|इलेक्ट्रॉन|प्रोटॉन|न्यूट्रॉन|अणु|तत्व|आवर्त', 'atom'],
+  ['acid|base|chemistry|chemical|reaction|compound|solution|salt|metal|alloy', 'अम्ल|क्षार|रसायन|अभिक्रिया|यौगिक|लवण|धातु|मिश्र धातु', 'flask'],
+  ['electric|electricity|current|voltage|battery|resistance|circuit|watt', 'विद्युत|धारा|वोल्ट|बैटरी|प्रतिरोध|परिपथ|वाट', 'bolt'],
+  ['magnet|magnetic', 'चुंबक', 'magnet'],
+  ['heat|temperature|fire|combustion|fuel|thermal', 'ऊष्मा|ताप|आग|दहन|ईंधन', 'fire'],
+  ['moon|lunar|eclipse', 'चंद्रमा|चन्द्रमा|ग्रहण', 'moon'],
+  ['isro|rocket|satellite|space|chandrayaan|mission|launch', 'इसरो|रॉकेट|उपग्रह|अंतरिक्ष|चंद्रयान|मिशन', 'rocket'],
+  ['planet|earth|mars|jupiter|saturn|venus|mercury|galaxy|solar system|star', 'ग्रह|पृथ्वी|मंगल|बृहस्पति|शनि|शुक्र|बुध|आकाशगंगा|सौरमंडल|तारा', 'planet'],
+  ['sun|solar|light|ray|rays|lens|optics|reflection|refraction', 'सूर्य|सौर|प्रकाश|किरण|लेंस|परावर्तन|अपवर्तन', 'sun'],
+  ['blood|heart|pulse|vitamin|disease|medicine|health|body|human|organ|digestion', 'रक्त|हृदय|विटामिन|रोग|दवा|स्वास्थ्य|शरीर|मानव|अंग|पाचन', 'heart'],
+  ['plant|plants|tree|forest|leaf|photosynthesis|crop|agriculture|botany|flower|soil', 'पौधा|पौधे|पेड़|वृक्ष|वन्य|जंगल|पत्ती|प्रकाश संश्लेषण|फसल|कृषि|वनस्पति|फूल|मिट्टी', 'leaf'],
+  ['animal|animals|bird|fish|wildlife|tiger|lion|elephant|peacock|sanctuary|national park', 'पशु|जानवर|पक्षी|मछली|वन्यजीव|बाघ|शेर|हाथी|मोर|अभयारण्य|राष्ट्रीय उद्यान', 'paw'],
+  ['force|energy|pressure|friction|motion|newton|gravity|mass|density|machine|engine|velocity|acceleration', 'बल|ऊर्जा|दाब|घर्षण|न्यूटन|गुरुत्व|द्रव्यमान|घनत्व|मशीन|इंजन|वेग|त्वरण', 'wrench'],
+  ['keyboard|shortcut|ctrl|function key', 'कीबोर्ड|शॉर्टकट', 'keyboard'],
+  ['mouse|cursor|click', 'माउस|कर्सर|क्लिक', 'mouse'],
+  ['email|mail|inbox', 'ईमेल|ई-मेल|मेल', 'mail'],
+  ['internet|network|wifi|wi-fi|web|browser|website|url|http|www|online|router|lan|wan', 'इंटरनेट|नेटवर्क|वेब|ब्राउज़र|वेबसाइट|ऑनलाइन|राउटर', 'wifi'],
+  ['file|files|folder|file extension|ms word|ms excel|excel|powerpoint|ppt|spreadsheet|ms office|docx', 'फाइल|फोल्डर|एक्सटेंशन|एक्सेल|पावरपॉइंट', 'file'],
+  ['program|programming|code|coding|html|python|java|compiler|algorithm|binary|software|language translator', 'प्रोग्राम|कोड|एल्गोरिथ्म|बाइनरी|सॉफ्टवेयर|कंपाइलर', 'code'],
+  ['cloud|saas|iaas', 'क्लाउड', 'cloud'],
+  ['computer|computers|hardware|cpu|processor|memory|ram|rom|chip|generation|input|output|storage', 'कंप्यूटर|हार्डवेयर|प्रोसेसर|मेमोरी|चिप|पीढ़ी|इनपुट|आउटपुट|स्टोरेज', 'chip'],
+  ['percent|percentage', 'प्रतिशत|%', 'percent'],
+  ['profit|loss|interest|price|discount|rupee|cost|salary|tax|money|rate|sales|installment|emi|wage', 'लाभ|हानि|ब्याज|मूल्य|छूट|रुपये|लागत|वेतन|धन|दर|किस्त|मजदूरी', 'rupee'],
+  ['triangle|circle|area|perimeter|angle|geometry|square|rectangle|volume|cube|sphere|cylinder|cone|polygon', 'त्रिभुज|वृत्त|क्षेत्रफल|परिमाप|कोण|ज्यामिति|वर्ग|आयत|आयतन|घन|गोला|बेलन|शंकु', 'triangle'],
+  ['average|ratio|proportion|data|graph|chart|mean|median|mode|probability|statistics|table', 'औसत|अनुपात|समानुपात|आंकड़े|आलेख|माध्य|माध्यिका|बहुलक|प्रायिकता|सांख्यिकी', 'chart'],
+  ['time|speed|distance|clock|pipe|pipes|tank|train|boat|stream|age|ages|work|works|hours|minutes', 'समय|चाल|दूरी|घड़ी|नल|टंकी|रेलगाड़ी|नाव|आयु|उम्र|कार्य|काम|घंटे|मिनट', 'clock'],
+  ['constitution|article|law|court|judge|supreme|right|rights|justice|act|bill|amendment|duty|duties|fundamental', 'संविधान|अनुच्छेद|कानून|न्यायालय|न्यायाधीश|उच्चतम|अधिकार|न्याय|अधिनियम|विधेयक|संशोधन|कर्तव्य|मौलिक', 'scales'],
+  ['king|emperor|dynasty|empire|maurya|gupta|mughal|akbar|ashoka|queen|rani|sultan|chola|rajput|maratha|shivaji', 'राजा|सम्राट|राजवंश|साम्राज्य|मौर्य|गुप्त|मुगल|अकबर|अशोक|रानी|सुल्तान|चोल|राजपूत|मराठा|शिवाजी', 'crown'],
+  ['war|battle|army|military|revolt|1857|panipat|independence|freedom|movement|satyagraha|quit india', 'युद्ध|लड़ाई|सेना|सैन्य|विद्रोह|पानीपत|स्वतंत्रता|आज़ादी|आंदोलन|सत्याग्रह|भारत छोड़ो', 'sword'],
+  ['temple|religion|buddhist|buddha|jain|hindu|festival|god|sanchi|khajuraho|ujjain|mahakal|omkareshwar|fort|monument|heritage', 'मंदिर|धर्म|बौद्ध|बुद्ध|जैन|हिंदू|त्योहार|देवता|भगवान|सांची|खजुराहो|उज्जैन|महाकाल|ओंकारेश्वर|किला|स्मारक|धरोहर|विरासत', 'temple'],
+  ['bank|rbi|economy|gdp|budget|finance|inflation|gst|currency|nabard|sebi|fiscal|monetary', 'बैंक|आरबीआई|अर्थव्यवस्था|बजट|वित्त|मुद्रास्फीति|मुद्रा|नाबार्ड|सेबी|राजकोषीय|मौद्रिक', 'bank'],
+  ['president|prime minister|minister|governor|parliament|lok sabha|rajya sabha|election|vote|government|panchayat|flag|national|chief minister|cabinet', 'राष्ट्रपति|प्रधानमंत्री|मंत्री|राज्यपाल|संसद|लोकसभा|राज्यसभा|चुनाव|मतदान|सरकार|पंचायत|ध्वज|राष्ट्रीय|मुख्यमंत्री|मंत्रिमंडल', 'flag'],
+  ['map|latitude|longitude|border|district|state|capital|city|india|madhya pradesh|bhopal|indore|region|geography|divisions?', 'मानचित्र|अक्षांश|देशांतर|सीमा|जिला|राज्य|राजधानी|शहर|भारत|मध्य प्रदेश|भोपाल|इंदौर|क्षेत्र|भूगोल|संभाग', 'map'],
+  ['calendar|date|month|year|day|week|century|history|era', 'कैलेंडर|तिथि|माह|महीना|वर्ष|दिन|सप्ताह|शताब्दी|इतिहास|युग', 'calendar'],
+  ['sports|sport|olympic|cricket|medal|award|prize|winner|champion|trophy|cup|player|stadium', 'खेल|ओलंपिक|क्रिकेट|पदक|पुरस्कार|विजेता|चैंपियन|ट्रॉफी|कप|खिलाड़ी|स्टेडियम', 'trophy'],
+  ['music|song|raga|dance|instrument|singer|film|cinema', 'संगीत|गीत|राग|नृत्य|वाद्य|गायक|फिल्म|सिनेमा', 'music'],
+  ['poem|poet|author|writer|novel|book|story|literature|kavya|chhand|alankar|autobiography', 'कविता|कवि|लेखक|रचनाकार|उपन्यास|पुस्तक|कहानी|साहित्य|काव्य|छंद|अलंकार|आत्मकथा|रचना', 'feather'],
+  ['grammar|noun|verb|adjective|adverb|pronoun|tense|synonym|antonym|idiom|phrase|proverb|spelling|vowel|consonant|preposition|article|sentence|word|alphabet|voice|narration|conjunction', 'व्याकरण|संज्ञा|क्रिया|विशेषण|सर्वनाम|काल|पर्यायवाची|विलोम|मुहावरा|लोकोक्ति|वर्तनी|स्वर|व्यंजन|वाक्य|शब्द|वर्ण|संधि|समास|प्रत्यय|उपसर्ग|वचन|लिंग|कारक|अव्यय', 'letterA'],
+  ['sound|echo|noise|frequency|pitch', 'ध्वनि|प्रतिध्वनि|आवृत्ति|स्वर', 'speaker'],
+  ['camera|photo|image|picture|video', 'कैमरा|फोटो|चित्र|वीडियो', 'camera'],
+  ['people|population|census|tribe|caste|society|family|women|child|community', 'लोग|जनसंख्या|जनगणना|जनजाति|जाति|समाज|परिवार|महिला|बच्चे|समुदाय', 'people'],
+  ['discover|invented|invention|scientist|research|experiment', 'खोज|आविष्कार|वैज्ञानिक|अनुसंधान|प्रयोग', 'search'],
+  ['logic|reasoning|series|puzzle|analogy|coding-decoding|venn|syllogism|blood relation|ranking|seating', 'तर्क|श्रृंखला|पहेली|सादृश्य|वेन|न्याय निगमन|रक्त संबंध|क्रम', 'brain']
+].map(([a, d, n]) => [new RegExp('\\b(?:' + a + ')\\b', 'i'), new RegExp(d), n]);
+const VDEF = {hindi: 'feather', english: 'letterA', science: 'atom', reasoning: 'brain', computer: 'chip', maths: 'pi'};
+const LANGV = new Set(['feather', 'letterA', 'speaker']);
+function vecFor(q, subjId) {
+  const txt = (q.t || '') + ' ' + (q.q || ''), lang = subjId === 'hindi' || subjId === 'english';
+  for (const [ra, rd, n] of VRULES) if ((!lang || LANGV.has(n)) && (ra.test(txt) || rd.test(txt))) return n;
+  return VDEF[subjId] || 'bulb';
+}
 
-    <div class="row" style="display: flex;align-items: center;justify-content: space-around;align-content: space-around;">
-      <div class="col-md-3">
-        <div class="card bg-light" > 
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Mettl_Logo.png/220px-Mettl_Logo.png" 
-          alt="Mettl | Mercer Mettl">
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = svg(el.dataset.ic));
+const SUBJ = {hindi: {c: '#E5484D', t: 'अ'}, english: {c: '#2F6BFF', t: 'Aa'}, science: {c: '#1F9D6B', p: 'flask'}, reasoning: {c: '#8E4EC6', p: 'target'}, computer: {c: '#0F8BA8', p: 'monitor'}, maths: {c: '#F08A1C', p: 'calc'}};
+const subjGlyph = id => { const s = SUBJ[id] || {p: 'help'}; return s.t ? s.t : svg(s.p); };
 
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card bg-light" > 
-          <img src="https://vwo.com/downloads/media-kit/VWO-Logo-Color.png" alt="VWO | Wingify">
+/* ============ backgrounds ============ */
+const GLYPHS = {hindi: ['अ', 'आ', 'क', 'ख', 'ग', 'श्री'], english: ['Aa', 'Bb', 'Qq', '?', 'Zz', '“ ”'], science: ['H₂O', 'E=mc²', 'Δ', 'pH', 'CO₂', 'DNA'], reasoning: ['?', '△', '◇', 'A:B', '∞', '→'], computer: ['{ }', '</>', '01', '&&', '#', '>_'], maths: ['π', '∑', '√', '÷', '±', '%']};
+function rng(seed) { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+/* ============ scenic backgrounds (same warm family, random every question) ============ */
+const SKIES = [['#2B3A67', '#F2A65A', '#FFE0A3'], ['#3A2A5C', '#E8707A', '#FFCDA8'], ['#1F4E6B', '#5BB5B0', '#FFE9B5'], ['#5B2A4A', '#F0803C', '#FFD98A'], ['#3F3470', '#B07CC6', '#FFD3C0'], ['#2F6DB5', '#7FC1E8', '#FFEFCF']];
+const hx = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const mix = (a, b, t) => { const A = hx(a.startsWith('#') ? a : '#888888'), B = hx(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')'; };
+const mixc = (a, b, t) => { const A = a.match(/\d+/g).map(Number), B = hx(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')'; };
+function theme(seed) { return {seed}; }
+function scene(c, seed) {
+  const W = 1080, H = 1920, r = rng(seed), sk = SKIES[Math.floor(r() * SKIES.length)], hz = 1020 + r() * 120;
+  let g = c.createLinearGradient(0, 0, 0, hz + 140); g.addColorStop(0, sk[0]); g.addColorStop(.6, sk[1]); g.addColorStop(1, sk[2]); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  const sx = 160 + r() * 760, sy = hz - 80 - r() * 220;
+  g = c.createRadialGradient(sx, sy, 0, sx, sy, 560); g.addColorStop(0, 'rgba(255,248,215,.95)'); g.addColorStop(.1, 'rgba(255,228,160,.6)'); g.addColorStop(1, 'rgba(255,200,120,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = 'rgba(255,252,236,.95)'; c.beginPath(); c.arc(sx, sy, 48, 0, 7); c.fill();
+  for (let k = 0; k < 6; k++) { const cx = r() * W, cy = 420 + r() * (hz - 700), s = .7 + r() * 1.1; c.fillStyle = 'rgba(255,255,255,.17)'; for (let j = 0; j < 5; j++) { c.beginPath(); c.ellipse(cx + (j - 2) * 55 * s, cy + (j % 2) * 10 * s, 80 * s, 26 * s, 0, 0, 7); c.fill(); } }
+  c.strokeStyle = 'rgba(40,25,50,.5)'; c.lineWidth = 4; c.lineCap = 'round';
+  for (let k = 0; k < 5; k++) { const bx = 100 + r() * 800, by = 520 + r() * 300, s = 14 + r() * 14; c.beginPath(); c.moveTo(bx - s, by); c.quadraticCurveTo(bx - s / 2, by - s * .7, bx, by); c.quadraticCurveTo(bx + s / 2, by - s * .7, bx + s, by); c.stroke(); }
+  const ridge = (y0, amp, f1, f2) => { const p1 = r() * 6, p2 = r() * 6; return x => y0 + amp * (Math.sin(x * f1 + p1) * .6 + Math.sin(x * f2 + p2) * .4); };
+  const L = [{fn: ridge(hz + 40, 50, .006, .017), col: mix(sk[1], '#6A4A7A', .5)}, {fn: ridge(hz + 150, 70, .005, .013), col: mix(sk[1], '#5A3A55', .66)}, {fn: ridge(hz + 330, 90, .004, .011), col: mix(sk[0], '#2E1F2A', .5)}, {fn: ridge(1620, 50, .005, .014), col: mix('#3A2433', sk[0], .25)}];
+  const fillL = l => { c.fillStyle = l.col; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 20) c.lineTo(x, l.fn(x)); c.lineTo(W, H); c.closePath(); c.fill(); };
+  fillL(L[0]); fillL(L[1]);
+  const lm = ['dome', 'temple', 'fort', 'none'][Math.floor(r() * 4)], lx = 200 + r() * 560, ly = L[1].fn(lx) + 6, s = .9 + r() * .5;
+  c.fillStyle = mixc(L[1].col, '#241624', .4);
+  if (lm === 'dome') {
+    c.fillRect(lx - 90 * s, ly - 40 * s, 180 * s, 44 * s); for (let i = 0; i < 5; i++) c.fillRect(lx - 80 * s + i * 38 * s, ly - 130 * s, 12 * s, 92 * s);
+    c.fillRect(lx - 96 * s, ly - 146 * s, 192 * s, 18 * s); c.beginPath(); c.ellipse(lx, ly - 146 * s, 84 * s, 78 * s, 0, Math.PI, 0); c.fill();
+    c.fillRect(lx - 4 * s, ly - 250 * s, 8 * s, 28 * s); c.beginPath(); c.arc(lx, ly - 256 * s, 9 * s, 0, 7); c.fill();
+  } else if (lm === 'temple') {
+    for (let i = 0; i < 6; i++) { const w = (170 - i * 24) * s; c.fillRect(lx - w / 2, ly - (i + 1) * 40 * s, w, 41 * s); }
+    c.beginPath(); c.ellipse(lx, ly - 270 * s, 16 * s, 22 * s, 0, 0, 7); c.fill(); c.fillRect(lx - 2 * s, ly - 350 * s, 4 * s, 70 * s); c.beginPath(); c.moveTo(lx + 2 * s, ly - 350 * s); c.lineTo(lx + 44 * s, ly - 334 * s); c.lineTo(lx + 2 * s, ly - 318 * s); c.fill();
+  } else if (lm === 'fort') {
+    c.fillRect(lx - 230 * s, ly - 110 * s, 460 * s, 114 * s); for (let i = 0; i < 12; i++) c.fillRect(lx - 230 * s + i * 40 * s, ly - 134 * s, 24 * s, 26 * s);
+    [-250, 180].forEach(o => { c.fillRect(lx + o * s, ly - 210 * s, 70 * s, 214 * s); c.beginPath(); c.ellipse(lx + (o + 35) * s, ly - 210 * s, 44 * s, 40 * s, 0, Math.PI, 0); c.fill(); });
+    c.fillRect(lx - 60 * s, ly - 180 * s, 120 * s, 184 * s); c.beginPath(); c.ellipse(lx, ly - 180 * s, 70 * s, 56 * s, 0, Math.PI, 0); c.fill();
+  }
+  fillL(L[2]);
+  for (let k = 0; k < 4; k++) { const tx = r() * W, ty = L[2].fn(tx) + 4, tc = mixc(L[2].col, '#1E1420', .35); c.fillStyle = tc; c.fillRect(tx - 4, ty - 60, 8, 62); for (let j = 0; j < 3; j++) { c.beginPath(); c.arc(tx + (j - 1) * 30, ty - 80 - (j % 2) * 18, 38, 0, 7); c.fill(); } }
+  fillL(L[3]);
+  g = c.createLinearGradient(0, 0, 0, 520); g.addColorStop(0, 'rgba(15,10,35,.38)'); g.addColorStop(1, 'rgba(15,10,35,0)'); c.fillStyle = g; c.fillRect(0, 0, W, 520);
+  g = c.createLinearGradient(0, 1450, 0, H); g.addColorStop(0, 'rgba(25,12,20,0)'); g.addColorStop(1, 'rgba(25,12,20,.3)'); c.fillStyle = g; c.fillRect(0, 1450, W, H - 1450);
+}
+let bgFlip = false;
+function setBg(seed) { const el = $(bgFlip ? 'bgA' : 'bgB'), old = $(bgFlip ? 'bgB' : 'bgA'); const cv = document.createElement('canvas'); cv.width = 540; cv.height = 960; const cc = cv.getContext('2d'); cc.scale(.5, .5); scene(cc, seed); el.style.background = 'url(' + cv.toDataURL('image/jpeg', .85) + ') center/cover no-repeat'; el.classList.add('on'); old.classList.remove('on'); bgFlip = !bgFlip; }
 
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card bg-light" > 
-          <img 
-          src="https://images.yourstory.com/cs/images/companies/6164062326375110929360896727241536678920192n-1623848215785.jpg?fm=auto&ar=1:1&mode=fill&fill=solid&fill-color=fff" 
-          alt="InboundMantra | ZNbound">
+/* ============ one-line rewriting ============ */
+const INSTR = /^(in the (following|below|given|question)|in the sentence|in this question|out of|from the|four alternatives|below are|choose|select|find|each (sentence|of)|the sentence|read the|consider|identify|improve|rearrange|arrange|mark|pick|a part|a sentence|the (first|rest)|these four|in each)/i;
+const LABELS = [
+  [/active\/passive|passive\/active/i, 'Active ⇄ Passive'], [/direct\/indirect|indirect\/direct/i, 'Direct ⇄ Indirect'],
+  [/blank[\s\S]*idiom|idiom[\s\S]*blank/i, 'Fill the blank (idiom)'], [/blank/i, 'Fill the blank'],
+  [/bracketed|improve the sentence/i, 'Improve the bracketed part'], [/grammatical error|segment which contains/i, 'Spot the error'],
+  [/group of words/i, 'One word for'], [/idiom|phrase/i, 'Idiom meaning'],
+  [/split into four parts|p, q, r and s/i, 'Rearrange P Q R S'], [/sequenced|logical order|coherent paragraph/i, 'Order the sentences'],
+  [/spelt|misspelt|spelling/i, 'Spot the misspelt word'],
+  [/related to the third[\s\S]*first/i, 'Analogy']
+];
+function oneLine(t) {
+  let q = t.replace(/\s+/g, ' ').trim();
+  q = q.replace(/ा{2,}/g, 'ा').replace(/ी{2,}/g, 'ी').replace(/ू{2,}/g, 'ू').replace(/ि{2,}/g, 'ि');
+  let m = q.match(/^(?:select|choose|find)(?: the)?(?: word)? (synonym|antonym)(?: of| to| for)?(?: the (?:given )?word)?\s*[:.\-]?\s*(.+)$/i);
+  if (m) return m[1][0].toUpperCase() + m[1].slice(1).toLowerCase() + ': ' + m[2];
+  if (/[ऀ-ॿ]/.test(q)) return q.replace(/^निम्[‌‍]?न(?:लिखित)?\s+में\s+से\s+/, '');
+  const S = q.split(/(?<=[.?!])\s+(?=[A-Z"“‘'(\[0-9])/); let k = 0;
+  while (k < S.length - 1 && INSTR.test(S[k]) && !/_{2,}/.test(S[k])) k++;
+  if (k === 0) return q;
+  const instr = S.slice(0, k).join(' '), rest = S.slice(k).join(' ');
+  for (const [re, lab] of LABELS) if (re.test(instr) && rest.length >= 8 && rest.length < q.length - 15) return lab + ': ' + rest;
+  return q;
+}
 
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card bg-light" > 
-          <img src="https://secureservercdn.net/160.153.138.219/w7d.a08.myftpupload.com/wp-content/uploads/2020/12/ADMP-Digital-marketing-course-gwalior-logo-180x85.png
-          " alt="ADMP">
+/* ============ data ============ */
+let EDITS = {}; try { EDITS = JSON.parse(localStorage.getItem('qr_edits') || '{}'); } catch (e) {}
+const saveEdits = () => { try { localStorage.setItem('qr_edits', JSON.stringify(EDITS)); } catch (e) {} };
+const NEEDS = /which (of|one of) the (following|below|given|these)|out of the (four|following|given)|four alternatives|in the (following|below) question|the question below|\boptions?\b|विकल्प|निम्[‍]?नलिखित में से (कौन|किस|किन)|निम्[‍]?न में से (कौन|किस|किन)/i;
+const norm = (d, sid) => (Array.isArray(d) ? d : (d.questions || [])).map(x => {
+  const oq = x.oq || x.q, mcq = !!x.o, base = (x.oq || mcq) ? x.q : oneLine(x.q), ed = (EDITS[sid] || {})[oq], q = ed || base;
+  return {q, oq, a: String(x.a), t: x.t || x.topic || 'General', o: x.o, i: x.i, s: x.s, chk: x.chk, ed: !!ed, need: !ed && !mcq && NEEDS.test(q)};
+}).filter(x => x.q && x.a);
+const G = s => (window.Intl && Intl.Segmenter) ? Array.from(new Intl.Segmenter(undefined, {granularity: 'grapheme'}).segment(s), x => x.segment) : Array.from(s);
+const shuf = a => { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
 
-        </div>
-      </div>
+/* ============ settings ============ */
+function seg(id, key, opts) {
+  const box = $(id); box.innerHTML = '';
+  opts.forEach(([label, val]) => { const b = document.createElement('button'); b.textContent = label; if (CFG[key] === val) b.className = 'on'; b.onclick = () => { CFG[key] = val; saveCfg(); seg(id, key, opts); }; box.appendChild(b); });
+}
+function sw(id, key) { const el = $(id); el.classList.toggle('on', !!CFG[key]); el.setAttribute('role', 'switch'); el.tabIndex = 0; el.onclick = () => { CFG[key] = !CFG[key]; saveCfg(); el.classList.toggle('on', CFG[key]); }; el.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.onclick(); } }; }
+function buildSettings() {
+  seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]); seg('sMath', 'mathS', [['15', 15], ['20', 20], ['30', 30], ['45', 45]]);
+  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['1', 1], ['5', 5], ['10', 10], ['15', 15]]); seg('sBatch', 'batch', [['1', 1], ['3', 3], ['5', 5], ['10', 10], ['20', 20]]);
+  seg('sMode', 'mode', [['Play live', 'live'], ['Export video', 'reel']]);
+  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai'], ['sAutoDl', 'autoDl']].forEach(([a, b]) => sw(a, b));
+  $('inExam').value = CFG.exam || ''; $('inExam').oninput = e => { CFG.exam = e.target.value; saveCfg(); };
+  $('inHandle').value = CFG.handle || ''; $('inHandle').oninput = e => { CFG.handle = e.target.value; saveCfg(); };
+  fillVoiceSel();
+}
+
+/* ============ device voice (live only) ============ */
+let VOICES = [], spkId = 0; const DEV = /[ऀ-ॿ]/;
+function loadVoices() { try { VOICES = speechSynthesis.getVoices() || []; } catch (e) { VOICES = []; } fillVoiceSel(); }
+if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = loadVoices; loadVoices(); }
+const isLang = (v, p) => v.lang.replace('_', '-').toLowerCase().startsWith(p);
+function pickVoice(kind) {
+  const saved = kind === 'hi' ? CFG.vHi : CFG.vEn;
+  const L = kind === 'hi' ? VOICES.filter(v => isLang(v, 'hi')) : VOICES.filter(v => isLang(v, 'en-in')).concat(VOICES.filter(v => isLang(v, 'en') && !isLang(v, 'en-in')));
+  if (!L.length) return null;
+  if (CFG.vary) return L[Math.floor(Math.random() * L.length)];
+  if (saved) { const s = VOICES.find(v => v.name === saved); if (s) return s; }
+  const good = /(neerja|swara|madhur|kalpana|hemant|google|rishi|heera|lekha|kajal|natural|online)/i;
+  const score = v => (/natural|online/i.test(v.name) ? 4 : 0) + (/google/i.test(v.name) ? 2 : 0) + (good.test(v.name) ? 1 : 0);
+  return L.slice().sort((a, b) => score(b) - score(a))[0];
+}
+function fillVoiceSel() {
+  [['selEn', 'vEn', v => isLang(v, 'en')], ['selHi', 'vHi', v => isLang(v, 'hi')]].forEach(([id, key, f]) => {
+    const el = $(id); if (!el) return;
+    el.innerHTML = '<option value="">Auto</option>' + VOICES.filter(f).map(v => '<option value="' + v.name.replace(/"/g, '&quot;') + '">' + v.name + '</option>').join('');
+    el.value = CFG[key] || ''; el.onchange = () => { CFG[key] = el.value; saveCfg(); };
+  });
+}
+function cleanSpeech(t) {
+  const hi = (t.match(/[ऀ-ॿ]/g) || []).length > (t.match(/[A-Za-z]/g) || []).length, blank = hi ? ' रिक्त स्थान ' : ' blank ';
+  return t.replace(/\(\s*[_\-\.\s]{2,}\s*\)|_+|\.{4,}|-{3,}|[…]{2,}/g, blank).replace(/(\d)\s*:\s*(?=\d)/g, '$1 to ')
+    .replace(/→|->|⇄/g, hi ? ' से ' : ' to ').replace(/&/g, hi ? ' और ' : ' and ').replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
+    .replace(/=/g, ' equals ').replace(/%/g, ' percent').replace(/[–—]/g, ', ').replace(/[*#\/\\|~^]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+}
+const speechText = q => cleanSpeech(q.q + (q.o ? ' Options. ' + q.o.map((o, k) => 'Option ' + 'ABCD'[k] + ', ' + o + '.').join(' ') : ''));
+function segments(t) {
+  const runs = t.match(/[ऀ-ॿ][ऀ-ॿ\s,.।॥]*|[^ऀ-ॿ]+/g) || [], out = []; let last = 'en';
+  runs.forEach(r => {
+    const hasD = DEV.test(r), hasL = /[A-Za-z]/.test(r), has = /[\p{L}\p{N}]/u.test(r);
+    if (!has) { if (out.length) out[out.length - 1].t += r; return; }
+    const lang = hasD ? 'hi' : hasL ? 'en' : last;
+    if (out.length && out[out.length - 1].lang === lang) out[out.length - 1].t += r; else out.push({lang, t: r}); last = lang;
+  });
+  return out;
+}
+function speak(text, done) {
+  if (!CFG.voice || !window.speechSynthesis) { done && done(); return; }
+  const my = ++spkId; let fired = false; const fin = () => { if (!fired && my === spkId) { fired = true; done && done(); } };
+  try {
+    speechSynthesis.cancel(); const segs = segments(cleanSpeech(text)); if (!segs.length) { fin(); return; } let k = 0;
+    const next = () => {
+      if (my !== spkId) return; if (k >= segs.length) { fin(); return; }
+      const s = segs[k++], u = new SpeechSynthesisUtterance(s.t), v = pickVoice(s.lang);
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = s.lang === 'hi' ? 'hi-IN' : 'en-IN';
+      u.rate = s.lang === 'hi' ? 0.93 : 0.96; u.pitch = CFG.vary ? 0.9 + Math.random() * 0.25 : 1; u.onend = next; u.onerror = next; speechSynthesis.speak(u);
+    };
+    next(); clearTimeout(aux); aux = setTimeout(fin, 25000);
+  } catch (e) { fin(); }
+}
+function testVoice() { const was = CFG.voice; CFG.voice = true; speak('Which planet is known as the red planet? मंगल ग्रह को लाल ग्रह कहा जाता है।'); CFG.voice = was; }
+
+/* ============ AI voice (recordable) ============ */
+const AI_VOICES = ['nova', 'shimmer', 'alloy', 'echo', 'fable', 'onyx', 'coral', 'sage'];
+function pickAiVoice() {
+  let last = '', lse = ''; try { last = localStorage.getItem('qr_lastv') || ''; lse = localStorage.getItem('qr_lastse') || ''; } catch (e) {}
+  const L = AI_VOICES.filter(v => v !== last), pl = L[Math.floor(Math.random() * L.length)], se = lse === 'Raveena' ? 'Aditi' : 'Raveena';
+  try { localStorage.setItem('qr_lastv', pl); localStorage.setItem('qr_lastse', se); } catch (e) {} return {pl, se};
+}
+async function fetchAudio(url, ms) {
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, {signal: ctl.signal}); if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!/audio|octet/.test(r.headers.get('content-type') || '')) throw new Error('not audio');
+    return await AC.decodeAudioData(await r.arrayBuffer());
+  } finally { clearTimeout(to); }
+}
+// Indian-accent voices first (Amazon Polly Aditi/Raveena through StreamElements, no key), Pollinations as the backup
+async function fetchTts(text, v, errs) {
+  const seV = DEV.test(text) ? 'Aditi' : v.se;
+  const tries = [['StreamElements', 'https://api.streamelements.com/kappa/v2/speech?voice=' + seV + '&text=' + encodeURIComponent(text)], ['Pollinations', 'https://text.pollinations.ai/' + encodeURIComponent(text) + '?model=openai-audio&voice=' + v.pl]];
+  for (const [nm, u] of tries) { try { const b = await fetchAudio(u, 10000); fetchTts.used = nm; return b; } catch (e) { if (errs) errs.push(nm + ': ' + (e.name === 'AbortError' ? 'timed out' : e.message)); } }
+  throw new Error('no voice service');
+}
+async function testAiVoice() {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
+  toast('Testing voice services\u2026'); const errs = [];
+  try { const b = await fetchTts('\u0928\u092e\u0938\u094d\u0924\u0947, \u092f\u0939 \u0906\u0935\u093e\u091c\u093c \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0939\u0948. This is a voice test.', {pl: 'nova', se: 'Aditi'}, errs); const sr = AC.createBufferSource(); sr.buffer = b; sr.connect(AC.destination); sr.start(); toast('Voice works via ' + fetchTts.used + (VOICE_DEAD = false, errs.length ? ' (' + errs.join('; ') + ')' : '')); }
+  catch (e) { toast('No voice service reachable. ' + errs.join(' | ')); }
+}
+const ansText = q => cleanSpeech(q.o ? 'Option ' + 'ABCD'[q.i] + ', ' + q.a : q.a);
+
+/* ============ screens ============ */
+function show(id) { if (id !== 'quiz' && REC) exitRec(); ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
+async function init() {
+  buildSettings(); setBg(Date.now());
+  try { MAN = await (await fetch('manifest.json')).json(); } catch (e) { $('err').textContent = 'Serve this folder with a web server. ' + e; return; }
+  await Promise.all(MAN.map(async m => { try { CACHE[m.id] = norm(await (await fetch(m.file)).json(), m.id); } catch (e) { CACHE[m.id] = []; } m.count = CACHE[m.id].length; }));
+  showHome();
+}
+function cell(tileHtml, tileColor, label, count, onclick, off) {
+  const b = document.createElement('button'); b.className = 'cell' + (off ? ' off' : '');
+  b.innerHTML = '<span class="tile" style="background:' + tileColor + '">' + tileHtml + '</span><span class="lab"></span><span class="cnt"></span><span class="chev">' + svg('chevR') + '</span>';
+  b.querySelector('.lab').textContent = label; b.querySelector('.cnt').textContent = count; b.onclick = onclick; return b;
+}
+function showHome() {
+  stop(); show('home'); const g = $('subjects'); g.innerHTML = '';
+  MAN.forEach(m => { const s = SUBJ[m.id] || {c: '#667'}; g.appendChild(cell(subjGlyph(m.id), s.c, m.name, m.count || 'Soon', () => pickSubject(m), !m.count)); });
+}
+function pickSubject(m) { subj = m; pool = CACHE[m.id]; showTopics(); }
+function showTopics() {
+  stop(); show('topics'); $('tSubj').textContent = subj.name;
+  const L = $('topicList'); L.innerHTML = ''; const col = (SUBJ[subj.id] || {c: '#667'}).c;
+  L.appendChild(cell(svg('layers'), '#10192F', 'All questions', pool.length, () => go(pool, 'All')));
+  const nd = pool.filter(x => x.need).length; if (nd) L.appendChild(cell(svg('pencil'), '#F08A1C', 'Needs rewrite', nd, () => go(pool.filter(x => x.need), 'Needs rewrite')));
+  const ed = pool.filter(x => x.ed).length; if (ed) L.appendChild(cell(svg('check'), '#1F9D6B', 'Rewritten by me', ed, () => go(pool.filter(x => x.ed), 'Rewritten')));
+  const g = {}; pool.forEach(x => (g[x.t] = g[x.t] || []).push(x));
+  Object.keys(g).sort((a, b) => g[b].length - g[a].length).forEach(t => L.appendChild(cell(svg('list'), col, t, g[t].length, () => go(g[t], t))));
+}
+function go(arr, name) {
+  if (CFG.skip) { const f = arr.filter(x => !x.need); if (f.length) arr = f; }
+  if (CFG.mode === 'reel') { const f = arr.filter(x => !x.chk); if (f.length) arr = f; startReel(arr, name); } else start(arr);
+}
+function start(arr) {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {}
+  set = shuffle ? shuf(arr) : arr.slice(); i = 0; show('quiz'); render();
+}
+function toggleShuffle() { shuffle = !shuffle; $('shufBtn').classList.toggle('on', shuffle); $('shufBtn').style.background = shuffle ? '#10192F' : ''; $('shufBtn').style.color = shuffle ? '#fff' : ''; set = shuffle ? shuf(set) : set; i = 0; render(); }
+
+/* ============ live quiz ============ */
+function stop() { clearInterval(tmr); clearTimeout(aux); tmr = aux = null; spkId++; try { speechSynthesis.cancel(); } catch (e) {} }
+function beep(freq, dur, gain, delay, type) {
+  if (!CFG.beep || !AC) return;
+  try { const o = AC.createOscillator(), g = AC.createGain(), t0 = AC.currentTime + (delay || 0), v = gain || 0.15; o.type = type || 'sine'; o.frequency.value = freq; o.connect(g); if (RC && RC.dest) g.connect(RC.dest); else g.connect(AC.destination); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); o.start(t0); o.stop(t0 + dur + 0.02); } catch (e) {}
+}
+function chime() { [[659, 0], [880, 0.09], [1175, 0.18], [1568, 0.28]].forEach(([f, d]) => beep(f, 0.5, 0.13, d, 'triangle')); }
+const CONF = ['#FF5A5F', '#FFB400', '#2F6BFF', '#1F9D6B', '#8E4EC6', '#00B8D9', '#FF8A3D'];
+function burst(x, y) {
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const cv = $('confetti'), c = cv.getContext('2d'), dpr = window.devicePixelRatio || 1; cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; c.scale(dpr, dpr);
+  const P = Array.from({length: 90}, (_, k) => { const a = -Math.PI / 2 + (Math.random() - .5) * 2.4, sp = 6 + Math.random() * 11; return {x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: Math.random() * 6, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, col: CONF[k % CONF.length], round: k % 4 === 0}; });
+  const t0 = performance.now();
+  (function f(now) {
+    const t = (now - t0) / 1000; c.clearRect(0, 0, innerWidth, innerHeight); if (t > 1.9) return;
+    P.forEach(p => { p.vy += 0.45; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr; c.save(); c.globalAlpha = Math.max(0, 1 - Math.max(0, t - 1.2) / 0.7); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.col; if (p.round) { c.beginPath(); c.arc(0, 0, p.w / 2, 0, 7); c.fill(); } else c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); c.restore(); });
+    requestAnimationFrame(f);
+  })(t0);
+}
+function fit(el, text, big) {
+  const n = text.length, k = REC ? 1.14 : 1;
+  el.style.fontSize = k * (big ? (n <= 45 ? 32 : n <= 90 ? 28 : n <= 150 ? 24 : n <= 240 ? 21 : 18) : (n <= 20 ? 32 : n <= 60 ? 26 : n <= 120 ? 22 : 18)) + 'px';
+}
+function makeHint(a) {
+  const mode = CFG.hint; if (mode === 'off') return null;
+  const words = a.trim().split(/\s+/), one = words.length === 1, g = G(a.trim());
+  const jumbleOK = one && g.length >= 4 && g.length <= 12 && !/^[\d.,\/\-+%]+$/.test(a);
+  if ((mode === 'jumble' || mode === 'auto') && jumbleOK) { let j = g, tries = 0; do { j = shuf(g); tries++; } while (j.join('') === g.join('') && tries < 10); return ['Unscramble', j.join(' ')]; }
+  if (words.length <= 4 && g.length <= 28) return [words.length + (words.length > 1 ? ' words' : ' word'), words.map(w => { const x = G(w); return x[0] + ' ' + x.slice(1).map(() => '_').join(' '); }).join('  /  ')];
+  return [words.length + ' words', 'Starts with ' + G(words[0])[0]];
+}
+function render() {
+  stop(); document.documentElement.style.setProperty('--acc', (SUBJ[subj.id] || {c: '#2F6BFF'}).c); const q = set[i], mc = !!q.o, S = mc ? CFG.mathS : CFG.secs; setBg(Date.now() + i * 977);
+  $('prog').textContent = $('tcnt').textContent = (i + 1) + ' / ' + set.length; $('emblem').innerHTML = svg(vecFor(q, subj.id)); $('hint').classList.remove('gone'); $('trk').style.width = ((i + 1) / set.length * 100) + '%';
+  $('tag').innerHTML = '<span class="sj"><i class="si" style="display:inline-flex;font-style:normal"></i><span class="sn"></span></span><span class="tp"></span>';
+  $('tag').querySelector('.si').innerHTML = subjGlyph(subj.id); $('tag').querySelector('.sn').textContent = subj.name; $('tag').querySelector('.tp').textContent = q.t;
+  const badge = txt => { const b = document.createElement('span'); b.className = 'badge'; b.textContent = txt; $('tag').appendChild(b); };
+  if (q.chk) badge('verify answer'); if (q.need) badge('needs rewrite');
+  $('qText').textContent = q.q; fit($('qText'), q.q, true); $('qText').classList.toggle('mc', mc);
+  if (mc) $('qText').style.fontSize = Math.min(parseInt($('qText').style.fontSize), 24) + 'px';
+  const ob = $('opts'); ob.className = 'opts' + (mc ? ' on' : ''); ob.innerHTML = '';
+  if (mc) q.o.forEach((o, k) => { const d = document.createElement('div'); d.className = 'opt'; d.innerHTML = '<b>' + 'ABCD'[k] + '</b><span></span>'; d.lastChild.textContent = o; ob.appendChild(d); });
+  $('ansT').textContent = mc ? q.s : q.a; fit($('ans'), mc ? q.s : q.a, false); $('ans').classList.toggle('mc', mc); $('ansLbl').textContent = mc ? 'Solution' : 'Answer'; if (mc) $('ans').style.fontSize = Math.min(parseInt($('ans').style.fontSize), 19) + 'px';
+  const h = mc ? null : makeHint(q.a), hb = $('hint');
+  if (h) { hb.innerHTML = '<small>' + svg('bulb') + 'Hint: ' + h[0].toLowerCase() + '</small>'; hb.appendChild(document.createTextNode(h[1])); hb.classList.add('show'); hb.style.animation = 'none'; void hb.offsetWidth; hb.style.animation = ''; } else hb.classList.remove('show');
+  const pp = document.querySelector('.paper'); pp.classList.remove('enter'); void pp.offsetWidth; pp.classList.add('enter');
+  $('edTa').value = q.q; $('edInfo').textContent = q.q !== q.oq ? 'Original: ' + q.oq : 'Edits stay in this browser. Download the JSON and replace the file in your folder to keep them for good.';
+  $('ring').classList.remove('urgent'); $('prev').disabled = i === 0; $('next').disabled = i === set.length - 1;
+  $('ans').style.display = 'none'; $('showBtn').style.display = 'none'; $('cta').style.display = 'flex'; $('tfill').style.transition = 'none'; tick(S, S); void $('tfill').offsetWidth; $('tfill').style.transition = ''; window.scrollTo(0, 0);
+  speak(speechText(q), () => {
+    let t = S;
+    tmr = setInterval(() => {
+      t--; tick(t, S); if (t > 0) { if (t <= 3) $('ring').classList.add('urgent'); beep(t <= 3 ? 880 : 560, 0.07, t <= 3 ? 0.15 : 0.07); }
+      if (t <= 0) { stop(); beep(330, 0.25, 0.12); $('ring').style.display = 'none'; if (CFG.auto) reveal(); else $('showBtn').style.display = 'inline-flex'; }
+    }, 1000);
+  });
+}
+function tick(t, S) { const f = t / S, fl = $('tfill'); fl.style.width = (f * 100) + '%'; fl.style.background = 'hsl(' + Math.round(150 * f) + ',95%,55%)'; fl.style.color = fl.style.background; $('tnum').textContent = t + 's'; $('num').textContent = t; $('arc').setAttribute('stroke-dashoffset', (320.4 * (1 - t / S)).toFixed(1)); }
+function reveal() {
+  $('showBtn').style.display = 'none'; $('cta').style.display = 'none'; $('ans').style.display = 'block'; $('hint').classList.add('gone');
+  const x = set[i]; if (x.o) [...$('opts').children].forEach((el, k) => el.classList.add(k === x.i ? 'right' : 'dim'));
+  chime(); const tg = x.o ? $('opts').children[x.i] : $('ans'), bb = tg.getBoundingClientRect(); burst(bb.left + bb.width / 2, bb.top + bb.height / 2);
+  speak(x.o ? 'Option ' + 'ABCD'[x.i] + ', ' + x.a : x.a, () => { if (CFG.auto && i < set.length - 1) aux = setTimeout(() => step(1), 3500); });
+}
+function step(d) { const n = i + d; if (n >= 0 && n < set.length) { i = n; render(); } }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && REC) { exitRec(); return; }
+  if (/TEXTAREA|INPUT|SELECT/.test((e.target || {}).tagName || '') || $('quiz').classList.contains('hide') || $('reel').style.display === 'flex') return;
+  if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1);
+  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if ($('showBtn').style.display === 'inline-flex') reveal(); else if ($('ans').style.display === 'block') step(1); }
+});
 
 
-    </div>
-  </div>
-</section>
-<section id="projects" class="py-5">
-  <div class="container ">
-    <h2 class="text-center mb-4" style="font-size: 48px;">BASIC PROJECTS</h2>
-    <div class="row">
-      <div class="col-md-3 thumbnail" style="text-align: center;">
+/* ============ recording mode ============ */
+let REC = false, RWL = null, toastT = 0;
+function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => { t.style.display = 'none'; }, 7000); }
+function inFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function toggleFs() {
+  const el = document.documentElement;
+  if (inFs()) { (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document); return; }
+  const f = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!f) { toast('This browser cannot go full screen. Install the page to your Home Screen to open it without the address bar.'); return; }
+  try { const r = f.call(el); if (r && r.catch) r.catch(() => toast('Full screen was blocked. Tap the full-screen icon again.')); } catch (e) {}
+}
+function enterRec() {
+  REC = true; document.body.classList.add('rec'); $('recTools').classList.remove('hide'); toggleFsIfNeeded();
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { RWL = l; }).catch(() => {}); } catch (e) {}
+  render();
+}
+function toggleFsIfNeeded() { if (!inFs()) toggleFs(); }
+function exitRec() {
+  REC = false; document.body.classList.remove('rec'); $('recTools').classList.add('hide');
+  if (inFs()) (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
+  try { if (RWL) RWL.release(); } catch (e) {} RWL = null; if (!$('quiz').classList.contains('hide')) render();
+}
+document.querySelector('.paper').addEventListener('click', () => { if (REC && $('ans').style.display === 'block') step(1); });
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
 
-        <a class="nav-link  text-uppercase font-weight-bold text-lg " 
-        href="ninjafood.html">NinjaFood <span class="text-sm badge badge-dark uppercase">Tailwind Css Project</span></a>
-        
-        
-       </div>
-      <div class="col-md-3 thumbnail" style="text-align: center;">
+/* ============ rewrite box ============ */
+function toggleEdit() { const b = $('edBox'); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
+function saveEdit() {
+  const x = set[i], v = $('edTa').value.trim(); if (!v) return;
+  x.q = v; x.ed = !x.o && v !== oneLine(x.oq); x.need = !x.ed && !x.o && NEEDS.test(v);
+  const E = EDITS[subj.id] = EDITS[subj.id] || {}; if (x.ed) E[x.oq] = v; else delete E[x.oq]; saveEdits(); render();
+}
+function resetEdit() { $('edTa').value = set[i].o ? set[i].oq : oneLine(set[i].oq); saveEdit(); }
+function exportJson() {
+  const out = CACHE[subj.id].map(x => { const o = {q: x.q, a: x.a, t: x.t}; if (x.o) { o.o = x.o; o.i = x.i; o.s = x.s; } if (x.chk) o.chk = 1; if (x.q !== x.oq) o.oq = x.oq; return o; });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], {type: 'application/json'})); a.download = subj.file; a.click();
+}
 
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="calc.html">Calculator</a>
-      </div>
-       <div class="col-md-3 thumbnail" style="text-align: center;">
+/* ============ video: drawing (1080x1920, inside Shorts/Reels safe zones) ============ */
+const REEL = {W: 1080, H: 1920, HOLD: 3.5, INTRO: 2.8, OUTRO: 3.4};
+const INK = '#1D2433', MUTE = '#6F7686', RED = '#D93F36', HI = '#FFC815';
+const FONT = '"Poppins","Noto Sans Devanagari","Segoe UI",system-ui,sans-serif';
+const CARD = {x: 50, y: 450, w: 820, h: 1020};
+const ease = x => 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
+function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function icon(c, name, x, y, s, color, lw) { c.save(); c.translate(x, y); c.scale(s / 24, s / 24); c.strokeStyle = color; c.lineWidth = lw || 2; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke(new Path2D(IC[name])); c.restore(); }
+function glyph(c, id, cx, cy, s, color) {            // subject tile glyph: letter or icon, centred
+  const m = SUBJ[id] || {p: 'help'};
+  if (m.t) { c.fillStyle = color; c.font = '700 ' + Math.round(s * 0.8) + 'px ' + FONT; c.textAlign = 'center'; c.fillText(m.t, cx, cy + s * 0.28); c.textAlign = 'left'; }
+  else icon(c, m.p, cx - s / 2, cy - s / 2, s, color, 2);
+}
+function wrapLines(c, text, maxW) {
+  const lines = []; let cur = '';
+  for (const w of text.split(/\s+/)) {
+    const test = cur ? cur + ' ' + w : w; if (c.measureText(test).width <= maxW) { cur = test; continue; }
+    if (cur) { lines.push(cur); cur = ''; }
+    if (c.measureText(w).width <= maxW) cur = w; else { let part = ''; for (const ch of G(w)) { if (c.measureText(part + ch).width > maxW) { lines.push(part); part = ch; } else part += ch; } cur = part; }
+  }
+  if (cur) lines.push(cur); return lines;
+}
+function fitText(c, text, maxW, maxH, maxS, minS, weight, lh) {
+  for (let s = maxS; s >= minS; s -= 2) { c.font = weight + ' ' + s + 'px ' + FONT; const L = wrapLines(c, text, maxW); if (L.length * s * lh <= maxH) return {s, L}; }
+  c.font = weight + ' ' + minS + 'px ' + FONT; return {s: minS, L: wrapLines(c, text, maxW)};
+}
+function fit1(c, text, maxW, maxS, minS, weight) { let s = maxS; c.font = weight + ' ' + s + 'px ' + FONT; while (s > minS && c.measureText(text).width > maxW) { s -= 2; c.font = weight + ' ' + s + 'px ' + FONT; } return s; }
+function drawLines(c, f, x, y0, boxH, lh, align) { const total = f.L.length * f.s * lh; let y = y0 + (boxH - total) / 2 + f.s * 1.0; c.textAlign = align; f.L.forEach(l => { c.fillText(l, x, y); y += f.s * lh; }); c.textAlign = 'left'; }
 
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="cssColorPicker.html">Css Color Picker</a>
-      </div>
-       <div class="col-md-3 thumbnail" style="text-align: center;">
+const acc = P => (SUBJ[P.subjId] || {c: '#2F6BFF'}).c;
+function buildBg(P, qi) { const cv = document.createElement('canvas'); cv.width = REEL.W; cv.height = REEL.H; scene(cv.getContext('2d'), P.themes[qi].seed); return cv; }
+function brush(c, x, y, w, h, fill, seed) {
+  const r = rng(seed), n = 9; c.save(); c.fillStyle = fill; c.beginPath(); c.moveTo(x + r() * 16, y + r() * 10);
+  for (let k = 1; k <= n; k++) c.lineTo(x + w * k / n + (r() - .5) * 10, y + (r() - .5) * 12);
+  c.lineTo(x + w + 12 + r() * 10, y + h * .5 + (r() - .5) * 10);
+  for (let k = n; k >= 0; k--) c.lineTo(x + w * k / n + (r() - .5) * 10, y + h + (r() - .5) * 12);
+  c.lineTo(x - 10 - r() * 8, y + h * .5); c.closePath(); c.fill(); c.restore();
+}
+function ital(c, text, x, y, font, color, align) { c.save(); c.translate(x, y); c.transform(1, 0, -0.2, 1, 0, 0); c.font = font; c.fillStyle = color; c.textAlign = align || 'center'; c.fillText(text, 0, 0); c.restore(); }
+function header(c, P, label) {
+  const col = acc(P); c.font = '700 36px ' + FONT; const tw = c.measureText('Daily Quiz').width, pw = 28 + 52 + 14 + tw + 28;
+  c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 18; c.fillStyle = 'rgba(24,18,38,.62)'; rrect(c, 60, 270, pw, 68, 34); c.fill(); c.restore();
+  c.strokeStyle = col; c.lineWidth = 3; rrect(c, 60, 270, pw, 68, 34); c.stroke();
+  c.fillStyle = col; c.beginPath(); c.arc(60 + 14 + 26, 304, 26, 0, 7); c.fill(); icon(c, 'check', 60 + 14 + 26 - 15, 304 - 15, 30, '#fff', 3);
+  c.fillStyle = '#fff'; c.font = '700 36px ' + FONT; c.textAlign = 'left'; c.fillText('Daily Quiz', 60 + 14 + 52 + 14, 316);
+  const bw = 400, bx = 1020 - bw; brush(c, bx, 262, bw, label ? 96 : 70, '#FFC815', 11);
+  const ex = (CFG.exam || 'Daily Quiz').toUpperCase(), es = fit1(c, ex, bw - 50, 42, 24, '800');
+  ital(c, ex, bx + bw / 2, label ? 308 : 311, '800 ' + es + 'px ' + FONT, '#1A1A1A');
+  if (label) ital(c, label, bx + bw / 2, 344, '700 26px ' + FONT, '#3A2F00');
+}
+function paperPath(c, x, y, w, h, seed) {
+  const r = rng(seed), R = 40; c.beginPath(); c.moveTo(x, y + R); c.lineTo(x + 4, y + 6);
+  for (let px = x + 4; px < x + w - 4; px += 18) c.lineTo(Math.min(px + 18, x + w - 4), y + r() * 9 - 2);
+  c.lineTo(x + w, y + R); c.arcTo(x + w, y + h, x, y + h, R); c.arcTo(x, y + h, x, y, R); c.closePath();
+}
+function cardShell(c, P) {
+  c.save(); c.shadowColor = 'rgba(40,20,0,.45)'; c.shadowBlur = 56; c.shadowOffsetY = 22; c.fillStyle = '#FBF8EF'; paperPath(c, CARD.x, CARD.y, CARD.w, CARD.h, 5); c.fill(); c.restore();
+}
+function timerBar(c, f, rev, e) {
+  const x = 60, y = 366, w = 800, h = 22, col = rev ? '#35C27A' : 'hsl(' + Math.round(150 * f) + ',90%,50%)';
+  c.save(); c.globalAlpha = e; c.fillStyle = 'rgba(255,255,255,.38)'; rrect(c, x, y, w, h, 12); c.fill();
+  if (rev || f > 0.001) { c.shadowColor = 'rgba(0,0,0,.25)'; c.shadowBlur = 12; c.shadowOffsetY = 3; c.fillStyle = col; rrect(c, x, y, rev ? w : Math.max(h, w * f), h, 12); c.fill(); }
+  c.restore(); return col;
+}
+function bookend(c, P, seg, lt) {
+  const intro = seg.type === 'intro', e = ease(lt / 0.5), mx = CARD.x + CARD.w / 2, pw = CARD.w - 96, col = acc(P);
+  c.drawImage(P.bgs[intro ? 0 : P.qs.length - 1], 0, 0); header(c, P, '');
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P);
+  brush(c, CARD.x + 10, CARD.y - 46, 360, 84, '#FFC815', 21); ital(c, intro ? 'TODAY’S QUIZ' : 'WELL DONE', CARD.x + 190, CARD.y + 12, '800 48px ' + FONT, '#1A1A1A');
+  const cy = CARD.y + CARD.h / 2 + 20;
+  if (intro) {
+    c.save(); c.shadowColor = 'rgba(0,0,0,.25)'; c.shadowBlur = 30; c.shadowOffsetY = 12; c.fillStyle = col; rrect(c, mx - 90, cy - 330, 180, 180, 48); c.fill(); c.restore(); glyph(c, P.subjId, mx, cy - 240, 96, '#fff');
+    c.fillStyle = INK; drawLines(c, fitText(c, P.subj, pw, 200, 92, 52, '700', 1.15), mx, cy - 120, 200, 1.15, 'center');
+    c.fillStyle = '#4A5368'; c.font = '500 40px ' + FONT; c.textAlign = 'center';
+    c.fillText(P.qs.length + ' questions  ·  ' + P.Ss[0] + ' seconds each', mx, cy + 120);
+    icon(c, 'chat', mx - 20, cy + 190, 40, col, 2.2); c.fillStyle = MUTE; c.font = '500 34px ' + FONT; c.fillText('Comment your answers', mx, cy + 285); c.textAlign = 'left';
+  } else {
+    c.fillStyle = INK; drawLines(c, fitText(c, 'How many did you get right?', pw, 330, 84, 48, '700', 1.2), mx, cy - 250, 330, 1.2, 'center');
+    c.fillStyle = '#4A5368'; c.font = '500 40px ' + FONT; c.textAlign = 'center'; c.fillText('Follow for a new quiz every day', mx, cy + 120);
+    if (P.handle) { const hs = fit1(c, P.handle, pw - 80, 48, 28, '800'); brush(c, mx - 230, cy + 160, 460, 90, '#FFC815', 33); ital(c, P.handle, mx, cy + 220, '800 ' + hs + 'px ' + FONT, '#1A1A1A'); } c.textAlign = 'left';
+  }
+  c.restore();
+}
+function questionFrame(c, P, seg, lt) {
+  const S = P.Ss[seg.qi], q = P.qs[seg.qi], mc = !!q.o, rev = lt >= S, e = ease(lt / 0.5), col = acc(P);
+  const cx = CARD.x, cy = CARD.y, px = cx + 44, pw = CARD.w - 88, mx = cx + CARD.w / 2;
+  c.drawImage(P.bgs[seg.qi], 0, 0); header(c, P, P.qs.length === 1 ? 'DAILY QUESTION' : 'QUESTION ' + (seg.qi + 1) + ' / ' + P.qs.length);
+  const rem = Math.max(0, S - lt); timerBar(c, rem / S, rev, e);
+  c.save(); c.globalAlpha = e; c.textAlign = 'right'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 12;
+  if (rev) icon(c, 'check', 972, 360, 46, '#fff', 3.6); else { c.fillStyle = '#fff'; c.font = '800 50px ' + FONT; c.fillText(String(Math.ceil(rem)), 1020, 404); }
+  c.restore(); c.textAlign = 'left';
+  c.save(); c.globalAlpha = e; c.translate(0, (1 - e) * 36); cardShell(c, P);
+  { const ex = cx + CARD.w - 88, ey = cy + 4; c.save(); c.shadowColor = 'rgba(40,20,0,.4)'; c.shadowBlur = 24; c.shadowOffsetY = 10; c.fillStyle = '#FFFDF5'; c.beginPath(); c.arc(ex, ey, 62, 0, 7); c.fill(); c.restore(); c.strokeStyle = '#FFC815'; c.lineWidth = 8; c.beginPath(); c.arc(ex, ey, 62, 0, 7); c.stroke(); icon(c, P.vecs[seg.qi], ex - 32, ey - 32, 64, col, 1.9); }
+  brush(c, cx + 10, cy - 46, 330, 84, '#FFC815', 7); ital(c, 'QUESTION', cx + 175, cy + 12, '800 48px ' + FONT, '#1A1A1A');
+  c.font = '700 28px ' + FONT; const nw = c.measureText(P.subj).width, cw = 14 + 40 + 10 + nw + 22;
+  c.font = '500 28px ' + FONT; let tp = q.t; const room = pw - cw - 24; while (tp.length > 3 && c.measureText(tp).width > room) tp = tp.slice(0, -2); if (tp !== q.t) tp += '…';
+  const gx = mx - (cw + 16 + c.measureText(tp).width) / 2, ty = cy + 70;
+  c.fillStyle = col; rrect(c, gx, ty, cw, 52, 26); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.arc(gx + 27, ty + 26, 20, 0, 7); c.fill(); glyph(c, P.subjId, gx + 27, ty + 26, 24, '#fff');
+  c.fillStyle = '#fff'; c.font = '700 28px ' + FONT; c.fillText(P.subj, gx + 14 + 40 + 10, ty + 37); c.fillStyle = MUTE; c.font = '500 28px ' + FONT; c.fillText(tp, gx + cw + 16, ty + 37);
+  const qh = mc ? 220 : 360; c.fillStyle = INK; drawLines(c, fitText(c, q.q, pw, qh, mc ? 52 : 66, 30, '700', 1.36), mx, cy + 150, qh, 1.36, 'center');
+  if (mc) {
+    const oy = cy + 390, oe = ease((lt - S) / 0.35);
+    q.o.forEach((o, k) => {
+      const y = oy + k * 82, right = k === q.i, hot = rev && right; c.save(); if (rev && !right) c.globalAlpha = e * (1 - 0.6 * oe);
+      if (hot) { c.shadowColor = 'rgba(46,158,91,.6)'; c.shadowBlur = 24; c.shadowOffsetY = 8; }
+      c.fillStyle = hot ? '#2E9E5B' : '#F3EEE0'; rrect(c, px, y, pw, 72, 22); c.fill(); c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; c.strokeStyle = hot ? '#2E9E5B' : '#DDD5BE'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = hot ? '#fff' : col; c.beginPath(); c.arc(px + 40, y + 36, 23, 0, 7); c.fill();
+      c.fillStyle = hot ? '#2E9E5B' : '#fff'; c.font = '700 27px ' + FONT; c.textAlign = 'center'; c.fillText('ABCD'[k], px + 40, y + 46);
+      c.fillStyle = hot ? '#fff' : INK; const fs = fit1(c, o, pw - 110, 34, 20, '600'); c.textAlign = 'left'; c.fillText(o, px + 82, y + 36 + fs * 0.35); c.restore();
+    });
+  }
+  const h = P.hints[seg.qi];
+  if (h && !rev) {
+    const he = ease((lt - 0.2) / 0.4); c.save(); c.globalAlpha = e * he; c.translate(0, (1 - he) * 14);
+    c.fillStyle = '#FFF1B8'; rrect(c, px, cy + 520, pw, 130, 28); c.fill(); c.strokeStyle = '#E3B100'; c.lineWidth = 3; c.stroke();
+    c.fillStyle = '#7A5A00'; c.font = '600 28px ' + FONT; const lab = 'Hint: ' + h[0].toLowerCase(), lw = c.measureText(lab).width; icon(c, 'bulb', mx - lw / 2 - 40, cy + 536, 30, '#7A5A00', 2.2); c.textAlign = 'left'; c.fillText(lab, mx - lw / 2 - 2, cy + 562);
+    fit1(c, h[1], pw - 40, 52, 26, '700'); c.fillStyle = '#2B2200'; c.textAlign = 'center'; c.fillText(h[1], mx, cy + 626); c.textAlign = 'left'; c.restore();
+  }
+  const top = cy + (mc ? 740 : 700), ph = mc ? 270 : 280;
+  if (!rev) {
+    const my = top + ph / 2; c.save(); c.globalAlpha = e;
+    c.font = '700 44px ' + FONT; const t1 = 'Comment your answer', bw = c.measureText(t1).width + 130, bx = mx - bw / 2;
+    c.fillStyle = '#FFF3C4'; rrect(c, bx, my - 54, bw, 108, 54); c.fill(); c.strokeStyle = '#E0A800'; c.lineWidth = 3; c.stroke();
+    icon(c, 'chat', bx + 36, my - 24, 48, '#B07A00', 2.4); c.fillStyle = '#3A2F00'; c.textAlign = 'left'; c.fillText(t1, bx + 100, my + 15);
+    c.fillStyle = MUTE; c.font = '500 28px ' + FONT; c.textAlign = 'center'; c.fillText('Answer appears when the bar ends', mx, my + 104); c.textAlign = 'left'; c.restore();
+  } else {
+    const ae = ease((lt - S) / 0.35), txt = mc ? q.s : q.a; c.save(); c.globalAlpha = e * ae; c.translate(mx, top + ph / 2); c.scale(0.94 + 0.06 * ae, 0.94 + 0.06 * ae); c.translate(-mx, -(top + ph / 2));
+    c.fillStyle = '#D8F3DF'; rrect(c, px, top, pw, ph, 36); c.fill(); c.strokeStyle = '#2E9E5B'; c.lineWidth = 3; c.stroke();
+    brush(c, px - 4, top - 34, mc ? 290 : 250, 66, '#1F7A45', 17); ital(c, mc ? 'SOLUTION' : 'ANSWER', px - 4 + (mc ? 145 : 125), top + 14, '800 38px ' + FONT, '#fff');
+    c.fillStyle = '#0F3D24'; drawLines(c, mc ? fitText(c, txt, pw - 60, ph - 90, 38, 22, '600', 1.4) : fitText(c, txt, pw - 50, ph - 90, 76, 32, '700', 1.3), mx, top + 54, ph - 70, mc ? 1.4 : 1.3, 'center'); c.restore();
+  }
+  c.restore();
+  if (rev) {                                           // confetti burst, computed from time so every frame is exact
+    const tt = lt - S; if (tt < 1.9) {
+      const ox = mx, oy = mc ? cy + 390 + q.i * 82 + 36 : top + ph / 2, rg = rng(P.seed + seg.qi * 31);
+      for (let k = 0; k < 90; k++) {
+        const a = -Math.PI / 2 + (rg() - .5) * 2.4, sp = 560 + rg() * 900, w = 14 + rg() * 14, hh = 9 + rg() * 11, r0 = rg() * 6, vr = (rg() - .5) * 14, rnd = k % 4 === 0;
+        const x = ox + Math.cos(a) * sp * tt * Math.pow(0.5, tt * 1.2), y = oy + Math.sin(a) * sp * tt * Math.pow(0.5, tt * 1.2) + 900 * tt * tt;
+        c.save(); c.globalAlpha = Math.max(0, 1 - Math.max(0, tt - 1.2) / 0.7); c.translate(x, y); c.rotate(r0 + vr * tt); c.fillStyle = CONF[k % CONF.length];
+        if (rnd) { c.beginPath(); c.arc(0, 0, w / 2, 0, 7); c.fill(); } else c.fillRect(-w / 2, -hh / 2, w, hh); c.restore();
+      }
+    }
+  }
+}
+function drawFrame(c, P, t) {
+  const seg = P.segs.find(s => t < s.start + s.dur) || P.segs[P.segs.length - 1], lt = Math.min(t - seg.start, seg.dur);
+  if (seg.type === 'q') questionFrame(c, P, seg, lt); else bookend(c, P, seg, lt); return {seg, lt};
+}
 
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="form.html">Login and Sign Up Form</a>
-      </div>
-       <div class="col-md-3 thumbnail" style="text-align: center;">
+/* ============ video: recorder ============ */
+function pickMime() { const L = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']; return L.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || ''; }
+const reelMsg = t => { $('reelMsg').textContent = t; };
+let LASTREEL = null, BATCH = {left: 1, total: 1, done: 0}, MIC = null, VOICE_DEAD = false;
+function saveUrl(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 800); }
+function nextVideo() { if (LASTREEL) { closeReel(); startReel(LASTREEL.arr, LASTREEL.name); } }
+async function startReel(arr, name, cont) {
+  if (RC) return; LASTREEL = {arr, name}; if (!cont) { const nb = Math.max(1, CFG.batch || 1); BATCH = {left: nb, total: nb, done: 0}; }
+  if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome or Edge.'); return; }
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
+  const n = CFG.reelN, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
+  if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
+  const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], audioA: [], errs: [], total: 0, voice: '', note: ''};
+  P.vecs = qs.map(q => vecFor(q, subj.id)); P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
+  RC = {prep: true, cancelled: false, srcs: []}; const cv = $('reelCv'); cv.width = REEL.W; cv.height = REEL.H; const c = cv.getContext('2d');
+  $('reel').style.display = 'flex'; $('reelDone').style.display = 'none'; $('reelLive').style.display = 'flex'; cv.style.display = 'block';
+  c.fillStyle = '#fff'; c.fillRect(0, 0, REEL.W, REEL.H);
+  if (CFG.aiv && VOICE_DEAD) P.note = 'AI voice was skipped because it failed earlier in this session. Tap \u201cTest AI voice\u201d to retry.';
+  if (CFG.aiv && AC && !VOICE_DEAD) {
+    P.vobj = pickAiVoice(); P.voice = P.vobj.se + ' / ' + P.vobj.pl;
+    for (let k = 0; k < qs.length; k++) {
+      if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…');
+      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.vobj, P.errs); } catch (e) { if (k === 0) break; continue; }
+      try { P.audioA[k] = await fetchTts(ansText(qs[k]).slice(0, 200), P.vobj, P.errs); } catch (e) {}
+    }
+    if (RC.cancelled) { RC = null; return; }
+    if (!P.audio.some(Boolean)) { P.voice = ''; VOICE_DEAD = true; P.note = 'AI voice could not load (' + P.errs.slice(0, 2).join('; ') + '). Turn on \u201cRecord my microphone\u201d and speak, or try another network.'; }
+  }
+  if (CFG.aiv && !P.voice && !CFG.mic && BATCH.total > 1) { reelMsg('Stopped: no voice available, so the batch would be silent. ' + P.note); BATCH.left = 0; RC = null; return; }
+  P.audio.forEach((b, k) => { if (b) P.Ss[k] = Math.max(P.Ss[k], Math.ceil(b.duration + 1.6)); });
+  let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
+  if (qs.length > 1) add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + Math.max(q.o ? 6 : REEL.HOLD, P.audioA[qi] ? P.audioA[qi].duration + 1.2 : 0), qi)); if (qs.length > 1) add('outro', REEL.OUTRO); P.total = st;
+  try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
+  const stream = cv.captureStream(30), dest = AC ? AC.createMediaStreamDestination() : null; let mic = null;
+  if (dest) dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+  if (CFG.mic && dest) { try { mic = (MIC && MIC.active) ? MIC : await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true}}); MIC = mic; AC.createMediaStreamSource(mic).connect(dest); } catch (e) { P.note += ' Microphone blocked.'; } }
+  const mime = pickMime(), chunks = []; let rec;
+  try { rec = new MediaRecorder(stream, mime ? {mimeType: mime, videoBitsPerSecond: 6000000} : {}); } catch (e) { rec = new MediaRecorder(stream); }
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  RC.prep = false; RC.dest = dest; RC.rec = rec;
+  const cleanup = () => { cancelAnimationFrame(RC.raf); RC.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); stream.getTracks().forEach(t => t.stop()); if (mic && !(BATCH.left > 1)) { mic.getTracks().forEach(t => t.stop()); MIC = null; } try { wake && wake.release(); } catch (e) {} };
+  rec.onstop = () => {
+    const was = RC; cleanup(); RC = null; if (was.cancelled) { $('reel').style.display = 'none'; return; }
+    const type = (rec.mimeType || mime || 'video/webm').split(';')[0], ext = type.includes('mp4') ? 'mp4' : 'webm', url = URL.createObjectURL(new Blob(chunks, {type}));
+    const fname = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '-q' + (pos + 1);
+    if (!shuffle) { try { localStorage.setItem(key, String((pos + qs.length) % arr.length)); } catch (e) {} }
+    BATCH.done++; BATCH.left--;
+    if (CFG.autoDl) { saveUrl(url, fname + '.' + ext); const m = templateMeta(P, name); setTimeout(() => saveUrl(URL.createObjectURL(new Blob([m.title + '\n\n' + m.desc], {type: 'text/plain'})), fname + '.txt'), 900); }
+    if (BATCH.left > 0) { let c3 = CFG.mic ? 4 : 2; const wait = () => { if (BATCH.left <= 0) return; if (c3 > 0) { reelMsg('Saved ' + BATCH.done + ' of ' + BATCH.total + '. Next video in ' + c3 + '\u2026'); c3--; setTimeout(wait, 1000); } else startReel(arr, name, true); }; wait(); return; }
+    $('reelVid').src = url; $('reelDl').href = url; $('reelDl').download = 'quiz-' + subj.id + '-' + new Date().toISOString().slice(0, 10) + '.' + ext;
+    $('vNote').textContent = (P.voice ? 'AI voice: ' + P.voice + '. Check the audio before posting.' : P.note) + (CFG.autoDl ? ' Saved automatically' + (BATCH.done > 1 ? ' (' + BATCH.done + ' videos in this run).' : '.') : '');
+    cv.style.display = 'none'; $('reelLive').style.display = 'none'; $('reelDone').style.display = 'flex'; fillMeta(P, name, true);
+  };
+  rec.start(); const t0 = performance.now(), base = AC ? AC.currentTime : 0; let lastSec = -1, answered = -1;
+  if (AC && dest) P.audio.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + 0.5); RC.srcs.push(src); });
+  if (AC && dest) P.audioA.forEach((b, k) => { if (!b) return; const sg = P.segs.find(s => s.type === 'q' && s.qi === k), src = AC.createBufferSource(); src.buffer = b; src.connect(dest); if (!CFG.mic) src.connect(AC.destination); src.start(base + sg.start + P.Ss[k] + 0.6); RC.srcs.push(src); });
+  const loop = () => {
+    if (!RC) return; const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
+    if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi]; if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
+    reelMsg((r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording') + (BATCH.total > 1 ? ' \u00b7 video ' + (BATCH.done + 1) + ' of ' + BATCH.total : '') + (!P.voice && !CFG.mic ? ' \u00b7 no voice' : ''));
+    if (t >= P.total) { rec.stop(); return; } RC.raf = requestAnimationFrame(loop);
+  };
+  loop();
+}
+function cancelReel() { BATCH.left = 0; if (RC && RC.rec) { RC.cancelled = true; try { RC.rec.stop(); } catch (e) {} } else if (RC) RC.cancelled = true; else $('reel').style.display = 'none'; if (RC && RC.prep) $('reel').style.display = 'none'; }
+function closeReel() { $('reel').style.display = 'none'; $('reelVid').removeAttribute('src'); }
 
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="randomNumber.html">Random Number Generator</a>
-      </div>
-       <div class="col-md-3 thumbnail" style="text-align: center;">
-
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="carousel.html">Carousel</a>
-      </div>
-      <div class="col-md-3 thumbnail" style="text-align: center;">
-
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="recipeBook.html">Recipe Book</a>
-      </div>
-      <div class="col-md-3 thumbnail" style="text-align: center;">
-
-       <a class="nav-link text-uppercase font-weight-bold text-lg " href="cssAnimations.html">CSS Animations</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-  <!-- Resume Download Section -->
-  <section id="resume" class="py-5 bg-dark" style="background: rgb(9,9,121);
-background: -moz-radial-gradient(circle, rgba(9,9,121,1) 0%, rgba(6,0,102,1) 33%, rgba(20,2,91,1) 100%);
-background: -webkit-radial-gradient(circle, rgba(9,9,121,1) 0%, rgba(6,0,102,1) 33%, rgba(20,2,91,1) 100%);
-background: radial-gradient(circle, rgba(9,9,121,1) 0%, rgba(6,0,102,1) 33%, rgba(20,2,91,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#090979",endColorstr="#14025b",GradientType=1);">
-    <div class="container text-center text-light">
-      <h2>Download My Resume</h2>
-      <a href="https://github.com/Amanush/nirveshverma.github.io/blob/main/Resume_2023.pdf" 
-      class="btn btn-primary btn-lg mt-3">Download Resume PDF</a>
-    </div>
-  </section>
-
-  <!-- JavaScript -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="index.js"></script>
+/* ============ title and description ============ */
+const TAGS = {hindi: ['#Hindi', '#HindiGrammar'], english: ['#English', '#EnglishGrammar'], science: ['#GeneralScience', '#Science'], reasoning: ['#Reasoning', '#LogicalReasoning'], computer: ['#ComputerKnowledge', '#Computer'], maths: ['#Maths', '#MathsTricks', '#Aptitude']};
+const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+const snip = t => t.replace(/\s+/g, ' ').trim().slice(0, 55) + (t.length > 55 ? '…' : '');
+const chapters = P => '0:00 Intro\n' + P.segs.filter(s => s.type === 'q').map(s => fmtT(s.start) + ' Q' + (s.qi + 1) + ' ' + snip(P.qs[s.qi].q)).join('\n');
+function templateMeta(P, name) {
+  if (P.qs.length === 1) { const q = P.qs[0], ex = (CFG.exam || 'MP Patwari').trim(), tags = ['#' + ex.replace(/[^A-Za-z0-9]/g, ''), '#MPPEB', '#GovtExam', '#Quiz', '#DailyQuiz', '#Shorts'].concat(TAGS[P.subjId] || []); return {title: 'Can You Answer This ' + P.subj + ' Question? | ' + ex, desc: q.q.replace(/\s+/g, ' ').trim() + '\n\nComment your answer, then watch the reveal.\n' + (P.handle ? 'Follow ' + P.handle + ' for a new question every day.\n' : '') + '\n' + tags.join(' ')}; }
+  const n = P.qs.length, exam = (CFG.exam || 'MP Patwari').trim(), sj = P.subj, tp = (name && name !== 'All') ? name : '';
+  const titles = [n + ' ' + sj + ' Questions That Decide Your Selection | ' + exam, 'Can You Solve All ' + n + '? ' + sj + ' Quiz | ' + exam, sj + (tp ? ' ' + tp : ' Practice') + ' Quiz: ' + n + ' PYQs | ' + exam];
+  let title = titles[(new Date().getDate() + n) % 3]; if (title.length > 95) title = titles[0].slice(0, 95);
+  const tags = ['#' + exam.replace(/[^A-Za-z0-9]/g, ''), '#MPPEB', '#GovtExam', '#Quiz', '#DailyQuiz'].concat(TAGS[P.subjId] || []);
+  return {title, desc: n + ' ' + sj + ' questions for ' + exam + '. Pause, think, then check the answer.\nComment your score: how many did you get right?\n\nChapters:\n' + chapters(P) + '\n\n' + (P.handle ? 'Follow ' + P.handle + ' for a new quiz every day.\n\n' : '') + tags.join(' ')};
+}
+async function aiMeta(P, name) {
+  const exam = (CFG.exam || 'MP Patwari').trim(), sample = P.qs.slice(0, 5).map(q => snip(q.q)).join(' | ');
+  const prompt = 'Write YouTube Shorts metadata for an Indian government exam quiz video. Exam: ' + exam + '. Subject: ' + P.subj + '. Topic: ' + name + '. ' + P.qs.length + ' questions. Sample questions: ' + sample + '. Reply with ONLY compact JSON: {"title":"max 70 chars, curiosity hook, no emojis","description":"two short lines asking viewers to comment their score, then 6 relevant hashtags"}';
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt) + '?model=openai&seed=' + Math.floor(Math.random() * 1e6), {signal: ctl.signal});
+    const j = JSON.parse((await r.text()).match(/\{[\s\S]*\}/)[0]);
+    if (typeof j.title !== 'string' || typeof j.description !== 'string' || !j.title.trim()) throw new Error('bad');
+    return {title: j.title.trim().slice(0, 95), desc: j.description.trim() + '\n\nChapters:\n' + chapters(P) + (P.handle ? '\n\nFollow ' + P.handle + ' for a new quiz every day.' : '')};
+  } finally { clearTimeout(to); }
+}
+let META = null;
+async function fillMeta(P, name, useAi) {
+  META = {P, name}; const t = templateMeta(P, name); $('mTitle').value = t.title; $('mDesc').value = t.desc; $('mSrc').textContent = 'Template';
+  if (!(useAi && CFG.ai)) return; $('mSrc').textContent = 'Writing with AI…';
+  try { const a = await aiMeta(P, name); $('mTitle').value = a.title; $('mDesc').value = a.desc; $('mSrc').textContent = 'AI written. Check it before posting.'; } catch (e) { $('mSrc').textContent = 'AI unavailable, using the template.'; }
+}
+function regenMeta() { if (META) fillMeta(META.P, META.name, true); }
+function copyEl(id, btn) {
+  const el = $(id); el.select(); const done = () => { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1200); };
+  if (navigator.clipboard) navigator.clipboard.writeText(el.value).then(done, () => { document.execCommand('copy'); done(); }); else { document.execCommand('copy'); done(); }
+}
+init();
+</script>
 </body>
-
 </html>
