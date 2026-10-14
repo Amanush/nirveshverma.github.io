@@ -1,0 +1,164 @@
+{
+  "schema": "gkturbo.topic/1",
+  "id": "narmada-river-hinglish",
+  "title": "Narmada Nadi (Hinglish)",
+  "subtitle": "Madhya Pradesh ki jeevan rekha",
+  "category": "Geography",
+  "exams": [
+    "MPPEB",
+    "MP Vyapam",
+    "UPSC"
+  ],
+  "language": "hinglish",
+  "slides": [
+    {
+      "type": "title",
+      "heading": "Narmada River",
+      "tagline": "Isse Rewa aur MP ki Lifeline bhi kehte hain",
+      "image": null
+    },
+    {
+      "type": "overview",
+      "heading": "Quick Overview",
+      "points": [
+        "Amarkantak (Anuppur, MP) se nikalti hai",
+        "Pashchim mein behkar Khambhat ki khadi (Arabian Sea) mein girti hai",
+        "MP, Maharashtra aur Gujarat se guzarti hai",
+        "Peninsular India ki sabse badi pashchim-vahini nadi"
+      ]
+    },
+    {
+      "type": "facts",
+      "heading": "Key Facts",
+      "items": [
+        {
+          "label": "Total length",
+          "value": "About 1,312 km"
+        },
+        {
+          "label": "Length in MP",
+          "value": "About 1,077 km"
+        },
+        {
+          "label": "Valley type",
+          "value": "Rift valley between Vindhya and Satpura"
+        },
+        {
+          "label": "Mouth",
+          "value": "Estuary, not delta"
+        },
+        {
+          "label": "Largest tributary",
+          "value": "Tawa"
+        }
+      ]
+    },
+    {
+      "type": "map",
+      "heading": "Course of the River",
+      "image": {
+        "src": "assets/narmada-sketch.svg",
+        "alt": "Schematic: Narmada Amarkantak se pashchim ki taraf Vindhya (uttar) aur Satpura (dakshin) ke beech rift valley mein behti hai",
+        "source": "Original GK Turbo sketch, not to scale"
+      },
+      "labels": [
+        {
+          "text": "Amarkantak",
+          "note": "Source"
+        },
+        {
+          "text": "Bhedaghat",
+          "note": "Marble Rocks and Dhuandhar Falls near Jabalpur"
+        },
+        {
+          "text": "Omkareshwar",
+          "note": "Jyotirlinga on an island in the river"
+        },
+        {
+          "text": "Bharuch",
+          "note": "Near the mouth at the Gulf of Khambhat"
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "heading": "West-flowing vs East-flowing",
+      "left": {
+        "title": "Narmada and Tapi",
+        "points": [
+          "Flow west",
+          "Form estuaries",
+          "Run through rift valleys"
+        ]
+      },
+      "right": {
+        "title": "Mahanadi, Godavari, Krishna",
+        "points": [
+          "Flow east",
+          "Form deltas",
+          "Fall into Bay of Bengal"
+        ]
+      }
+    },
+    {
+      "type": "trick",
+      "heading": "Memory Trick",
+      "mnemonic": "Narmada = Never builds a delta, goes West",
+      "decode": [
+        {
+          "key": "Narmada + Tapi",
+          "meaning": "West-flowing, estuary, rift valley"
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "statement": "Narmada nadi ____ se nikalti hai.",
+      "options": [
+        "Amarkantak",
+        "Multai",
+        "Mahabaleshwar",
+        "Nashik"
+      ],
+      "answer": 0,
+      "explain": [
+        "Amarkantak Anuppur district, MP mein hai",
+        "Tapi Multai (Betul) se nikalti hai"
+      ],
+      "trick": "Amar = amar strot Narmada ka",
+      "pyq": [
+        {
+          "exam": "MP Vyapam",
+          "year": "Practice"
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "statement": "The Narmada falls into the sea through an ____, not a delta.",
+      "options": [
+        "Estuary",
+        "Lagoon",
+        "Fjord",
+        "Bay"
+      ],
+      "answer": 0,
+      "explain": [
+        "It flows in a rift valley with a steep, straight course",
+        "Little silt reaches the mouth to build a delta"
+      ],
+      "trick": "West rivers = Estuary",
+      "pyq": []
+    },
+    {
+      "type": "summary",
+      "heading": "Revise in 30 seconds",
+      "points": [
+        "Source: Amarkantak",
+        "West-flowing, estuary",
+        "Rift valley: Vindhya and Satpura",
+        "Dhuandhar Falls near Jabalpur"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "_help": "Claude: fill every field. Keep each slide short (max ~25 words per text). Delete slides that don't apply. Do not rename keys. Optional on ANY slide: \"image\" {src,alt,source} and \"narration\" {script,audio}. Use image: null if none. Write quiz statements as one sentence with a ____ blank.",
+  "schema": "gkturbo.topic/1",
+  "id": "topic-id-lowercase",
+  "title": "Topic name",
+  "subtitle": "One-line hook",
+  "category": "Geography | General Science | Polity | History | MP GK | Current Affairs",
+  "exams": [
+    "MPPEB",
+    "MP Vyapam",
+    "UPSC"
+  ],
+  "language": "en | hi | hinglish",
+  "slides": [
+    {
+      "type": "title",
+      "heading": "",
+      "tagline": "",
+      "image": {
+        "src": "",
+        "alt": "",
+        "source": ""
+      }
+    },
+    {
+      "type": "overview",
+      "heading": "",
+      "points": [
+        "",
+        ""
+      ]
+    },
+    {
+      "type": "facts",
+      "heading": "",
+      "items": [
+        {
+          "label": "",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "type": "map",
+      "heading": "",
+      "image": {
+        "src": "",
+        "alt": "",
+        "source": ""
+      },
+      "labels": [
+        {
+          "text": "",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "type": "timeline",
+      "heading": "",
+      "events": [
+        {
+          "when": "",
+          "what": ""
+        }
+      ]
+    },
+    {
+      "type": "compare",
+      "heading": "",
+      "left": {
+        "title": "",
+        "points": [
+          ""
+        ]
+      },
+      "right": {
+        "title": "",
+        "points": [
+          ""
+        ]
+      }
+    },
+    {
+      "type": "trick",
+      "heading": "Memory Trick",
+      "mnemonic": "",
+      "decode": [
+        {
+          "key": "",
+          "meaning": ""
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "statement": "Full sentence with a ____ blank, e.g. 'The Narmada rises at ____.'",
+      "options": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "answer": 0,
+      "explain": [
+        "",
+        ""
+      ],
+      "trick": "",
+      "pyq": [
+        {
+          "exam": "",
+          "year": ""
+        }
+      ],
+      "image": null,
+      "narration": {
+        "script": "",
+        "audio": ""
+      }
+    },
+    {
+      "type": "summary",
+      "heading": "Revise in 30 seconds",
+      "points": [
+        ""
+      ]
+    }
+  ],
+  "reveal": "Every list-type slide shows items one by one on Next/arrow key; quiz runs timer then reveals answer, explain, trick, pyq."
+}
