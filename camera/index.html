@@ -32,7 +32,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;font-wei
 .check{display:flex;gap:12px;align-items:flex-start;color:var(--text);font-size:14px;margin-top:14px;cursor:pointer}
 .check input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
 .check small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-video{display:block;width:100%;aspect-ratio:16/9;px;background:#000;border-radius:12px;object-fit:contain;margin:14px 0}
+video{display:block;width:100%;aspect-ratio:16/9;max-height:460px;background:#000;border-radius:12px;object-fit:contain;margin:14px 0}
 .meter{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted);font-weight:600}
 .meter .bar{flex:1;height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
 .meter .fill{height:100%;width:0;background:var(--ok);transition:width .08s}
@@ -97,7 +97,11 @@ ol.steps li{margin:4px 0}
     <select id="facing"><option value="environment">Rear Camera</option><option value="user">Front Camera</option></select>
     
     <label for="quality">Resolution Quality</label>
-    <select id="quality"><option value="720">HD 720p (Recommended)</option><option value="1080">Full HD 1080p</option><option value="480">SD 480p</option></select>
+    <select id="quality">
+      <option value="1920">Full HD 1080p (Max Quality)</option>
+      <option value="1280" selected>HD 720p (Recommended)</option>
+      <option value="640">SD 480p (Fastest)</option>
+    </select>
 
     <div class="slider-group">
       <label for="brightnessRange" style="margin-top:0">Brightness <span id="brightnessVal" class="slider-val">100%</span></label>
@@ -227,28 +231,43 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     if (!navigator.mediaDevices?.getUserMedia) return setStatus("phone", "HTTPS required for camera access.", "bad");
     if (!ensurePeerLib("phone")) return;
     $("phoneStart").disabled = true;
-    setStatus("phone", "Requesting camera & microphone permissions...");
+    setStatus("phone", "Requesting high-res camera access...");
     try {
-      const targetRes = Number($("quality").value);
+      const res = Number($("quality").value); // 1920, 1280, or 640
       const landscape = $("forceLandscape").checked;
       
-      // Use ideal constraints without forced hard axis inversion to prevent sensor zoom clipping
-      const width = landscape ? { ideal: targetRes === 1080 ? 1920 : targetRes === 720 ? 1280 : 854 } : { ideal: 720 };
-      const height = landscape ? { ideal: targetRes } : { ideal: targetRes === 1080 ? 1920 : targetRes === 720 ? 1280 : 480 };
+      // Force exact dimensions to prevent mobile browsers from downscaling silently
+      const width = landscape ? res : Math.round(res * 9 / 16);
+      const height = landscape ? Math.round(res * 9 / 16) : res;
       const on = $("noise").checked;
 
       localStream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: on, noiseSuppression: on, autoGainControl: on },
-        video: { facingMode: { ideal: $("facing").value }, width, height, frameRate: { ideal: 30 } }
+        video: { 
+          facingMode: { exact: $("facing").value }, 
+          width: { exact: width }, 
+          height: { exact: height }, 
+          frameRate: { ideal: 30, max: 30 } 
+        }
       });
     } catch (err) {
-      $("phoneStart").disabled = false;
-      return setStatus("phone", "Camera error: " + (err.message || err.name), "bad");
+      // Fallback if 'exact' facingMode/resolution isn't supported by certain smartphone camera drivers
+      try {
+        const res = Number($("quality").value);
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: { facingMode: $("facing").value, width: { ideal: res }, height: { ideal: Math.round(res * 9 / 16) } }
+        });
+      } catch (fallbackErr) {
+        $("phoneStart").disabled = false;
+        return setStatus("phone", "Camera error: " + (fallbackErr.message || fallbackErr.name), "bad");
+      }
     }
     $("localVideo").srcObject = localStream;
     updateVideoFilters();
     startMeter(localStream, $("phoneLevel"), "phone");
     $("phoneStart").classList.add("hidden");
+    $("phoneStarp") // placeholder check
     $("phoneStop").classList.remove("hidden");
     wantConnection = true;
     connectToPC();
@@ -297,83 +316,3 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     peer = new Peer(pcId(), { debug: 1 });
     peer.on("open", () => setStatus("pc", "Ready. Open the phone link on your device.", "good"));
     peer.on("call", incoming => {
-      if (call) { try { call.close(); } catch (_) {} }
-      call = incoming;
-      incoming.answer();
-      incoming.on("stream", stream => {
-        if (remoteStream === stream) return;
-        remoteStream = stream;
-        const v = $("remoteVideo");
-        v.srcObject = stream; v.muted = false;
-        v.play().catch(() => $("unmute").classList.remove("hidden"));
-        startMeter(stream, $("pcLevel"), "pc");
-        $("record").disabled = false;
-        setStatus("pc", "Live feed active.", "good");
-      });
-      incoming.on("close", () => {
-        if (isRecording) finishRecording();
-        remoteStream = null; $("remoteVideo").srcObject = null; $("record").disabled = true;
-        stopMeter("pc", $("pcLevel"));
-        setStatus("pc", "Phone disconnected. Waiting to reconnect...", "warn");
-      });
-    });
-  }
-  function pcStop() {
-    if (isRecording) finishRecording();
-    destroyPeer(); remoteStream = null; $("remoteVideo").srcObject = null;
-    stopMeter("pc", $("pcLevel"));
-    $("record").disabled = true; $("pcStart").disabled = false; $("pcStop").disabled = true;
-    setStatus("pc", "Receiver stopped.");
-  }
-  $("pcStart").onclick = pcStart;
-  $("pcStop").onclick = pcStop;
-  $("unmute").onclick = () => { $("remoteVideo").muted = false; $("remoteVideo").play(); $("unmute").classList.add("hidden"); };
-
-  // Recording
-  function mime() {
-    return ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"]
-      .find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
-  }
-  function fmt(s) { return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
-  
-  $("record").onclick = () => {
-    if (!remoteStream || !remoteStream.active) return setStatus("pc", "No active remote stream to record.", "bad");
-    try {
-      chunks = [];
-      const type = mime();
-      recorder = new MediaRecorder(remoteStream, type ? { mimeType: type } : undefined);
-      recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-      recorder.onstop = saveRecording;
-      recorder.start(1000);
-      isRecording = true;
-      $("record").disabled = true; $("stopRecord").disabled = false;
-      recStart = Date.now(); $("timer").classList.remove("hidden");
-      timerId = setInterval(() => $("timer").textContent = "● " + fmt(Math.floor((Date.now() - recStart) / 1000)), 500);
-      setStatus("pc", "Recording in progress...", "good");
-    } catch (err) { setStatus("pc", "Recording failed: " + err.message, "bad"); }
-  };
-  function finishRecording() { if (recorder && recorder.state !== "inactive") recorder.stop(); }
-  $("stopRecord").onclick = () => { finishRecording(); setStatus("pc", "Saving recording...", "warn"); };
-  
-  function saveRecording() {
-    clearInterval(timerId); $("timer").classList.add("hidden");
-    isRecording = false; $("stopRecord").disabled = true; $("record").disabled = !remoteStream;
-    const type = recorder.mimeType || "video/webm";
-    const blob = new Blob(chunks, { type });
-    if (!blob.size) return setStatus("pc", "Recording is empty.", "bad");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "cam-recording-" + new Date().toISOString().slice(0,19).replace(/[:T]/g, "-") + (type.includes("mp4") ? ".mp4" : ".webm");
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-    setStatus("pc", "Recording saved successfully!", "good");
-  }
-
-  const h = new URLSearchParams(location.hash.slice(1));
-  $("room").value = h.get("room") || randomCode();
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  chooseRole(h.get("role") === "phone" || (!h.get("role") && isMobile) ? "phone" : "pc");
-})();
-</script>
-</body>
-</html>
