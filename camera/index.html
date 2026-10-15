@@ -12,8 +12,8 @@ main{max-width:760px;margin:auto;padding:24px 16px 48px}
 h1{font-size:clamp(24px,4vw,32px);margin:0 0 6px;letter-spacing:-.02em;font-weight:800}
 .lead{color:var(--muted);margin:0 0 20px;font-size:14px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.card.alert{border-color:var(--amber);background:#2a2208;color:#ffe3a3;font-size:13px}
 h2{font-size:16px;margin:0 0 4px;font-weight:700}
-.hint{color:var(--muted);font-size:13px;margin:0 0 12px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .seg button{padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-weight:600;cursor:pointer;text-align:left;transition:all .2s}
 .seg button small{display:block;font-weight:400;color:var(--muted);font-size:12px}
@@ -29,7 +29,7 @@ button.btn.big{width:100%;padding:16px;font-size:16px}
 button:disabled{opacity:.4;cursor:not-allowed}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
-.check{display:flex;gap:12px;align-items:flex-start;color:var(--text);font-size:14px;margin-top:14px;cursor:pointer}
+.check{display:flex;gap:12px;align-items:flex-start;color:var(--text);font-size:14px;margin-top:14px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400}
 .check input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
 .check small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 video{display:block;width:100%;aspect-ratio:16/9;max-height:460px;background:#000;border-radius:12px;object-fit:contain;margin:14px 0}
@@ -53,13 +53,15 @@ ol.steps li{margin:4px 0}
   <h1>PhoneCam to PC Pro</h1>
   <p class="lead">Use your phone as a wireless camera and microphone with live monitoring, brightness, and landscape orientation.</p>
 
+  <section id="envWarn" class="card alert hidden"></section>
+
   <section class="card">
     <h2>1. Device Setup</h2>
     <div class="seg">
-      <button id="rolePhone" aria-pressed="false">Phone<small>Sends video & mic</small></button>
-      <button id="rolePC" aria-pressed="true">Computer<small>Views & records</small></button>
+      <button id="rolePhone" type="button" aria-pressed="false">Phone<small>Sends video &amp; mic</small></button>
+      <button id="rolePC" type="button" aria-pressed="true">Computer<small>Views &amp; records</small></button>
     </div>
-    <label for="room">Room Code (Match on both devices)</label>
+    <label for="room">Room Code (match on both devices)</label>
     <div class="row">
       <input id="room" type="text" maxlength="32" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button id="newRoom" class="btn ghost" type="button">New code</button>
@@ -69,22 +71,22 @@ ol.steps li{margin:4px 0}
 
   <!-- PC PANEL -->
   <section id="pcPanel" class="card">
-    <h2>2. PC Monitor & Recorder</h2>
+    <h2>2. PC Monitor &amp; Recorder</h2>
     <ol class="steps">
       <li>Click "Start receiving".</li>
-      <li>Open your phone link and activate the camera.</li>
+      <li>Open your phone link and tap "Start camera".</li>
       <li>Hit "Start recording" when you are ready.</li>
     </ol>
     <div class="row">
-      <button id="pcStart" class="btn" style="flex:1">Start receiving</button>
-      <button id="pcStop" class="btn ghost" disabled>Stop</button>
+      <button id="pcStart" class="btn" type="button" style="flex:1">Start receiving</button>
+      <button id="pcStop" class="btn ghost" type="button" disabled>Stop</button>
     </div>
     <video id="remoteVideo" autoplay playsinline controls></video>
     <div class="meter"><span>MIC INPUT LEVEL</span><div class="bar"><div id="pcLevel" class="fill"></div></div></div>
-    <button id="unmute" class="btn ghost hidden" style="margin-top:10px">Click to hear audio</button>
+    <button id="unmute" class="btn ghost hidden" type="button" style="margin-top:10px">Click to hear audio</button>
     <div class="row" style="margin-top:14px;align-items:center">
-      <button id="record" class="btn" disabled>Start recording</button>
-      <button id="stopRecord" class="btn stop" disabled>Stop and save</button>
+      <button id="record" class="btn" type="button" disabled>Start recording</button>
+      <button id="stopRecord" class="btn stop" type="button" disabled>Stop and save</button>
       <span id="timer" class="rec hidden">00:00</span>
     </div>
     <div id="pcStatus" class="status"><span class="dot"></span><span class="msg">Not started yet.</span></div>
@@ -95,7 +97,7 @@ ol.steps li{margin:4px 0}
     <h2>2. Phone Stream Setup</h2>
     <label for="facing">Camera Source</label>
     <select id="facing"><option value="environment">Rear Camera</option><option value="user">Front Camera</option></select>
-    
+
     <label for="quality">Resolution Quality</label>
     <select id="quality">
       <option value="1920">Full HD 1080p (Max Quality)</option>
@@ -108,89 +110,90 @@ ol.steps li{margin:4px 0}
       <input id="brightnessRange" type="range" min="50" max="150" value="100" step="5">
     </div>
 
-    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Landscape Widescreen Mode<br><small>Requests 16:9 widescreen dimensions.</small></span></label>
-    <label class="check"><input id="bgBlur" type="checkbox"><span>Soft Background Blur Filter<br><small>Applies a soft-focus bokeh effect on the preview.</small></span></label>
-    <label class="check"><input id="noise" type="checkbox" checked><span>Echo & Noise Suppression<br><small>Filters background chatter and audio feedback.</small></span></label>
+    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Landscape Widescreen Mode<br><small>Requests 16:9 dimensions. Also hold the phone sideways.</small></span></label>
+    <label class="check"><input id="bgBlur" type="checkbox"><span>Soft-focus blur (whole frame)<br><small>Blurs the entire picture, not only the background. Sent to the PC too.</small></span></label>
+    <label class="check"><input id="noise" type="checkbox" checked><span>Echo &amp; Noise Suppression<br><small>Applies when you press Start camera.</small></span></label>
 
     <video id="localVideo" autoplay playsinline muted></video>
     <div class="meter"><span>MIC LEVEL</span><div class="bar"><div id="phoneLevel" class="fill"></div></div></div>
-    
+
     <div class="row" style="margin-top:16px">
-      <button id="phoneStart" class="btn big" style="flex:1">Start camera</button>
-      <button id="phoneStop" class="btn ghost hidden">Stop</button>
+      <button id="phoneStart" class="btn big" type="button" style="flex:1">Start camera</button>
+      <button id="phoneStop" class="btn ghost hidden" type="button">Stop</button>
     </div>
     <div id="phoneStatus" class="status"><span class="dot"></span><span class="msg">Not started yet.</span></div>
   </section>
 
-  <p class="small">Secure peer-to-peer connection. No external server uploads.</p>
+  <p class="small">Video and audio go directly phone to PC (peer-to-peer). A public PeerJS server is used only to connect the two devices.</p>
 </main>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" onerror="loadFallback()"></script>
 <script>
+/* Defined BEFORE the library tag so onerror can always find it */
 function loadFallback(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s);}
 </script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" onerror="loadFallback()"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  let role = "pc", peer = null, call = null, localStream = null, remoteStream = null;
-  let wantConnection = false, retryTimer = null;
-  let recorder = null, chunks = [], isRecording = false, timerId = null, recStart = 0;
-  let audioCtx = null, meterStop = {};
+  let role = "pc", peer = null, call = null;
+  let rawStream = null, outStream = null, remoteStream = null;
+  let wantConnection = false, retryTimer = null, wakeLock = null;
+  let recorder = null, chunks = [], timerId = null, recStart = 0;
+  let audioCtx = null; const meterStop = {};
+  let procCanvas = null, procCtx = null, procTrack = null, procLoop = null, procActive = false;
+  const canFilter = typeof CanvasRenderingContext2D !== "undefined" && "filter" in CanvasRenderingContext2D.prototype;
+  const hosted = /^https?:$/.test(location.protocol);
 
+  /* ---------- helpers ---------- */
   function setStatus(which, msg, kind = "") {
     const el = $(which + "Status");
     el.className = "status " + kind;
     el.querySelector(".msg").textContent = msg;
   }
-  const roomCode = () => $("room").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32);
+  const roomCode = () => $("room").value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "").replace(/^[-_]+|[-_]+$/g, "").slice(0, 32);
   const pcId = () => "pcrecorder-" + roomCode();
   function randomCode() {
     const c = "abcdefghjkmnpqrstuvwxyz23456789";
     let s = "cam-";
-    const r = crypto.getRandomValues(new Uint8Array(6));
-    r.forEach(n => s += c[n % c.length]);
+    crypto.getRandomValues(new Uint8Array(6)).forEach(n => s += c[n % c.length]);
     return s;
   }
   function validRoom(which) {
-    if (roomCode().length < 4) { setStatus(which, "Enter a room code with at least 4 chars.", "bad"); return false; }
+    if (roomCode().length < 4) { setStatus(which, "Enter a room code with at least 4 letters/numbers.", "bad"); return false; }
     return true;
   }
-  function phoneLink() {
-    return location.origin + location.pathname + "#room=" + encodeURIComponent(roomCode()) + "&role=phone";
+  const phoneLink = () => location.origin + location.pathname + "#room=" + encodeURIComponent(roomCode()) + "&role=phone";
+  function saveRoom() { try { localStorage.setItem("pcam-room", roomCode()); } catch (_) {} }
+  function ensurePeerLib(which) {
+    if (typeof Peer === "undefined") { setStatus(which, "Connection library is still loading or failed to load. Check internet and try again in a few seconds.", "bad"); return false; }
+    return true;
   }
 
+  /* ---------- role switching ---------- */
   function chooseRole(r) {
+    if (r !== role) { if (role === "phone") phoneStop(); else pcStop(); }
     role = r;
-    $("rolePhone").setAttribute("aria-pressed", r === "phone");
-    $("rolePC").setAttribute("aria-pressed", r === "pc");
+    $("rolePhone").setAttribute("aria-pressed", String(r === "phone"));
+    $("rolePC").setAttribute("aria-pressed", String(r === "pc"));
     $("phonePanel").classList.toggle("hidden", r !== "phone");
     $("pcPanel").classList.toggle("hidden", r !== "pc");
     $("copyLink").classList.toggle("hidden", r !== "pc");
   }
   $("rolePhone").onclick = () => chooseRole("phone");
   $("rolePC").onclick = () => chooseRole("pc");
-  $("newRoom").onclick = () => { $("room").value = randomCode(); };
+  $("newRoom").onclick = () => { $("room").value = randomCode(); saveRoom(); };
+  $("room").addEventListener("change", saveRoom);
   $("copyLink").onclick = async () => {
-    if (roomCode().length < 4) return setStatus("pc", "Enter room code first.", "bad");
+    if (!validRoom("pc")) return;
+    if (!hosted) return setStatus("pc", "This page is opened as a local file, so the link will not work on your phone. Upload it to an HTTPS host first (GitHub Pages, Netlify Drop, Cloudflare Pages).", "bad");
     try { await navigator.clipboard.writeText(phoneLink()); setStatus("pc", "Phone link copied to clipboard!", "good"); }
     catch (_) { prompt("Copy link:", phoneLink()); }
   };
 
-  $("brightnessRange").oninput = (e) => {
-    $("brightnessVal").textContent = e.target.value + "%";
-    updateVideoFilters();
-  };
-  $("bgBlur").onchange = updateVideoFilters;
-
-  function updateVideoFilters() {
-    const b = $("brightnessRange").value;
-    const blur = $("bgBlur").checked ? "blur(4px)" : "none";
-    $("localVideo").style.filter = `brightness(${b}%) ${blur}`;
-  }
-
+  /* ---------- audio meter ---------- */
   function startMeter(stream, fillEl, key) {
     stopMeter(key, fillEl);
-    if (!stream.getAudioTracks().length) return;
+    if (!stream || !stream.getAudioTracks().length) return;
     try {
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
       audioCtx.resume().catch(() => {});
@@ -216,103 +219,324 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     if (fillEl) fillEl.style.width = "0";
   }
 
+  /* ---------- peer lifecycle ---------- */
   function destroyPeer() {
     clearTimeout(retryTimer);
     if (call) { try { call.close(); } catch (_) {} call = null; }
     if (peer) { try { peer.destroy(); } catch (_) {} peer = null; }
   }
-  function ensurePeerLib(which) {
-    if (typeof Peer === "undefined") { setStatus(which, "Connection library failed to load.", "bad"); return false; }
-    return true;
-  }
 
+  /* ---------- brightness / blur (applied to the SENT video, not only the preview) ---------- */
+  const filterCss = () => `brightness(${$("brightnessRange").value}%)` + ($("bgBlur").checked ? " blur(4px)" : "");
+  const filtersActive = () => $("brightnessRange").value !== "100" || $("bgBlur").checked;
+
+  function startProcessing(raw) {
+    if (procActive) return;
+    const v = $("localVideo"), st = raw.getSettings();
+    procCanvas = procCanvas || document.createElement("canvas");
+    procCanvas.width = st.width || v.videoWidth || 1280;
+    procCanvas.height = st.height || v.videoHeight || 720;
+    procCtx = procCanvas.getContext("2d");
+    procTrack = procCanvas.captureStream(30).getVideoTracks()[0];
+    try { procTrack.contentHint = "detail"; } catch (_) {}
+    procActive = true;
+    const draw = () => {
+      if (!procActive) return;
+      if (v.readyState >= 2 && v.videoWidth) {
+        if (procCanvas.width !== v.videoWidth || procCanvas.height !== v.videoHeight) { procCanvas.width = v.videoWidth; procCanvas.height = v.videoHeight; }
+        procCtx.filter = filterCss();
+        procCtx.drawImage(v, 0, 0, procCanvas.width, procCanvas.height);
+      }
+      procLoop = setTimeout(draw, 33);
+    };
+    draw();
+  }
+  function stopProcessing() {
+    procActive = false; clearTimeout(procLoop);
+    if (procTrack) { procTrack.stop(); procTrack = null; }
+  }
+  function currentVideoTrack() {
+    const raw = rawStream && rawStream.getVideoTracks()[0];
+    if (!raw) return null;
+    if (filtersActive() && canFilter) { startProcessing(raw); return procTrack; }
+    stopProcessing();
+    return raw;
+  }
+  function syncVideoTrack() {
+    const t = currentVideoTrack();
+    if (!t || !outStream) return;
+    const old = outStream.getVideoTracks()[0];
+    if (old === t) return;
+    if (old) outStream.removeTrack(old);
+    outStream.addTrack(t);
+    const sender = call && call.peerConnection && call.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
+    if (sender) sender.replaceTrack(t).catch(() => {});
+  }
+  function updateVideoFilters() {
+    $("brightnessVal").textContent = $("brightnessRange").value + "%";
+    $("localVideo").style.filter = filterCss();
+    if (filtersActive() && !canFilter && rawStream) setStatus("phone", "This browser cannot apply filters to the sent video (preview only).", "warn");
+    syncVideoTrack();
+  }
+  $("brightnessRange").oninput = updateVideoFilters;
+  $("bgBlur").onchange = updateVideoFilters;
+
+  /* ---------- keep phone screen awake ---------- */
+  async function lockScreen() { try { if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); } catch (_) {} }
+  function unlockScreen() { try { if (wakeLock) wakeLock.release(); } catch (_) {} wakeLock = null; }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && wantConnection) { lockScreen(); if (peer && !peer.destroyed && (!call || !call.open)) placeCall(); }
+  });
+
+  /* ---------- PHONE ---------- */
   async function phoneStart() {
     if (!validRoom("phone")) return;
-    if (!navigator.mediaDevices?.getUserMedia) return setStatus("phone", "HTTPS required for camera access.", "bad");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return setStatus("phone", "Camera needs HTTPS. Open the hosted https:// address of this page.", "bad");
     if (!ensurePeerLib("phone")) return;
     $("phoneStart").disabled = true;
-    setStatus("phone", "Requesting high-res camera access...");
-    try {
-      const res = Number($("quality").value); // 1920, 1280, or 640
-      const landscape = $("forceLandscape").checked;
-      
-      // Force exact dimensions to prevent mobile browsers from downscaling silently
-      const width = landscape ? res : Math.round(res * 9 / 16);
-      const height = landscape ? Math.round(res * 9 / 16) : res;
-      const on = $("noise").checked;
-
-      localStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: on, noiseSuppression: on, autoGainControl: on },
-        video: { 
-          facingMode: { exact: $("facing").value }, 
-          width: { exact: width }, 
-          height: { exact: height }, 
-          frameRate: { ideal: 30, max: 30 } 
-        }
-      });
-    } catch (err) {
-      // Fallback if 'exact' facingMode/resolution isn't supported by certain smartphone camera drivers
-      try {
-        const res = Number($("quality").value);
-        localStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: { facingMode: $("facing").value, width: { ideal: res }, height: { ideal: Math.round(res * 9 / 16) } }
-        });
-      } catch (fallbackErr) {
-        $("phoneStart").disabled = false;
-        return setStatus("phone", "Camera error: " + (fallbackErr.message || fallbackErr.name), "bad");
-      }
+    setStatus("phone", "Requesting camera access...");
+    const res = Number($("quality").value), land = $("forceLandscape").checked;
+    const w = land ? res : Math.round(res * 9 / 16), h = land ? Math.round(res * 9 / 16) : res;
+    const on = $("noise").checked, facing = $("facing").value;
+    const audio = { echoCancellation: on, noiseSuppression: on, autoGainControl: on };
+    const attempts = [
+      { audio, video: { facingMode: { exact: facing }, width: { ideal: w }, height: { ideal: h }, frameRate: { ideal: 30, max: 30 } } },
+      { audio, video: { facingMode: facing, width: { ideal: w }, height: { ideal: h } } },
+      { audio: true, video: true }
+    ];
+    let lastErr = null;
+    for (const c of attempts) {
+      try { rawStream = await navigator.mediaDevices.getUserMedia(c); break; } catch (e) { lastErr = e; if (e.name === "NotAllowedError") break; }
     }
-    $("localVideo").srcObject = localStream;
-    updateVideoFilters();
-    startMeter(localStream, $("phoneLevel"), "phone");
+    if (!rawStream) {
+      $("phoneStart").disabled = false;
+      return setStatus("phone", "Camera error: " + (lastErr && (lastErr.message || lastErr.name)), "bad");
+    }
+    const rawV = rawStream.getVideoTracks()[0];
+    if (rawV) {
+      try { rawV.contentHint = "detail"; } catch (_) {}
+      rawV.addEventListener("ended", () => { if (wantConnection) setStatus("phone", "Camera was stopped by the system (another app or screen lock). Tap Stop, then Start camera.", "bad"); });
+    }
+    $("localVideo").srcObject = rawStream;
+    $("localVideo").style.filter = filterCss();
+    outStream = new MediaStream(rawStream.getAudioTracks());
+    const vt = currentVideoTrack();
+    if (vt) outStream.addTrack(vt);
+    startMeter(rawStream, $("phoneLevel"), "phone");
     $("phoneStart").classList.add("hidden");
-    $("phoneStarp") // placeholder check
     $("phoneStop").classList.remove("hidden");
     wantConnection = true;
+    lockScreen();
+    const s = rawV ? rawV.getSettings() : {};
+    setStatus("phone", `Camera on (${s.width || "?"}x${s.height || "?"}). Connecting to computer...`, "warn");
     connectToPC();
   }
 
   function connectToPC() {
     clearTimeout(retryTimer);
-    if (!wantConnection || !localStream) return;
+    if (!wantConnection || !outStream) return;
     destroyPeer();
-    setStatus("phone", "Connecting to computer...", "warn");
     peer = new Peer({ debug: 1 });
     peer.on("open", placeCall);
-    peer.on("error", () => {
-      retryTimer = setTimeout(connectToPC, 3000);
+    peer.on("disconnected", () => { if (wantConnection && peer && !peer.destroyed) { try { peer.reconnect(); } catch (_) {} } });
+    peer.on("error", err => {
+      if (!wantConnection) return;
+      clearTimeout(retryTimer);
+      if (err.type === "peer-unavailable") {
+        setStatus("phone", "Computer not ready. On the PC choose the same room code and click Start receiving. Retrying...", "warn");
+        retryTimer = setTimeout(placeCall, 2500);
+      } else {
+        setStatus("phone", "Connection problem (" + err.type + "). Retrying...", "warn");
+        retryTimer = setTimeout(connectToPC, 3000);
+      }
+    });
+  }
+
+  function tuneSender() {
+    const pc = call && call.peerConnection;
+    if (!pc) return;
+    const rate = { 1920: 6e6, 1280: 3.5e6, 640: 1.2e6 }[$("quality").value] || 3e6;
+    pc.getSenders().forEach(s => {
+      if (s.track && s.track.kind === "video") {
+        try {
+          const p = s.getParameters();
+          if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+          p.encodings[0].maxBitrate = rate;
+          p.degradationPreference = "maintain-resolution";
+          s.setParameters(p).catch(() => {});
+        } catch (_) {}
+      }
     });
   }
 
   function placeCall() {
-    if (!wantConnection || !peer || peer.destroyed || !localStream) return;
-    if (call) { try { call.close(); } catch (_) {} }
-    call = peer.call(pcId(), localStream);
-    if (!call) { retryTimer = setTimeout(placeCall, 2500); return; }
-    call.on("close", () => {
-      if (wantConnection) retryTimer = setTimeout(placeCall, 2000);
+    clearTimeout(retryTimer);
+    if (!wantConnection || !peer || peer.destroyed || !outStream) return;
+    if (!peer.open) return;
+    if (call) { try { call.close(); } catch (_) {} call = null; }
+    const c = peer.call(pcId(), outStream);
+    if (!c) { retryTimer = setTimeout(placeCall, 2500); return; }
+    call = c;
+    setStatus("phone", "Calling computer...", "warn");
+    const pc = c.peerConnection;
+    if (pc) pc.addEventListener("iceconnectionstatechange", () => {
+      if (call !== c) return;
+      const st = pc.iceConnectionState;
+      if (st === "connected" || st === "completed") { setStatus("phone", "Streaming to computer.", "good"); tuneSender(); }
+      else if (st === "failed") setStatus("phone", "Could not connect directly (different networks or strict firewall). Try the same Wi-Fi on both devices.", "bad");
     });
+    c.on("close", () => {
+      if (wantConnection && call === c) { setStatus("phone", "Connection lost. Reconnecting...", "warn"); retryTimer = setTimeout(placeCall, 2000); }
+    });
+    c.on("error", () => { if (wantConnection && call === c) retryTimer = setTimeout(placeCall, 2500); });
   }
 
   function phoneStop() {
     wantConnection = false;
     destroyPeer();
+    stopProcessing();
+    unlockScreen();
     stopMeter("phone", $("phoneLevel"));
-    if (localStream) localStream.getTracks().forEach(t => t.stop());
-    localStream = null; $("localVideo").srcObject = null;
-    $("phoneStart").disabled = false; $("phoneStart").classList.remove("hidden"); $("phoneStop").classList.add("hidden");
+    if (rawStream) rawStream.getTracks().forEach(t => t.stop());
+    rawStream = null; outStream = null;
+    $("localVideo").srcObject = null;
+    $("phoneStart").disabled = false;
+    $("phoneStart").classList.remove("hidden");
+    $("phoneStop").classList.add("hidden");
     setStatus("phone", "Stream stopped.");
   }
   $("phoneStart").onclick = phoneStart;
   $("phoneStop").onclick = phoneStop;
 
-  // PC Side
+  /* ---------- PC ---------- */
+  function resetPcButtons() { $("pcStart").disabled = false; $("pcStop").disabled = true; }
+  function remoteLive() { return !!remoteStream && remoteStream.getVideoTracks().some(t => t.readyState === "live"); }
+
+  function showRemote(s) {
+    const v = $("remoteVideo");
+    if (remoteStream === s && v.srcObject === s) return;
+    remoteStream = s;
+    v.srcObject = s;
+    v.play().then(() => $("unmute").classList.add("hidden")).catch(() => {
+      v.muted = true; v.play().catch(() => {}); $("unmute").classList.remove("hidden");
+    });
+    startMeter(s, $("pcLevel"), "pc");
+    $("record").disabled = !!recorder;
+    setStatus("pc", "Receiving live video from phone.", "good");
+  }
+  function remoteGone() {
+    stopMeter("pc", $("pcLevel"));
+    if (!recorder) $("record").disabled = true;
+    setStatus("pc", "Phone disconnected. Waiting for it to reconnect...", "warn");
+  }
+
   function pcStart() {
     if (!validRoom("pc") || !ensurePeerLib("pc")) return;
+    saveRoom();
     destroyPeer();
     $("pcStart").disabled = true; $("pcStop").disabled = false;
-    setStatus("pc", "Waiting for incoming phone connection...", "warn");
+    setStatus("pc", "Connecting to signaling server...", "warn");
     peer = new Peer(pcId(), { debug: 1 });
-    peer.on("open", () => setStatus("pc", "Ready. Open the phone link on your device.", "good"));
+    peer.on("open", () => setStatus("pc", "Ready. Open the phone link and tap Start camera.", "good"));
     peer.on("call", incoming => {
+      if (call && call !== incoming) { try { call.close(); } catch (_) {} }
+      call = incoming;
+      incoming.answer();
+      incoming.on("stream", showRemote);
+      incoming.on("close", () => { if (call === incoming) remoteGone(); });
+      incoming.on("error", () => { if (call === incoming) remoteGone(); });
+    });
+    peer.on("disconnected", () => { if (peer && !peer.destroyed) { try { peer.reconnect(); } catch (_) {} } });
+    peer.on("error", err => {
+      if (err.type === "unavailable-id") {
+        setStatus("pc", "This room code is already in use (another tab or person). Press New code and try again.", "bad");
+        destroyPeer(); resetPcButtons();
+      } else if (err.type === "network" || err.type === "server-error" || err.type === "socket-error") {
+        setStatus("pc", "Cannot reach the PeerJS server (" + err.type + "). Check your internet.", "bad");
+      } else {
+        setStatus("pc", "Connection error: " + err.type, "warn");
+      }
+    });
+  }
+
+  function pcStop() {
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+    destroyPeer();
+    stopMeter("pc", $("pcLevel"));
+    $("remoteVideo").srcObject = null;
+    remoteStream = null;
+    $("unmute").classList.add("hidden");
+    $("record").disabled = true;
+    resetPcButtons();
+    setStatus("pc", "Stopped.");
+  }
+  $("pcStart").onclick = pcStart;
+  $("pcStop").onclick = pcStop;
+  $("unmute").onclick = () => { const v = $("remoteVideo"); v.muted = false; v.play().catch(() => {}); $("unmute").classList.add("hidden"); };
+
+  /* ---------- recording ---------- */
+  function pickMime() {
+    if (!window.MediaRecorder) return "";
+    return ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+  }
+  const fmtTime = s => { const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return (h ? h + ":" : "") + String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0"); };
+
+  function startRecording() {
+    if (!remoteLive()) return setStatus("pc", "No live video to record yet.", "bad");
+    if (!window.MediaRecorder) return setStatus("pc", "This browser does not support recording.", "bad");
+    const mime = pickMime();
+    let rec;
+    try { rec = new MediaRecorder(remoteStream, Object.assign(mime ? { mimeType: mime } : {}, { videoBitsPerSecond: 8e6, audioBitsPerSecond: 128e3 })); }
+    catch (e) { return setStatus("pc", "Cannot start recording: " + e.message, "bad"); }
+    recorder = rec; chunks = [];
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onerror = e => setStatus("pc", "Recording error: " + ((e.error && e.error.message) || "unknown"), "bad");
+    rec.onstop = () => {
+      clearInterval(timerId);
+      $("timer").classList.add("hidden");
+      $("stopRecord").disabled = true;
+      const type = rec.mimeType || mime || "video/webm";
+      const saved = chunks; chunks = [];
+      if (recorder === rec) recorder = null;
+      $("record").disabled = !remoteLive();
+      if (!saved.length) return setStatus("pc", "Nothing was recorded.", "warn");
+      const blob = new Blob(saved, { type });
+      const d = new Date(), p = n => String(n).padStart(2, "0");
+      const name = `phonecam-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${type.includes("mp4") ? "mp4" : "webm"}`;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      setStatus("pc", `Saved ${name} (${(blob.size / 1048576).toFixed(1)} MB) to your Downloads.`, "good");
+    };
+    rec.start(1000);
+    recStart = Date.now();
+    $("record").disabled = true; $("stopRecord").disabled = false;
+    $("timer").textContent = "00:00"; $("timer").classList.remove("hidden");
+    timerId = setInterval(() => { $("timer").textContent = "● " + fmtTime(Math.floor((Date.now() - recStart) / 1000)); }, 500);
+    setStatus("pc", "Recording...", "good");
+  }
+  function stopRecording() { if (recorder && recorder.state !== "inactive") recorder.stop(); }
+  $("record").onclick = startRecording;
+  $("stopRecord").onclick = stopRecording;
+  window.addEventListener("beforeunload", e => { if (recorder && recorder.state === "recording") { e.preventDefault(); e.returnValue = ""; } });
+
+  /* ---------- init ---------- */
+  (function init() {
+    const hp = new URLSearchParams(location.hash.slice(1));
+    let room = hp.get("room") || "";
+    if (!room) { try { room = localStorage.getItem("pcam-room") || ""; } catch (_) {} }
+    $("room").value = room || randomCode();
+    saveRoom();
+    chooseRole(hp.get("role") === "phone" ? "phone" : "pc");
+    $("localVideo").style.filter = filterCss();
+    if (!hosted) {
+      const w = $("envWarn");
+      w.textContent = "You opened this as a local file (file://). The PC side can run here, but the phone needs an HTTPS address for camera access. Upload this file to GitHub Pages, Netlify Drop or Cloudflare Pages, then open that address on both devices.";
+      w.classList.remove("hidden");
+    }
+  })();
+})();
+</script>
+</body>
+</html>
