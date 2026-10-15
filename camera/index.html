@@ -32,7 +32,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;font-wei
 .check{display:flex;gap:12px;align-items:flex-start;color:var(--text);font-size:14px;margin-top:14px;cursor:pointer}
 .check input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
 .check small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-video{display:block;width:100%;aspect-ratio:16/9;max-height:460px;background:#000;border-radius:12px;object-fit:cover;margin:14px 0}
+video{display:block;width:100%;aspect-ratio:16/9;max-height:460px;background:#000;border-radius:12px;object-fit:contain;margin:14px 0}
 .meter{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted);font-weight:600}
 .meter .bar{flex:1;height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
 .meter .fill{height:100%;width:0;background:var(--ok);transition:width .08s}
@@ -51,7 +51,7 @@ ol.steps li{margin:4px 0}
 <body>
 <main>
   <h1>PhoneCam to PC Pro</h1>
-  <p class="lead">Use your phone as a wireless camera and microphone with live monitoring, brightness, and auto-landscape orientation.</p>
+  <p class="lead">Use your phone as a wireless camera and microphone with live monitoring, brightness, and landscape orientation.</p>
 
   <section class="card">
     <h2>1. Device Setup</h2>
@@ -104,7 +104,7 @@ ol.steps li{margin:4px 0}
       <input id="brightnessRange" type="range" min="50" max="150" value="100" step="5">
     </div>
 
-    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Force Wide / Landscape Mode<br><small>Outputs widescreen video stream regardless of phone physical tilt.</small></span></label>
+    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Force True Landscape Stream<br><small>Swaps camera axis mapping so video outputs in proper 16:9 ratio.</small></span></label>
     <label class="check"><input id="bgBlur" type="checkbox"><span>Soft Background Blur Filter<br><small>Applies a soft-focus bokeh effect on the preview.</small></span></label>
     <label class="check"><input id="noise" type="checkbox" checked><span>Echo & Noise Suppression<br><small>Filters background chatter and audio feedback.</small></span></label>
 
@@ -123,7 +123,7 @@ ol.steps li{margin:4px 0}
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" onerror="loadFallback()"></script>
 <script>
-function loadFallback(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s);}
+function loadFallback(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s);}
 </script>
 <script>
 (() => {
@@ -232,9 +232,9 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
       const baseRes = Number($("quality").value);
       const landscape = $("forceLandscape").checked;
       
-      // Explicitly force width > height so the stream encoding is natively widescreen ($16:9$)
-      const width = landscape ? Math.max(baseRes, Math.round(baseRes * 16 / 9)) : baseRes;
-      const height = landscape ? Math.min(baseRes, Math.round(baseRes * 9 / 16)) : Math.round(baseRes * 16 / 9);
+      // Clean axis inversion to explicitly enforce proper widescreen values
+      const width = landscape ? baseRes : Math.round(baseRes * 9 / 16);
+      const height = landscape ? Math.round(baseRes * 9 / 16) : baseRes;
       const on = $("noise").checked;
 
       localStream = await navigator.mediaDevices.getUserMedia({
