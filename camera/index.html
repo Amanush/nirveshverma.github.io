@@ -3,114 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PhoneCam → PC</title>
+<title>PhoneCam → PC (Zero-Server Direct P2P)</title>
 <style>
 :root{color-scheme:dark;--bg:#101318;--panel:#1a2029;--line:#303947;--text:#eef3f8;--muted:#aab5c3;--accent:#58a6ff;--red:#ff5d67;--green:#44d19a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-main{max-width:1050px;margin:auto;padding:22px}h1{font-size:clamp(25px,4vw,38px);margin:0 0 6px}p{color:var(--muted);margin:6px 0 14px}.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 9px;color:var(--muted);font-size:12px}
+main{max-width:1100px;margin:auto;padding:22px}h1{font-size:clamp(22px,3.5vw,34px);margin:0 0 6px}p{color:var(--muted);margin:6px 0 14px}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 9px;color:var(--muted);font-size:12px}
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
-h2{font-size:18px;margin:0 0 10px}.role{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-label{display:block;color:var(--muted);font-size:13px;margin:12px 0 5px}input,select,button{font:inherit;border-radius:10px}input,select{width:100%;padding:11px 12px;background:#0e1218;border:1px solid var(--line);color:var(--text)}
-button{border:0;padding:11px 14px;background:var(--accent);color:#07111d;font-weight:700;cursor:pointer;margin:8px 6px 0 0}button.secondary{background:#313b49;color:var(--text)}button.danger{background:#ff5d67;color:#21070a}button:disabled{opacity:.4;cursor:not-allowed}
-video{display:block;width:100%;max-height:420px;background:#050607;border-radius:12px;aspect-ratio:16/9;object-fit:contain;margin-top:12px}
-data-id{font-family:monospace;color:var(--accent)}
-.status{border-radius:10px;background:#0e1218;border:1px solid var(--line);padding:10px 12px;color:var(--muted);min-height:42px;margin-top:12px;overflow-wrap:anywhere}.status.good{color:var(--green)}.status.bad{color:#ff9da3}
-.small{font-size:12px;color:var(--muted)}.hidden{display:none!important}.actions{display:flex;flex-wrap:wrap;align-items:center}.footer{margin:18px 0 0;font-size:12px;color:var(--muted)}
+h2{font-size:18px;margin:0 0 10px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 4px}
+input,select,textarea,button{font:inherit;border-radius:10px}input,select,textarea{width:100%;padding:10px 12px;background:#0e1218;border:1px solid var(--line);color:var(--text);resize:vertical}
+textarea{font-family:monospace;font-size:11px;height:70px}
+button{border:0;padding:10px 14px;background:var(--accent);color:#07111d;font-weight:700;cursor:pointer;margin:8px 6px 0 0}
+button.secondary{background:#313b49;color:var(--text)}button.danger{background:#ff5d67;color:#21070a}button:disabled{opacity:.4;cursor:not-allowed}
+video{display:block;width:100%;max-height:360px;background:#050607;border-radius:12px;aspect-ratio:16/9;object-fit:contain;margin-top:10px}
+.status{border-radius:10px;background:#0e1218;border:1px solid var(--line);padding:10px 12px;color:var(--muted);min-height:38px;margin-top:10px;font-size:13px;overflow-wrap:anywhere}.status.good{color:var(--green)}.status.bad{color:#ff9da3}
+.small{font-size:12px;color:var(--muted)}.actions{display:flex;flex-wrap:wrap;align-items:center}.step-box{background:#141922;border:1px solid var(--line);padding:10px;border-radius:10px;margin-top:10px}
 @media(max-width:760px){main{padding:14px}.layout{grid-template-columns:1fr}.panel{padding:13px}}
 </style>
 </head>
 <body>
 <main>
-  <span class="tag">ROBUST · SINGLE HTML · WEBRTC</span>
+  <span class="tag">ZERO-SERVER · GITHUB READY · WEBRTC P2P</span>
   <h1>PhoneCam <span style="color:var(--accent)">→</span> PC</h1>
-  <p>Use your phone as a wireless camera. Connect securely via unique peer IDs generated automatically.</p>
+  <p>Direct wireless camera streaming without server dropouts. Works on GitHub Pages or locally.</p>
 
   <div class="layout">
     <!-- PHONE PANEL -->
     <section class="panel">
-      <h2>📱 Phone Camera</h2>
-      <label>1. Your Generated Phone ID:</label>
-      <input id="phoneIdDisplay" readonly placeholder="Initializing ID..." style="font-weight:bold; color:var(--accent);">
-      
-      <label for="facing">Camera</label>
-      <select id="facing"><option value="environment">Rear camera</option><option value="user">Front camera</option></select>
-      
-      <label for="quality">Video quality</label>
-      <select id="quality"><option value="1280">HD 720p (recommended)</option><option value="1920">Full HD 1080p</option><option value="640">SD 480p</option></select>
+      <h2>📱 Step 1: Phone Camera</h2>
+      <label for="facing">Camera / Quality</label>
+      <div style="display:flex;gap:8px;">
+        <select id="facing"><option value="environment">Rear</option><option value="user">Front</option></select>
+        <select id="quality"><option value="1280">HD 720p</option><option value="1920">FHD 1080p</option><option value="640">SD 480p</option></select>
+      </div>
       
       <div class="actions">
-        <button id="startCamera">Start camera</button>
-        <button id="stopCamera" class="secondary" disabled>Stop camera</button>
+        <button id="startCam">1. Start Camera</button>
+        <button id="stopCam" class="secondary" disabled>Stop</button>
       </div>
       <video id="localVideo" autoplay playsinline muted></video>
-      <div id="phoneStatus" class="status">Waiting for camera start...</div>
+
+      <div class="step-box">
+        <label>2. Copy this Offer & send to PC:</label>
+        <textarea id="phoneOffer" readonly placeholder="Click 'Generate Offer' after starting camera..."></textarea>
+        <button id="genOffer" disabled>Generate Offer Code</button>
+      </div>
+
+      <div class="step-box">
+        <label>4. Paste Answer from PC here:</label>
+        <textarea id="phoneAnswerInput" placeholder="Paste PC answer code here..."></textarea>
+        <button id="applyAnswer" disabled>Complete Connection</button>
+      </div>
+
+      <div id="phoneStatus" class="status">Start your camera to begin.</div>
     </section>
 
     <!-- PC PANEL -->
     <section class="panel">
-      <h2>🖥️ PC Receiver & Recorder</h2>
-      <label for="targetPhoneId">2. Enter Phone ID shown on left:</label>
-      <input id="targetPhoneId" placeholder="e.g. phone-abc123xyz" autocomplete="off">
+      <h2>🖥️ Step 2: PC Receiver & Recorder</h2>
       
-      <div class="actions">
-        <button id="connectPC">Connect to Phone</button>
-        <button id="disconnectPC" class="secondary" disabled>Disconnect</button>
+      <div class="step-box">
+        <label>3. Paste Offer from Phone here:</label>
+        <textarea id="pcOfferInput" placeholder="Paste phone offer code here..."></textarea>
+        <button id="processOffer">Generate Answer Code</button>
       </div>
+
+      <div class="step-box">
+        <label>Copy this Answer & paste back to Phone:</label>
+        <textarea id="pcAnswerOutput" readonly placeholder="Generated answer will appear here..."></textarea>
+      </div>
+
+      <label>Live Camera Preview:</label>
       <video id="remoteVideo" autoplay playsinline controls></video>
       
       <div class="actions">
         <button id="record" disabled>● Start Recording</button>
         <button id="stopRecord" class="danger" disabled>■ Stop & Save</button>
       </div>
-      <div id="pcStatus" class="status">Enter the Phone ID above and click Connect.</div>
+      <div id="pcStatus" class="status">Waiting for phone offer input.</div>
     </section>
   </div>
-  <p class="footer">Make sure both devices are on the same Wi-Fi network if local firewall policies block external relay servers.</p>
 </main>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  let phonePeer = null, pcPeer = null, localStream = null, remoteStream = null;
-  let activeCall = null, recorder = null, chunks = [], isRecording = false;
+  let pc = null, localStream = null, remoteStream = null;
+  let recorder = null, chunks = [];
 
   function setStatus(id, msg, kind="") {
     const el = $(id); el.textContent = msg; el.className = "status" + (kind ? " " + kind : "");
   }
 
-  // 1. Initialize Phone Peer with random unique auto-ID
-  function initPhonePeer() {
-    phonePeer = new Peer({ debug: 1 });
-    
-    phonePeer.on("open", id => {
-      $("phoneIdDisplay").value = id;
-      setStatus("phoneStatus", "Phone ready. Start your camera below.", "good");
+  function createPeerConnection() {
+    if (pc) { try { pc.close(); } catch(e){} }
+    pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
     });
-
-    phonePeer.on("call", call => {
-      if (!localStream) {
-        call.close();
-        setStatus("phoneStatus", "Rejecting call: Camera not started yet!", "bad");
-        return;
-      }
-      activeCall = call;
-      call.answer(localStream);
-      setStatus("phoneStatus", "Connected! Streaming video to PC.", "good");
-
-      call.on("close", () => {
-        setStatus("phoneStatus", "PC disconnected.");
-        activeCall = null;
-      });
-    });
-
-    phonePeer.on("error", err => {
-      setStatus("phoneStatus", "Peer error: " + err.type, "bad");
-    });
+    pc.ontrack = e => {
+      remoteStream = e.streams[0];
+      $("remoteVideo").srcObject = remoteStream;
+      $("remoteVideo").play().catch(()=>{});
+      $("record").disabled = false;
+      setStatus("pcStatus", "Connected successfully! Live stream received.", "good");
+    };
   }
 
-  // Camera Controls
-  $("startCamera").addEventListener("click", async () => {
+  // --- PHONE SIDE LOGIC ---
+  $("startCam").addEventListener("click", async () => {
     try {
       const width = Number($("quality").value);
       localStream = await navigator.mediaDevices.getUserMedia({
@@ -118,87 +121,81 @@ data-id{font-family:monospace;color:var(--accent)}
         video: { facingMode: { ideal: $("facing").value }, width: { ideal: width }, height: { ideal: Math.round(width * 9 / 16) } }
       });
       $("localVideo").srcObject = localStream;
-      $("startCamera").disabled = true;
-      $("stopCamera").disabled = false;
-      setStatus("phoneStatus", "Camera active. Copy your Phone ID to the PC panel.", "good");
+      $("startCam").disabled = true;
+      $("stopCam").disabled = false;
+      $("genOffer").disabled = false;
+      setStatus("phoneStatus", "Camera active. Now click 'Generate Offer Code'.", "good");
     } catch (err) {
-      setStatus("phoneStatus", "Camera permission denied or error: " + err.message, "bad");
+      setStatus("phoneStatus", "Camera error: " + err.message, "bad");
     }
   });
 
-  $("stopCamera").addEventListener("click", () => {
+  $("stopCam").addEventListener("click", () => {
     if (localStream) localStream.getTracks().forEach(t => t.stop());
     localStream = null;
     $("localVideo").srcObject = null;
-    $("startCamera").disabled = false;
-    $("stopCamera").disabled = true;
+    $("startCam").disabled = false;
+    $("stopCam").disabled = true;
+    $("genOffer").disabled = true;
     setStatus("phoneStatus", "Camera stopped.");
   });
 
-  // 2. PC Connection Logic
-  $("connectPC").addEventListener("click", () => {
-    const targetId = $("targetPhoneId").value.trim();
-    if (!targetId) {
-      setStatus("pcStatus", "Please enter a valid Phone ID first.", "bad");
+  $("genOffer").addEventListener("click", async () => {
+    if (!localStream) return;
+    createPeerConnection();
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    // Wait a brief moment for ICE candidates to gather
+    setTimeout(() => {
+      $("phoneOffer").value = JSON.stringify(pc.localDescription);
+      $("phoneOffer").select();
+      $("phoneAnswerInput").disabled = false;
+      $("applyAnswer").disabled = false;
+      setStatus("phoneStatus", "Offer generated! Copy it and paste it into the PC panel.", "good");
+    }, 1000);
+  });
+
+  $("applyAnswer").addEventListener("click", async () => {
+    try {
+      const answerVal = $("phoneAnswerInput").value.trim();
+      if (!answerVal) return;
+      const answer = JSON.parse(answerVal);
+      await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      setStatus("phoneStatus", "Connection established with PC!", "good");
+    } catch (err) {
+      setStatus("phoneStatus", "Failed to apply answer: " + err.message, "bad");
+    }
+  });
+
+  // --- PC SIDE LOGIC ---
+  $("processOffer").addEventListener("click", async () => {
+    const offerVal = $("pcOfferInput").value.trim();
+    if (!offerVal) {
+      setStatus("pcStatus", "Please paste the phone's offer code first.", "bad");
       return;
     }
-
-    setStatus("pcStatus", "Connecting to phone ID: " + targetId + "...");
-    
-    if (pcPeer) { try { pcPeer.destroy(); } catch(e){} }
-    pcPeer = new Peer({ debug: 1 });
-
-    pcPeer.on("open", () => {
-      // Call the phone peer with an empty stream to receive media back
-      const emptyStream = new MediaStream();
-      const call = pcPeer.call(targetId, emptyStream);
+    try {
+      createPeerConnection();
+      const offer = JSON.parse(offerVal);
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
       
-      if (!call) {
-        setStatus("pcStatus", "Failed to initiate call. Check the Phone ID.", "bad");
-        return;
-      }
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
 
-      activeCall = call;
-
-      call.on("stream", stream => {
-        remoteStream = stream;
-        $("remoteVideo").srcObject = stream;
-        $("remoteVideo").play().catch(() => {});
-        $("disconnectPC").disabled = false;
-        $("record").disabled = false;
-        setStatus("pcStatus", "Connected successfully! Receiving live video.", "good");
-      });
-
-      call.on("close", () => {
-        remoteStream = null;
-        $("remoteVideo").srcObject = null;
-        $("disconnectPC").disabled = true;
-        $("record").disabled = true;
-        setStatus("pcStatus", "Phone stream closed.");
-      });
-
-      call.on("error", err => {
-        setStatus("pcStatus", "Call error: " + err.message, "bad");
-      });
-    });
-
-    pcPeer.on("error", err => {
-      setStatus("pcStatus", "PC Connection error: " + err.type, "bad");
-    });
+      setTimeout(() => {
+        $("pcAnswerOutput").value = JSON.stringify(pc.localDescription);
+        $("pcAnswerOutput").select();
+        setStatus("pcStatus", "Answer generated! Copy it and paste it back into the phone panel.", "good");
+      }, 1000);
+    } catch (err) {
+      setStatus("pcStatus", "Error processing offer: " + err.message, "bad");
+    }
   });
 
-  $("disconnectPC").addEventListener("click", () => {
-    if (activeCall) activeCall.close();
-    if (pcPeer) pcPeer.destroy();
-    remoteStream = null;
-    $("remoteVideo").srcObject = null;
-    $("disconnectPC").disabled = true;
-    $("record").disabled = true;
-    $("stopRecord").disabled = true;
-    setStatus("pcStatus", "Disconnected.");
-  });
-
-  // Recording functionality on PC
+  // --- PC RECORDING LOGIC ---
   function supportedMime() {
     const types = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
     return types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
@@ -213,18 +210,16 @@ data-id{font-family:monospace;color:var(--accent)}
       
       recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
       recorder.onstop = () => {
-        const type = recorder.mimeType || mimeType || "video/webm";
-        const blob = new Blob(chunks, { type });
+        const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "phone-recording-" + new Date().toISOString().slice(0,19).replace(/[:T]/g,"-") + ".webm";
+        a.download = "phone-cam-" + new Date().toISOString().slice(0,19).replace(/[:T]/g,"-") + ".webm";
         document.body.appendChild(a); a.click(); a.remove();
-        setStatus("pcStatus", "Recording saved to Downloads folder!", "good");
+        setStatus("pcStatus", "Recording saved to your PC downloads!", "good");
       };
 
       recorder.start(1000);
-      isRecording = true;
       $("record").disabled = true;
       $("stopRecord").disabled = false;
       setStatus("pcStatus", "● Recording live stream...", "good");
@@ -240,9 +235,6 @@ data-id{font-family:monospace;color:var(--accent)}
       $("record").disabled = false;
     }
   });
-
-  // Start Phone peer generation immediately on load
-  initPhonePeer();
 })();
 </script>
 </body>
