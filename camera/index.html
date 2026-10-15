@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PhoneCam → PC (Zero-Server Direct P2P)</title>
+<title>PhoneCam → PC (Reliable P2P)</title>
 <style>
 :root{color-scheme:dark;--bg:#101318;--panel:#1a2029;--line:#303947;--text:#eef3f8;--muted:#aab5c3;--accent:#58a6ff;--red:#ff5d67;--green:#44d19a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
@@ -12,7 +12,7 @@ main{max-width:1100px;margin:auto;padding:22px}h1{font-size:clamp(22px,3.5vw,34p
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
 h2{font-size:18px;margin:0 0 10px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 4px}
 input,select,textarea,button{font:inherit;border-radius:10px}input,select,textarea{width:100%;padding:10px 12px;background:#0e1218;border:1px solid var(--line);color:var(--text);resize:vertical}
-textarea{font-family:monospace;font-size:11px;height:70px}
+textarea{font-family:monospace;font-size:11px;height:75px}
 button{border:0;padding:10px 14px;background:var(--accent);color:#07111d;font-weight:700;cursor:pointer;margin:8px 6px 0 0}
 button.secondary{background:#313b49;color:var(--text)}button.danger{background:#ff5d67;color:#21070a}button:disabled{opacity:.4;cursor:not-allowed}
 video{display:block;width:100%;max-height:360px;background:#050607;border-radius:12px;aspect-ratio:16/9;object-fit:contain;margin-top:10px}
@@ -23,9 +23,9 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
 </head>
 <body>
 <main>
-  <span class="tag">ZERO-SERVER · GITHUB READY · WEBRTC P2P</span>
+  <span class="tag">RELIABLE P2P · ZERO SERVER</span>
   <h1>PhoneCam <span style="color:var(--accent)">→</span> PC</h1>
-  <p>Direct wireless camera streaming without server dropouts. Works on GitHub Pages or locally.</p>
+  <p>Direct camera streaming via complete candidate gathering. No servers required.</p>
 
   <div class="layout">
     <!-- PHONE PANEL -->
@@ -44,7 +44,7 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
       <video id="localVideo" autoplay playsinline muted></video>
 
       <div class="step-box">
-        <label>2. Copy this Offer & send to PC:</label>
+        <label>2. Copy this Offer (waits for gathering):</label>
         <textarea id="phoneOffer" readonly placeholder="Click 'Generate Offer' after starting camera..."></textarea>
         <button id="genOffer" disabled>Generate Offer Code</button>
       </div>
@@ -112,6 +112,25 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
     };
   }
 
+  // Helper to wait until ICE gathering completes fully
+  function gatherCompleteDescription(peerConnection) {
+    return new Promise((resolve) => {
+      if (peerConnection.iceGatheringState === "complete") {
+        resolve(peerConnection.localDescription);
+        return;
+      }
+      function checkState() {
+        if (peerConnection.iceGatheringState === "complete") {
+          peerConnection.removeEventListener("icegatheringstatechange", checkState);
+          resolve(peerConnection.localDescription);
+        }
+      }
+      peerConnection.addEventListener("icegatheringstatechange", checkState);
+      // Fallback timer in case STUN is unresponsive
+      setTimeout(() => resolve(peerConnection.localDescription), 3000);
+    });
+  }
+
   // --- PHONE SIDE LOGIC ---
   $("startCam").addEventListener("click", async () => {
     try {
@@ -134,7 +153,7 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
     if (localStream) localStream.getTracks().forEach(t => t.stop());
     localStream = null;
     $("localVideo").srcObject = null;
-    $("startCam").disabled = false;
+    $("startCam").disabled = true;
     $("stopCam").disabled = true;
     $("genOffer").disabled = true;
     setStatus("phoneStatus", "Camera stopped.");
@@ -145,17 +164,16 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
     createPeerConnection();
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
+    setStatus("phoneStatus", "Gathering network connection candidates (please wait 2 seconds)...");
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    // Wait a brief moment for ICE candidates to gather
-    setTimeout(() => {
-      $("phoneOffer").value = JSON.stringify(pc.localDescription);
-      $("phoneOffer").select();
-      $("phoneAnswerInput").disabled = false;
-      $("applyAnswer").disabled = false;
-      setStatus("phoneStatus", "Offer generated! Copy it and paste it into the PC panel.", "good");
-    }, 1000);
+    const completeOffer = await gatherCompleteDescription(pc);
+    $("phoneOffer").value = JSON.stringify(completeOffer);
+    $("phoneOffer").select();
+    $("phoneAnswerInput").disabled = false;
+    $("applyAnswer").disabled = false;
+    setStatus("phoneStatus", "Offer ready! Copy it and paste it into the PC panel.", "good");
   });
 
   $("applyAnswer").addEventListener("click", async () => {
@@ -179,17 +197,17 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
     }
     try {
       createPeerConnection();
+      setStatus("pcStatus", "Processing offer and gathering candidates...");
       const offer = JSON.parse(offerVal);
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
-      setTimeout(() => {
-        $("pcAnswerOutput").value = JSON.stringify(pc.localDescription);
-        $("pcAnswerOutput").select();
-        setStatus("pcStatus", "Answer generated! Copy it and paste it back into the phone panel.", "good");
-      }, 1000);
+      const completeAnswer = await gatherCompleteDescription(pc);
+      $("pcAnswerOutput").value = JSON.stringify(completeAnswer);
+      $("pcAnswerOutput").select();
+      setStatus("pcStatus", "Answer ready! Copy it and paste it back into the phone panel.", "good");
     } catch (err) {
       setStatus("pcStatus", "Error processing offer: " + err.message, "bad");
     }
@@ -224,18 +242,4 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
       $("stopRecord").disabled = false;
       setStatus("pcStatus", "● Recording live stream...", "good");
     } catch (err) {
-      setStatus("pcStatus", "Recording failed: " + err.message, "bad");
-    }
-  });
-
-  $("stopRecord").addEventListener("click", () => {
-    if (recorder && recorder.state !== "inactive") {
-      recorder.stop();
-      $("stopRecord").disabled = true;
-      $("record").disabled = false;
-    }
-  });
-})();
-</script>
-</body>
-</html>
+      setStatus("pcStatus", "Recording failed: "
