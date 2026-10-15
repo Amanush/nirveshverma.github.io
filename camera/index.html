@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PhoneCam → PC (Reliable P2P)</title>
+<title>PhoneCam → PC (QR Pairing)</title>
+<!-- Include QRCode and ZXing library for QR generation & scanning -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.19.1"></script>
 <style>
 :root{color-scheme:dark;--bg:#101318;--panel:#1a2029;--line:#303947;--text:#eef3f8;--muted:#aab5c3;--accent:#58a6ff;--red:#ff5d67;--green:#44d19a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
@@ -11,30 +14,32 @@ main{max-width:1100px;margin:auto;padding:22px}h1{font-size:clamp(22px,3.5vw,34p
 .tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 9px;color:var(--muted);font-size:12px}
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
 h2{font-size:18px;margin:0 0 10px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 4px}
-input,select,textarea,button{font:inherit;border-radius:10px}input,select,textarea{width:100%;padding:10px 12px;background:#0e1218;border:1px solid var(--line);color:var(--text);resize:vertical}
-textarea{font-family:monospace;font-size:11px;height:75px}
+input,select,textarea,button{font:inherit;border-radius:10px}input,select,textarea{width:100%;padding:10px 12px;background:#0e1218;border:1px solid var(--line);color:var(--text)}
+textarea{font-family:monospace;font-size:11px;height:55px;resize:vertical}
 button{border:0;padding:10px 14px;background:var(--accent);color:#07111d;font-weight:700;cursor:pointer;margin:8px 6px 0 0}
 button.secondary{background:#313b49;color:var(--text)}button.danger{background:#ff5d67;color:#21070a}button:disabled{opacity:.4;cursor:not-allowed}
-video{display:block;width:100%;max-height:360px;background:#050607;border-radius:12px;aspect-ratio:16/9;object-fit:contain;margin-top:10px}
+video{display:block;width:100%;max-height:320px;background:#050607;border-radius:12px;aspect-ratio:16/9;object-fit:contain;margin-top:10px}
 .status{border-radius:10px;background:#0e1218;border:1px solid var(--line);padding:10px 12px;color:var(--muted);min-height:38px;margin-top:10px;font-size:13px;overflow-wrap:anywhere}.status.good{color:var(--green)}.status.bad{color:#ff9da3}
-.small{font-size:12px;color:var(--muted)}.actions{display:flex;flex-wrap:wrap;align-items:center}.step-box{background:#141922;border:1px solid var(--line);padding:10px;border-radius:10px;margin-top:10px}
+.qr-container{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;text-align:center}
+.qr-container canvas, .qr-container img{display:block;margin:auto}
+.step-box{background:#141922;border:1px solid var(--line);padding:10px;border-radius:10px;margin-top:10px}
 @media(max-width:760px){main{padding:14px}.layout{grid-template-columns:1fr}.panel{padding:13px}}
 </style>
 </head>
 <body>
 <main>
-  <span class="tag">RELIABLE P2P · ZERO SERVER</span>
+  <span class="tag">QR CODE P2P · ZERO CONFIG</span>
   <h1>PhoneCam <span style="color:var(--accent)">→</span> PC</h1>
-  <p>Direct camera streaming via complete candidate gathering. No servers required.</p>
+  <p>Scan a QR code to link your phone camera to your computer instantly.</p>
 
   <div class="layout">
     <!-- PHONE PANEL -->
     <section class="panel">
-      <h2>📱 Step 1: Phone Camera</h2>
+      <h2>📱 Phone Camera</h2>
       <label for="facing">Camera / Quality</label>
       <div style="display:flex;gap:8px;">
         <select id="facing"><option value="environment">Rear</option><option value="user">Front</option></select>
-        <select id="quality"><option value="1280">HD 720p</option><option value="1920">FHD 1080p</option><option value="640">SD 480p</option></select>
+        <select id="quality"><option value="1280">HD 720p</option><option value="1920">FHD 1080p</option></select>
       </div>
       
       <div class="actions">
@@ -44,15 +49,15 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
       <video id="localVideo" autoplay playsinline muted></video>
 
       <div class="step-box">
-        <label>2. Copy this Offer (waits for gathering):</label>
-        <textarea id="phoneOffer" readonly placeholder="Click 'Generate Offer' after starting camera..."></textarea>
-        <button id="genOffer" disabled>Generate Offer Code</button>
+        <label>2. Your Connection QR Code:</label>
+        <div id="qrcode" class="qr-container hidden"></div>
+        <button id="genQR" disabled>Generate QR Code</button>
       </div>
 
       <div class="step-box">
-        <label>4. Paste Answer from PC here:</label>
-        <textarea id="phoneAnswerInput" placeholder="Paste PC answer code here..."></textarea>
-        <button id="applyAnswer" disabled>Complete Connection</button>
+        <label>Or paste PC Answer Token manually if scanning fails:</label>
+        <textarea id="phoneAnswerInput" placeholder="Paste PC answer token here..."></textarea>
+        <button id="applyAnswer" disabled>Link Connection</button>
       </div>
 
       <div id="phoneStatus" class="status">Start your camera to begin.</div>
@@ -60,17 +65,18 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
 
     <!-- PC PANEL -->
     <section class="panel">
-      <h2>🖥️ Step 2: PC Receiver & Recorder</h2>
+      <h2>🖥️ PC Receiver & Recorder</h2>
       
       <div class="step-box">
-        <label>3. Paste Offer from Phone here:</label>
-        <textarea id="pcOfferInput" placeholder="Paste phone offer code here..."></textarea>
-        <button id="processOffer">Generate Answer Code</button>
-      </div>
-
-      <div class="step-box">
-        <label>Copy this Answer & paste back to Phone:</label>
-        <textarea id="pcAnswerOutput" readonly placeholder="Generated answer will appear here..."></textarea>
+        <label>3. Scan Phone QR Code with PC Webcam:</label>
+        <div class="actions">
+          <button id="startScan">Scan QR via Webcam</button>
+          <button id="stopScan" class="secondary" disabled>Stop Scanner</button>
+        </div>
+        <video id="scannerVideo" class="hidden" muted playsinline style="max-height:180px;"></video>
+        <label style="margin-top:8px;">Or paste phone offer token directly:</label>
+        <textarea id="pcOfferInput" placeholder="Paste phone offer token here..."></textarea>
+        <button id="processOffer">Connect via Token</button>
       </div>
 
       <label>Live Camera Preview:</label>
@@ -80,7 +86,7 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
         <button id="record" disabled>● Start Recording</button>
         <button id="stopRecord" class="danger" disabled>■ Stop & Save</button>
       </div>
-      <div id="pcStatus" class="status">Waiting for phone offer input.</div>
+      <div id="pcStatus" class="status">Scan the phone's QR code or paste token.</div>
     </section>
   </div>
 </main>
@@ -88,7 +94,7 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  let pc = null, localStream = null, remoteStream = null;
+  let pc = null, localStream = null, remoteStream = null, codeReader = null;
   let recorder = null, chunks = [];
 
   function setStatus(id, msg, kind="") {
@@ -98,10 +104,7 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
   function createPeerConnection() {
     if (pc) { try { pc.close(); } catch(e){} }
     pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" }
-      ]
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }]
     });
     pc.ontrack = e => {
       remoteStream = e.streams[0];
@@ -112,7 +115,6 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
     };
   }
 
-  // Helper to wait until ICE gathering completes fully
   function gatherCompleteDescription(peerConnection) {
     return new Promise((resolve) => {
       if (peerConnection.iceGatheringState === "complete") {
@@ -126,12 +128,11 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
         }
       }
       peerConnection.addEventListener("icegatheringstatechange", checkState);
-      // Fallback timer in case STUN is unresponsive
       setTimeout(() => resolve(peerConnection.localDescription), 3000);
     });
   }
 
-  // --- PHONE SIDE LOGIC ---
+  // --- PHONE LOGIC ---
   $("startCam").addEventListener("click", async () => {
     try {
       const width = Number($("quality").value);
@@ -142,8 +143,8 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
       $("localVideo").srcObject = localStream;
       $("startCam").disabled = true;
       $("stopCam").disabled = false;
-      $("genOffer").disabled = false;
-      setStatus("phoneStatus", "Camera active. Now click 'Generate Offer Code'.", "good");
+      $("genQR").disabled = false;
+      setStatus("phoneStatus", "Camera active. Click 'Generate QR Code'.", "good");
     } catch (err) {
       setStatus("phoneStatus", "Camera error: " + err.message, "bad");
     }
@@ -153,67 +154,111 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
     if (localStream) localStream.getTracks().forEach(t => t.stop());
     localStream = null;
     $("localVideo").srcObject = null;
-    $("startCam").disabled = true;
+    $("startCam").disabled = false;
     $("stopCam").disabled = true;
-    $("genOffer").disabled = true;
+    $("genQR").disabled = true;
+    $("qrcode").classList.add("hidden");
     setStatus("phoneStatus", "Camera stopped.");
   });
 
-  $("genOffer").addEventListener("click", async () => {
+  $("genQR").addEventListener("click", async () => {
     if (!localStream) return;
     createPeerConnection();
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-    setStatus("phoneStatus", "Gathering network connection candidates (please wait 2 seconds)...");
+    setStatus("phoneStatus", "Generating connection offer...");
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-
     const completeOffer = await gatherCompleteDescription(pc);
-    $("phoneOffer").value = JSON.stringify(completeOffer);
-    $("phoneOffer").select();
-    $("phoneAnswerInput").disabled = false;
-    $("applyAnswer").disabled = false;
-    setStatus("phoneStatus", "Offer ready! Copy it and paste it into the PC panel.", "good");
+    const offerStr = encodeURIComponent(JSON.stringify(completeOffer));
+
+    // Generate QR code representation
+    try {
+      const qr = qrcode(0, 'L');
+      qr.addData(offerStr);
+      qr.make();
+      $("qrcode").innerHTML = qr.createHtmlTag(4);
+      $("qrcode").classList.remove("hidden");
+      $("phoneAnswerInput").disabled = false;
+      $("applyAnswer").disabled = false;
+      setStatus("phoneStatus", "QR Code ready! Scan it with your PC webcam.", "good");
+    } catch (e) {
+      // Fallback if data string is too long for QR capacity
+      setStatus("phoneStatus", "Token too large for QR. Copy text from console instead.", "bad");
+      console.log("Offer Token:", JSON.stringify(completeOffer));
+    }
   });
 
   $("applyAnswer").addEventListener("click", async () => {
     try {
       const answerVal = $("phoneAnswerInput").value.trim();
       if (!answerVal) return;
-      const answer = JSON.parse(answerVal);
-      await pc.setRemoteDescription(new RTCSessionDescription(answer));
-      setStatus("phoneStatus", "Connection established with PC!", "good");
+      await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(answerVal)));
+      setStatus("phoneStatus", "Successfully linked to PC!", "good");
     } catch (err) {
-      setStatus("phoneStatus", "Failed to apply answer: " + err.message, "bad");
+      setStatus("phoneStatus", "Link failed: " + err.message, "bad");
     }
   });
 
-  // --- PC SIDE LOGIC ---
-  $("processOffer").addEventListener("click", async () => {
-    const offerVal = $("pcOfferInput").value.trim();
-    if (!offerVal) {
-      setStatus("pcStatus", "Please paste the phone's offer code first.", "bad");
-      return;
-    }
+  // --- PC QR SCANNER & RECEIVER LOGIC ---
+  async function processOfferCode(offerJsonStr) {
     try {
       createPeerConnection();
-      setStatus("pcStatus", "Processing offer and gathering candidates...");
-      const offer = JSON.parse(offerVal);
+      setStatus("pcStatus", "Connecting via token...");
+      const offer = JSON.parse(decodeURIComponent(offerJsonStr));
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-
       const completeAnswer = await gatherCompleteDescription(pc);
-      $("pcAnswerOutput").value = JSON.stringify(completeAnswer);
-      $("pcAnswerOutput").select();
-      setStatus("pcStatus", "Answer ready! Copy it and paste it back into the phone panel.", "good");
+      
+      // Put answer into phone input box text area equivalent or show user
+      const answerStr = JSON.stringify(completeAnswer);
+      prompt("Connection successful! Copy this answer token and paste it into your phone's manual box if needed:", answerStr);
+      setStatus("pcStatus", "Connection handshake generated!", "good");
     } catch (err) {
-      setStatus("pcStatus", "Error processing offer: " + err.message, "bad");
+      setStatus("pcStatus", "Error connecting: " + err.message, "bad");
     }
+  }
+
+  $("processOffer").addEventListener("click", () => {
+    const val = $("pcOfferInput").value.trim();
+    if (val) processOfferCode(val);
   });
 
-  // --- PC RECORDING LOGIC ---
+  $("startScan").addEventListener("click", () => {
+    if (typeof ZXing === "undefined") {
+      setStatus("pcStatus", "QR Scanner library loading failed. Check internet connection.", "bad");
+      return;
+    }
+    codeReader = new ZXing.BrowserQRCodeReader();
+    $("scannerVideo").classList.remove("hidden");
+    $("stopScan").disabled = false;
+    $("startScan").disabled = true;
+    setStatus("pcStatus", "Looking for phone QR code in webcam view...");
+
+    codeReader.decodeFromVideoDevice(undefined, 'scannerVideo', (result, err) => {
+      if (result) {
+        codeReader.reset();
+        $("scannerVideo").classList.add("hidden");
+        $("stopScan").disabled = true;
+        $("startScan").disabled = false;
+        processOfferCode(result.text);
+      }
+    }).catch(err => {
+      setStatus("pcStatus", "Webcam scanner error: " + err, "bad");
+    });
+  });
+
+  $("stopScan").addEventListener("click", () => {
+    if (codeReader) codeReader.reset();
+    $("scannerVideo").classList.add("hidden");
+    $("stopScan").disabled = true;
+    $("startScan").disabled = false;
+    setStatus("pcStatus", "Scanner stopped.");
+  });
+
+  // --- RECORDING ---
   function supportedMime() {
     const types = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
     return types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
@@ -225,7 +270,6 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
       chunks = [];
       const mimeType = supportedMime();
       recorder = new MediaRecorder(remoteStream, mimeType ? { mimeType } : undefined);
-      
       recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
@@ -234,15 +278,14 @@ video{display:block;width:100%;max-height:360px;background:#050607;border-radius
         a.href = url;
         a.download = "phone-cam-" + new Date().toISOString().slice(0,19).replace(/[:T]/g,"-") + ".webm";
         document.body.appendChild(a); a.click(); a.remove();
-        setStatus("pcStatus", "Recording saved to your PC downloads!", "good");
+        setStatus("pcStatus", "Recording saved to PC downloads!", "good");
       };
-
       recorder.start(1000);
       $("record").disabled = true;
       $("stopRecord").disabled = false;
       setStatus("pcStatus", "● Recording live stream...", "good");
     } catch (err) {
-      setStatus("pcStatus", "Recording failed: " + err.message, "bad");
+      setStatus("pcStatus", "Recording error: " + err.message, "bad");
     }
   });
 
