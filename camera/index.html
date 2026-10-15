@@ -11,7 +11,7 @@ main{max-width:1050px;margin:auto;padding:22px}h1{font-size:clamp(25px,4vw,38px)
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
 h2{font-size:18px;margin:0 0 10px}.role{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 label{display:block;color:var(--muted);font-size:13px;margin:12px 0 5px}input,select,button{font:inherit;border-radius:10px}input,select{width:100%;padding:11px 12px;background:#0e1218;border:1px solid var(--line);color:var(--text)}
-button{border:0;padding:11px 14px;background:var(--accent);color:#07111d;font-weight:700;cursor:pointer;margin:8px 6px 0 0}button.secondary{background:#313b49;color:var(--text)}button.danger{background:var(--red);color:#21070a}button:disabled{opacity:.4;cursor:not-allowed}
+button{border:0;padding:11px 14px;background:var(--accent);color:#07111d;font-weight:700;cursor:pointer;margin:8px 6px 0 0}button.secondary{background:#313b49;color:var(--text)}button.danger{background:#ff5d67;color:#21070a}button:disabled{opacity:.4;cursor:not-allowed}
 video{display:block;width:100%;max-height:420px;background:#050607;border-radius:12px;aspect-ratio:16/9;object-fit:contain;margin-top:12px}
 .status{border-radius:10px;background:#0e1218;border:1px solid var(--line);padding:10px 12px;color:var(--muted);min-height:42px;margin-top:12px;overflow-wrap:anywhere}.status.good{color:var(--green)}.status.bad{color:#ff9da3}
 .small{font-size:12px;color:var(--muted)}.hidden{display:none!important}.actions{display:flex;flex-wrap:wrap;align-items:center}.recording{color:#ff858b;font-weight:700}.footer{margin:18px 0 0;font-size:12px;color:var(--muted)}
@@ -166,7 +166,24 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
     if (typeof Peer === "undefined") {
       status(role === "phone" ? "phoneStatus" : "pcStatus", "PeerJS library did not load. Check internet/CDN access and reload.", "bad"); return null;
     }
-    const p = new Peer(id, { debug: 1 });
+    
+    // Configured with STUN servers to assist NAT traversal and prevent black screens
+    const p = new Peer(id, {
+      debug: 1,
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" }
+          // Add your TURN server configuration here if needed:
+          // {
+          //   urls: "turn:your-turn-server.com:3478",
+          //   username: "your-username",
+          //   credential: "your-password"
+          // }
+        ]
+      }
+    });
+
     p.on("open", onOpen);
     p.on("error", err => {
       const message = err.type === "unavailable-id"
