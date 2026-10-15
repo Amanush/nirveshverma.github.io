@@ -229,18 +229,22 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     $("phoneStart").disabled = true;
     setStatus("phone", "Requesting camera & microphone permissions...");
     try {
-      const baseRes = Number($("quality").value);
-      const landscape = $("forceLandscape").checked;
-      
-      // Clean axis inversion to explicitly enforce proper widescreen values
-      const width = landscape ? baseRes : Math.round(baseRes * 9 / 16);
-      const height = landscape ? Math.round(baseRes * 9 / 16) : baseRes;
-      const on = $("noise").checked;
+     // Replace your localStream constraints block with this:
+const baseRes = Number($("quality").value);
+const isLandscape = $("forceLandscape").checked;
 
-      localStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: on, noiseSuppression: on, autoGainControl: on },
-        video: { facingMode: { ideal: $("facing").value }, width: { ideal: width }, height: { ideal: height }, frameRate: { ideal: 30 } }
-      });
+const width = isLandscape ? 1920 : 1080;
+const height = isLandscape ? 1080 : 1920;
+
+localStream = await navigator.mediaDevices.getUserMedia({
+  audio: { echoCancellation: on, noiseSuppression: on, autoGainControl: on },
+  video: { 
+    facingMode: { ideal: $("facing").value }, 
+    width: { ideal: width }, 
+    height: { ideal: height }, 
+    frameRate: { ideal: 30 } 
+  }
+});
     } catch (err) {
       $("phoneStart").disabled = false;
       return setStatus("phone", "Camera error: " + (err.message || err.name), "bad");
