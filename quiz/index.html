@@ -284,7 +284,7 @@ body.rec .bigrec{display:none}
 <div id="home">
   <div class="navbar"><span></span></div>
   <div class="hero">
-    <div><div class="title">Daily <mark>Quiz</mark></div><p class="sub">Pick a subject, then record one question at a time.</p></div>
+    <div><div class="title">Daily <mark>Quiz</mark></div><p class="sub">Pick a subject, then record a video of 1 to 5 questions.</p></div>
     <svg class="trophy" viewBox="0 0 120 120" aria-hidden="true"><g stroke="#14213D" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M34 18h52v26c0 18-12 30-26 30S34 62 34 44z" fill="#FFC815"/><path d="M34 26H18c0 16 6 26 20 30M86 26h16c0 16-6 26-20 30" fill="none"/><path d="M60 74v14" fill="none"/><path d="M42 102h36l-4-14H46z" fill="#F5A300"/><path d="M60 28l4.5 9.5 10 1.3-7.4 7 2 10-9.1-5-9.1 5 2-10-7.4-7 10-1.3z" fill="#fff"/></g></svg>
   </div>
   <div>
@@ -310,8 +310,10 @@ body.rec .bigrec{display:none}
     </div>
     <div class="ghead">Video export</div>
     <div class="group">
-      <div class="cell plain"><span class="lab">Videos in a row<span class="vsub">One question per video, next question starts by itself</span></span><div class="seg" id="sBatch"></div></div>
+      <div class="cell plain"><span class="lab">Questions per video<span class="vsub">The \u201cRecord this question\u201d button always makes a 1-question video</span></span><div class="seg" id="sReel"></div></div>
+      <div class="cell plain"><span class="lab">Videos in a row<span class="vsub">Recorded back to back, no tapping in between</span></span><div class="seg" id="sBatch"></div></div>
       <div class="cell plain"><span class="lab">Save each video automatically<span class="vsub">Also saves a title and description text file</span></span><div class="switch" id="sAutoDl"></div></div>
+      <div class="cell plain"><span class="lab">Narrate in Hindi (Hinglish)<span class="vsub">\u201cPehla prashn hai, green house effect kya hota hai\u201d. English questions are spoken Hindi-style</span></span><div class="switch" id="sHindiVo"></div></div>
       <div class="cell plain"><span class="lab">AI voice in video<span class="vsub">A different voice each video</span></span><div class="switch" id="sAiv"></div></div>
       <div class="cell plain"><span class="lab">Free Indian voice, offline (Piper)<span class="vsub">No key needed. First use downloads about 90 MB, then it works offline. English voice is British</span></span><div class="switch" id="sPiper"></div></div>
       <div class="cell plain"><span class="lab">Gemini voice key (free)<span class="vsub">Free, no card. Create one at aistudio.google.com/apikey</span></span><input id="inGemkey" type="text" placeholder="AIza..." autocomplete="off" spellcheck="false"></div>
@@ -398,11 +400,11 @@ body.rec .bigrec{display:none}
 </div>
 <script>
 /* ============ config ============ */
-const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 1, batch: 1, piper: true, autoDl: true, gkey: '', gemkey: '', devMic: true, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
+const DEF = {secs: 7, mathS: 20, hint: 'auto', skip: false, auto: false, beep: true, voice: false, vary: false, vEn: '', vHi: '', reelN: 5, batch: 1, piper: true, hindiVo: true, autoDl: true, gkey: '', gemkey: '', devMic: true, aiv: true, mic: false, ai: true, exam: 'MP Patwari', handle: '', mode: 'live'};
 let CFG = Object.assign({}, DEF);
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('qr_cfg') || '{}')); } catch (e) {}
 const saveCfg = () => { try { localStorage.setItem('qr_cfg', JSON.stringify(CFG)); } catch (e) {} };
-if ((CFG.cfgv || 0) < 2) { CFG.reelN = 1; CFG.cfgv = 2; saveCfg(); }
+if ((CFG.cfgv || 0) < 4) { CFG.reelN = 5; CFG.cfgv = 4; saveCfg(); }
 const $ = id => document.getElementById(id);
 let MAN = [], CACHE = {}, subj = null, pool = [], set = [], i = 0, tmr = null, aux = null, shuffle = false, AC = null, RC = null;
 
@@ -640,9 +642,9 @@ function seg(id, key, opts) {
 function sw(id, key) { const el = $(id); el.classList.toggle('on', !!CFG[key]); el.setAttribute('role', 'switch'); el.tabIndex = 0; el.onclick = () => { CFG[key] = !CFG[key]; saveCfg(); el.classList.toggle('on', CFG[key]); }; el.onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.onclick(); } }; }
 function buildSettings() {
   seg('sTimer', 'secs', [['5', 5], ['7', 7], ['10', 10], ['15', 15]]); seg('sMath', 'mathS', [['15', 15], ['20', 20], ['30', 30], ['45', 45]]);
-  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sBatch', 'batch', [['1', 1], ['3', 3], ['5', 5], ['10', 10], ['20', 20]]);
+  seg('sHint', 'hint', [['Off', 'off'], ['Auto', 'auto'], ['Mask', 'mask'], ['Jumble', 'jumble']]); seg('sReel', 'reelN', [['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5]]); seg('sBatch', 'batch', [['1', 1], ['3', 3], ['5', 5], ['10', 10], ['20', 20]]);
   seg('sMode', 'mode', [['Play live', 'live'], ['Export video', 'reel']]);
-  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai'], ['sAutoDl', 'autoDl'], ['sDevMic', 'devMic'], ['sPiper', 'piper']].forEach(([a, b]) => sw(a, b));
+  [['sSkip', 'skip'], ['sAuto', 'auto'], ['sBeep', 'beep'], ['sVoice', 'voice'], ['sVary', 'vary'], ['sAiv', 'aiv'], ['sMic', 'mic'], ['sAi', 'ai'], ['sAutoDl', 'autoDl'], ['sDevMic', 'devMic'], ['sPiper', 'piper'], ['sHindiVo', 'hindiVo']].forEach(([a, b]) => sw(a, b));
   $('inExam').value = CFG.exam || ''; $('inExam').oninput = e => { CFG.exam = e.target.value; saveCfg(); };
   $('inGemkey').value = CFG.gemkey || ''; $('inGemkey').oninput = e => { CFG.gemkey = e.target.value.trim(); VOICE_DEAD = false; saveCfg(); };
   $('inGkey').value = CFG.gkey || ''; $('inGkey').oninput = e => { CFG.gkey = e.target.value.trim(); VOICE_DEAD = false; saveCfg(); };
@@ -678,7 +680,16 @@ function cleanSpeech(t) {
     .replace(/→|->|⇄/g, hi ? ' से ' : ' to ').replace(/&/g, hi ? ' और ' : ' and ').replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
     .replace(/=/g, ' equals ').replace(/%/g, ' percent').replace(/[–—]/g, ', ').replace(/[*#\/\\|~^]/g, ' ').replace(/\s{2,}/g, ' ').trim();
 }
-const speechText = q => cleanSpeech(q.q + (q.o ? ' Options. ' + q.o.map((o, k) => 'Option ' + 'ABCD'[k] + ', ' + o + '.').join(' ') : ''));
+/* Hindi-medium narration: English questions are spoken as Hinglish ("pehla prashn hai, green house effect kya hota hai") */
+const ORD = ['पहला', 'दूसरा', 'तीसरा', 'चौथा', 'पाँचवाँ', 'छठा', 'सातवाँ', 'आठवाँ', 'नौवाँ', 'दसवाँ', 'ग्यारहवाँ', 'बारहवाँ'];
+const HLAB = [[/^synonym:\s*(.+)$/is, m => m[1] + ' का synonym क्या होगा?'], [/^antonym:\s*(.+)$/is, m => m[1] + ' का antonym क्या होगा?'], [/^idiom meaning:\s*(.+)$/is, m => 'इस idiom का मतलब क्या है? ' + m[1]], [/^one word for:\s*(.+)$/is, m => 'इसके लिए एक शब्द क्या होगा? ' + m[1]], [/^spot the error:\s*(.+)$/is, m => 'इस वाक्य में error कहाँ है? ' + m[1]], [/^fill the blank(?: \(idiom\))?:\s*(.+)$/is, m => 'रिक्त स्थान भरिए। ' + m[1]], [/^improve the bracketed part:\s*(.+)$/is, m => 'इस वाक्य में bracket वाला हिस्सा सुधारिए। ' + m[1]], [/^spot the misspelt word:\s*(.+)$/is, m => 'गलत spelling वाला शब्द बताइए। ' + m[1]], [/^rearrange p q r s:\s*(.+)$/is, m => 'इन वाक्यांशों को सही क्रम में लगाइए। ' + m[1]], [/^order the sentences:\s*(.+)$/is, m => 'इन वाक्यों को सही क्रम में लगाइए। ' + m[1]], [/^active ⇄ passive:\s*(.+)$/is, m => 'इस वाक्य का active passive बदलिए। ' + m[1]], [/^direct ⇄ indirect:\s*(.+)$/is, m => 'इस वाक्य को direct indirect speech में बदलिए। ' + m[1]], [/^analogy:\s*(.+)$/is, m => 'सही analogy चुनिए। ' + m[1]],
+  [/^what is the full form of\s+(.+?)\s*\?$/is, m => m[1] + ' का फुल फॉर्म क्या है?'], [/^what is the name of\s+(.+?)\s*\?$/is, m => m[1] + ' का नाम क्या है?'], [/^what (?:is|was) (?:an?|the)\s+(.+?)\s*\?$/is, m => m[1] + ' क्या होता है?'], [/^what (?:is|was)\s+(.+?)\s*\?$/is, m => m[1] + ' क्या है?'], [/^what are\s+(.+?)\s*\?$/is, m => m[1] + ' क्या होते हैं?'], [/^which of the following\s+(?:is|are)\s+(.+?)\s*\?$/is, m => 'इनमें से कौन सा ' + m[1] + ' है?']];
+function hinglish(t) { if (DEV.test(t)) return t; const x = t.replace(/\s+/g, ' ').trim(); for (const [re, f] of HLAB) { const m = x.match(re); if (m) return f(m); } return x; }
+function speechText(q, k, n) {
+  const hv = CFG.hindiVo !== false, pre = k == null ? '' : (n > 1 ? (ORD[k] || (k + 1) + 'वाँ') + ' प्रश्न है। ' : 'आज का प्रश्न है। ');
+  if (!hv) return cleanSpeech(q.q + (q.o ? ' Options. ' + q.o.map((o, j) => 'Option ' + 'ABCD'[j] + ', ' + o + '.').join(' ') : ''));
+  return cleanSpeech(pre + hinglish(q.q) + (q.o ? ' विकल्प हैं। ' + q.o.map((o, j) => 'ऑप्शन ' + 'ABCD'[j] + ', ' + o + '.').join(' ') : ''));
+}
 function segments(t) {
   const runs = t.match(/[ऀ-ॿ][ऀ-ॿ\s,.।॥]*|[^ऀ-ॿ]+/g) || [], out = []; let last = 'en';
   runs.forEach(r => {
@@ -835,7 +846,7 @@ async function testAiVoice() {
   try { const b = await fetchTts('\u0928\u092e\u0938\u094d\u0924\u0947, \u092f\u0939 \u0906\u0935\u093e\u091c\u093c \u0915\u093e \u092a\u0930\u0940\u0915\u094d\u0937\u0923 \u0939\u0948. This is a voice test.', {pl: 'nova', se: 'Aditi', g: 0, gv: 'Kore', pp: 0}, errs); const sr = AC.createBufferSource(); sr.buffer = b; sr.connect(AC.destination); sr.start(); toast('Voice works via ' + fetchTts.used + (VOICE_DEAD = false, errs.length ? ' (' + errs.join('; ') + ')' : '')); }
   catch (e) { toast('No AI voice worked. ' + errs.join(' | ') + (CFG.gemkey || CFG.gkey ? '' : '. Add a free Gemini voice key, or rely on the device-voice fallback.')); }
 }
-const ansText = q => cleanSpeech(q.o ? 'Option ' + 'ABCD'[q.i] + ', ' + q.a : q.a);
+const ansText = q => cleanSpeech(CFG.hindiVo === false ? (q.o ? 'Option ' + 'ABCD'[q.i] + ', ' + q.a : q.a) : (q.o ? 'सही उत्तर है, ऑप्शन ' + 'ABCD'[q.i] + ', ' + q.a : 'सही उत्तर है, ' + q.a));
 
 /* ============ screens ============ */
 function show(id) { document.body.classList.toggle('inq', id === 'quiz'); if (id !== 'quiz' && REC) exitRec(); ['home', 'topics', 'quiz'].forEach(x => $(x).classList.toggle('hide', x !== id)); window.scrollTo(0, 0); }
@@ -1172,7 +1183,7 @@ async function startReel(arr, name, cont, one) {
   if (RC) return; LASTREEL = {arr, name, one}; if (!cont) { const nb = Math.max(1, CFG.batch || 1); BATCH = {left: nb, total: nb, done: 0}; }
   if (!window.MediaRecorder) { alert('This browser cannot record video. Use Chrome or Edge.'); return; }
   try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); } catch (e) {}
-  const n = 1, key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
+  const n = one ? 1 : Math.max(1, CFG.reelN || 5), key = 'qr_pos_' + subj.id + '_' + name; let pos = 0, qs = [];
   if (one) { qs = [one.q]; pos = one.idx; } else if (shuffle) qs = shuf(arr).slice(0, n); else { try { pos = +localStorage.getItem(key) || 0; } catch (e) {} for (let k = 0; k < Math.min(n, arr.length); k++) qs.push(arr[(pos + k) % arr.length]); }
   const seed = (Date.now() & 0x7fffffff), P = {qs, subj: subj.name, subjId: subj.id, handle: (CFG.handle || '').trim(), seed, Ss: qs.map(q => q.o ? CFG.mathS : CFG.secs), hints: qs.map(q => q.o ? null : makeHint(q.a)), segs: [], audio: [], audioA: [], devA: [], errs: [], dev: false, total: 0, voice: '', note: ''};
   try { await luWarm(qs, subj.id); } catch (e) {} P.vecs = qs.map(q => vecFor(q, subj.id)); P.themes = qs.map((q, k) => theme(seed + k * 7919)); P.bgs = P.themes.map((t, k) => buildBg(P, k));
@@ -1184,7 +1195,7 @@ async function startReel(arr, name, cont, one) {
     P.vobj = pickAiVoice(); P.voice = P.vobj.se + ' / ' + P.vobj.pl;
     for (let k = 0; k < qs.length; k++) {
       if (RC.cancelled) { RC = null; return; } reelMsg('Preparing AI voice ' + (k + 1) + ' of ' + qs.length + '…'); PIPER_UI = t => reelMsg(t);
-      try { P.audio[k] = await fetchTts(speechText(qs[k]).slice(0, 420), P.vobj, P.errs); } catch (e) { if (k === 0) break; continue; }
+      try { P.audio[k] = await fetchTts(speechText(qs[k], k, qs.length).slice(0, 460), P.vobj, P.errs); } catch (e) { if (k === 0) break; continue; }
       try { P.audioA[k] = await fetchTts(ansText(qs[k]).slice(0, 200), P.vobj, P.errs); } catch (e) {}
     }
     if (RC.cancelled) { RC = null; return; }
@@ -1195,7 +1206,7 @@ async function startReel(arr, name, cont, one) {
   if (P.dev) P.note = 'AI voice unavailable, so the device voice is played aloud and recorded through your microphone. Keep the volume up and the room quiet.';
   if (CFG.aiv && !P.voice && !CFG.mic && !P.dev && BATCH.total > 1) { reelMsg('Stopped: no voice available, so the batch would be silent. ' + P.note); BATCH.left = 0; RC = null; return; }
   P.audio.forEach((b, k) => { if (b) P.Ss[k] = Math.max(P.Ss[k], Math.ceil(b.duration + 1.6)); });
-  if (P.dev) qs.forEach((q, k) => { P.Ss[k] = Math.max(P.Ss[k], Math.ceil(cleanSpeech(speechText(q)).length / 12 + 2)); P.devA[k] = Math.ceil(cleanSpeech(ansText(q)).length / 12 + 1.5); });
+  if (P.dev) qs.forEach((q, k) => { P.Ss[k] = Math.max(P.Ss[k], Math.ceil(cleanSpeech(speechText(q, k, qs.length)).length / 12 + 2)); P.devA[k] = Math.ceil(cleanSpeech(ansText(q)).length / 12 + 1.5); });
   let st = 0; const add = (type, dur, qi) => { P.segs.push({type, start: st, dur, qi}); st += dur; };
   if (qs.length > 1) add('intro', REEL.INTRO); qs.forEach((q, qi) => add('q', P.Ss[qi] + Math.max(q.o ? 6 : REEL.HOLD, P.audioA[qi] ? P.audioA[qi].duration + 1.2 : 0, P.devA[qi] || 0), qi)); if (qs.length > 1) add('outro', REEL.OUTRO); P.total = st;
   try { for (const w of [500, 600, 700]) { await document.fonts.load(w + ' 40px Poppins', 'Aa'); await document.fonts.load(w + ' 40px Poppins', 'अक'); } } catch (e) {}
@@ -1227,7 +1238,7 @@ async function startReel(arr, name, cont, one) {
     if (!RC) return;
     if (micAn) { micBuf = micBuf || new Uint8Array(micAn.fftSize); micAn.getByteTimeDomainData(micBuf); let pk = 0; for (let i = 0; i < micBuf.length; i++) pk = Math.max(pk, Math.abs(micBuf[i] - 128) / 128); micPeak = Math.max(micPeak, pk); RC.mlev = pk; } const t = (performance.now() - t0) / 1000, r = drawFrame(c, P, Math.min(t, P.total - 0.001));
     if (r.seg.type === 'q') { const Sq = P.Ss[r.seg.qi];
-      if (P.dev) { if (r.lt >= 0.5 && r.lt < Sq && spokeQ !== r.seg.qi) { spokeQ = r.seg.qi; speak(speechText(P.qs[r.seg.qi]), null, true); } if (r.lt >= Sq + 0.6 && spokeA !== r.seg.qi) { spokeA = r.seg.qi; speak(ansText(P.qs[r.seg.qi]), null, true); } } if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
+      if (P.dev) { if (r.lt >= 0.5 && r.lt < Sq && spokeQ !== r.seg.qi) { spokeQ = r.seg.qi; speak(speechText(P.qs[r.seg.qi], r.seg.qi, P.qs.length), null, true); } if (r.lt >= Sq + 0.6 && spokeA !== r.seg.qi) { spokeA = r.seg.qi; speak(ansText(P.qs[r.seg.qi]), null, true); } } if (r.lt < Sq) { const rem = Math.ceil(Sq - r.lt), sec = rem + r.seg.qi * 1000, from = P.audio[r.seg.qi] ? 0.5 + P.audio[r.seg.qi].duration : 0; if (sec !== lastSec) { lastSec = sec; if (r.lt >= from) beep(rem <= 3 ? 880 : 560, 0.07, rem <= 3 ? 0.15 : 0.07); } } else if (answered !== r.seg.qi) { answered = r.seg.qi; chime(); } }
     reelMsg((r.seg.type === 'q' ? 'Recording ' + (r.seg.qi + 1) + ' of ' + qs.length : 'Recording') + (BATCH.total > 1 ? ' \u00b7 video ' + (BATCH.done + 1) + ' of ' + BATCH.total : '') + (!P.voice && !CFG.mic && !P.dev ? ' \u00b7 no voice' : '') + (micAn ? ' \u00b7 mic ' + (RC.mlev > 0.04 ? 'hearing sound' : 'quiet') : ''));
     if (t >= P.total) { rec.stop(); return; } RC.raf = requestAnimationFrame(loop);
   };
