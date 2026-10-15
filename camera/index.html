@@ -81,7 +81,7 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
       <div id="pcStatus" class="status">Waiting for phone connection.</div>
     </section>
   </div>
-  <p class="footer">Privacy: media is sent peer-to-peer when the network permits; the app does not upload recordings to GitHub. WebRTC may use relay infrastructure on restrictive networks. Keep this page open on both devices during use.</p>
+  <p class="footer">Privacy: media is sent peer-to-peer when the network permits; the app does not upload recordings to GitHub. WebRTC may use relay infrastructure on restrictive networks. Keep this page open in the foreground on the phone during use; mobile browsers may pause camera access when minimized.</p>
 </main>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
@@ -89,7 +89,7 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
   const $ = id => document.getElementById(id);
   let role = "pc", peer = null, localStream = null, remoteStream = null;
   let mediaCall = null, recorder = null, chunks = [], isRecording = false;
-  let pcPlaceholderStream = null;
+  let pcPlaceholderStream = null, outgoingStream = null, screenWakeLock = null;
 
   function status(id, message, kind="") {
     const el = $(id); el.textContent = message; el.className = "status" + (kind ? " " + kind : "");
@@ -174,7 +174,42 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
     outgoingStream = null;
   }
 
+  async function keepScreenAwake() {
+    // Screen Wake Lock can prevent the display sleeping while the page is visible.
+    // It cannot override mobile OS/browser restrictions when the app is minimized.
+    if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+    try {
+      if (screenWakeLock) await screenWakeLock.release().catch(() => {});
+      screenWakeLock = await navigator.wakeLock.request('screen');
+      screenWakeLock.addEventListener('release', () => { screenWakeLock = null; });
+    } catch (_) {
+      // Unsupported or blocked; camera still works while the page stays foregrounded.
+    }
+  }
+  async function releaseScreenWakeLock() {
+    if (screenWakeLock) {
+      try { await screenWakeLock.release(); } catch (_) {}
+      screenWakeLock = null;
+    }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && localStream) {
+      keepScreenAwake();
+      const videoTrack = localStream.getVideoTracks()[0];
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (videoTrack && videoTrack.readyState === 'live' && !videoTrack.muted) {
+        status('phoneStatus', 'Camera is active again. Keep this page open in the foreground for the most reliable feed.', 'good');
+      } else if (videoTrack && videoTrack.readyState === 'live') {
+        status('phoneStatus', 'The phone browser may have paused camera frames in the background. Keep this page open and foregrounded; if video is frozen, stop and restart the camera.', 'bad');
+      }
+      if (audioTrack && audioTrack.readyState === 'ended') {
+        status('phoneStatus', 'Microphone stopped by the phone/browser. Restart the camera and reconnect.', 'bad');
+      }
+    }
+  });
+
   function stopLocalCamera() {
+    releaseScreenWakeLock();
     stopStudioAudio();
     if (localStream) localStream.getTracks().forEach(t => t.stop());
     localStream = null;
@@ -198,10 +233,11 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
       });
       $("localVideo").srcObject = localStream;
       await buildOutgoingStream(localStream);
+      await keepScreenAwake();
       $("startCamera").disabled = true;
       $("stopCamera").disabled = false;
       $("connectPhone").disabled = false;
-      status("phoneStatus", "Camera ready. Now connect to the PC using the same room code.", "good");
+      status("phoneStatus", "Camera ready. Keep this page open in the foreground; minimizing may pause the camera. Now connect to the PC using the same room code.", "good");
     } catch (err) {
       status("phoneStatus", "Could not start camera: " + (err.message || err.name) + ". Check camera/microphone permissions and close other camera apps.", "bad");
     }
