@@ -47,7 +47,7 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
         <select id="facing"><option value="environment">Rear camera</option><option value="user">Front camera</option></select>
         <label for="quality">Video quality</label>
         <select id="quality"><option value="1280">HD 720p (recommended)</option><option value="1920">Full HD 1080p</option><option value="640">SD 480p</option></select>
-        <label class="audio-option"><input id="studioAudio" type="checkbox" checked> <span><strong>Studio audio enhancement</strong><br><small>Automatic noise suppression, low-frequency rumble reduction and voice compression</small></span></label>
+        <label class="audio-option"><input id="studioAudio" type="checkbox" checked disabled> <span><strong>Microphone noise control</strong><br><small>Uses the phone browser’s built-in echo cancellation, noise suppression and automatic gain control for reliable audio recording.</small></span></label>
         <div class="actions">
           <button id="startCamera">Start camera</button>
           <button id="stopCamera" class="secondary" disabled>Stop camera</button>
@@ -153,76 +153,25 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
     $("connectPhone").disabled = !localStream || connected;
     $("hangPhone").disabled = !connected;
   }
-  // Browser noise suppression is applied at capture. This low-latency Web Audio
-  // chain adds a rumble-cut high-pass filter and gentle voice compression.
-  // It is real-time DSP, not a neural/AI source-separation model.
+  // Keep the original microphone track intact for reliable WebRTC transport.
+  // Browser-native echo cancellation, noise suppression and auto gain control
+  // are requested in getUserMedia below. Avoid routing through Web Audio here,
+  // because some mobile browsers can send a silent destination track.
   async function buildOutgoingStream(stream) {
-    if (outgoingStream) {
-      outgoingStream.getTracks().forEach(t => { if (t.kind !== "video") t.stop(); });
-      outgoingStream = null;
+    outgoingStream = new MediaStream(stream.getTracks());
+    const audioTrack = outgoingStream.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = true;
+      status("phoneStatus", "Microphone ready (browser noise suppression enabled).", "good");
+    } else {
+      status("phoneStatus", "WARNING: no microphone audio track was granted. Check microphone permission on the phone.", "bad");
     }
-    const videoTracks = stream.getVideoTracks();
-    const audioTrack = stream.getAudioTracks()[0];
-    if (!audioTrack) {
-      outgoingStream = new MediaStream(videoTracks);
-      return outgoingStream;
-    }
-    if (!$("studioAudio").checked) {
-      outgoingStream = new MediaStream([...videoTracks, audioTrack]);
-      return outgoingStream;
-    }
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) {
-      outgoingStream = new MediaStream([...videoTracks, audioTrack]);
-      status("phoneStatus", "Studio filters unavailable; using browser microphone noise suppression.", "bad");
-      return outgoingStream;
-    }
-    try {
-      studioAudioContext = new AudioCtx();
-      await studioAudioContext.resume();
-      const source = studioAudioContext.createMediaStreamSource(new MediaStream([audioTrack]));
-      const highpass = studioAudioContext.createBiquadFilter();
-      highpass.type = "highpass";
-      highpass.frequency.value = 85;
-      highpass.Q.value = 0.707;
-      const compressor = studioAudioContext.createDynamicsCompressor();
-      compressor.threshold.value = -24;
-      compressor.knee.value = 18;
-      compressor.ratio.value = 3;
-      compressor.attack.value = 0.008;
-      compressor.release.value = 0.18;
-      const gain = studioAudioContext.createGain();
-      gain.gain.value = 1.15;
-      const destination = studioAudioContext.createMediaStreamDestination();
-      source.connect(highpass);
-      highpass.connect(compressor);
-      compressor.connect(gain);
-      gain.connect(destination);
-      studioNodes = [source, highpass, compressor, gain, destination];
-      outgoingStream = new MediaStream([...videoTracks, ...destination.stream.getAudioTracks()]);
-      return outgoingStream;
-    } catch (err) {
-      if (studioAudioContext) { try { await studioAudioContext.close(); } catch (_) {} }
-      studioAudioContext = null;
-      studioNodes = [];
-      outgoingStream = new MediaStream([...videoTracks, audioTrack]);
-      status("phoneStatus", "Studio filters could not start; browser noise suppression remains enabled.", "bad");
-      return outgoingStream;
-    }
+    return outgoingStream;
   }
   async function stopStudioAudio() {
-    if (studioNodes.length) {
-      studioNodes.forEach(n => { try { n.disconnect(); } catch (_) {} });
-      studioNodes = [];
-    }
-    if (outgoingStream) {
-      outgoingStream.getAudioTracks().forEach(t => { try { t.stop(); } catch (_) {} });
-      outgoingStream = null;
-    }
-    if (studioAudioContext) {
-      try { await studioAudioContext.close(); } catch (_) {}
-      studioAudioContext = null;
-    }
+    // The outgoing stream shares the original camera/microphone tracks.
+    // Do not stop these here; stopLocalCamera() owns their lifecycle.
+    outgoingStream = null;
   }
 
   function stopLocalCamera() {
@@ -320,6 +269,9 @@ video{display:block;width:100%;max-height:420px;background:#050607;border-radius
       }
       mediaCall.on("stream", stream => {
         remoteStream = stream;
+        const audioTracks = stream.getAudioTracks();
+        if (!audioTracks.length) status("pcStatus", "Video connected, but no audio track arrived. Restart camera on phone and reconnect.", "bad");
+        else audioTracks.forEach(track => { track.enabled = true; });
         $("remoteVideo").srcObject = stream;
         $("remoteVideo").play().catch(() => {});
         setPCConnected(true);
