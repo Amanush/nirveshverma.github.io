@@ -51,11 +51,10 @@ ol.steps li{margin:4px 0}
 <body>
 <main>
   <h1>PhoneCam to PC Pro</h1>
-  <p class="lead">Use your phone as a high-performance wireless camera and microphone with live monitoring and adjustable controls.</p>
+  <p class="lead">Use your phone as a wireless camera and microphone with live monitoring, brightness, and auto-landscape orientation.</p>
 
   <section class="card">
     <h2>1. Device Setup</h2>
-    <p class="hint">Select your role on each screen to establish connection.</p>
     <div class="seg">
       <button id="rolePhone" aria-pressed="false">Phone<small>Sends video & mic</small></button>
       <button id="rolePC" aria-pressed="true">Computer<small>Views & records</small></button>
@@ -105,8 +104,8 @@ ol.steps li{margin:4px 0}
       <input id="brightnessRange" type="range" min="50" max="150" value="100" step="5">
     </div>
 
-    <label class="check"><input id="autoRotate" type="checkbox" checked><span>Auto-adjust orientation<br><small>Dynamically adapts aspect ratio as you rotate the phone.</small></span></label>
-    <label class="check"><input id="bgBlur" type="checkbox"><span>Soft Background Blur Filter<br><small>Applies software-based backdrop softening.</small></span></label>
+    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Force Wide / Landscape Mode<br><small>Outputs widescreen video stream regardless of phone physical tilt.</small></span></label>
+    <label class="check"><input id="bgBlur" type="checkbox"><span>Soft Background Blur Filter<br><small>Applies a soft-focus bokeh effect on the preview.</small></span></label>
     <label class="check"><input id="noise" type="checkbox" checked><span>Echo & Noise Suppression<br><small>Filters background chatter and audio feedback.</small></span></label>
 
     <video id="localVideo" autoplay playsinline muted></video>
@@ -119,7 +118,7 @@ ol.steps li{margin:4px 0}
     <div id="phoneStatus" class="status"><span class="dot"></span><span class="msg">Not started yet.</span></div>
   </section>
 
-  <p class="small">Peer-to-peer secure stream directly between devices. No data is stored externally.</p>
+  <p class="small">Secure peer-to-peer connection. No external server uploads.</p>
 </main>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" onerror="loadFallback()"></script>
@@ -133,7 +132,6 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
   let wantConnection = false, retryTimer = null, wakeLock = null;
   let recorder = null, chunks = [], isRecording = false, timerId = null, recStart = 0;
   let audioCtx = null, meterStop = {};
-  let currentOrientation = window.innerHeight > window.innerWidth ? "portrait" : "landscape";
 
   function setStatus(which, msg, kind = "") {
     const el = $(which + "Status");
@@ -174,10 +172,8 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     catch (_) { prompt("Copy link:", phoneLink()); }
   };
 
-  // Brightness & Filters
   $("brightnessRange").oninput = (e) => {
-    const val = e.target.value;
-    $("brightnessVal.textContent" || "brightnessVal").textContent = val + "%";
+    $("brightnessVal").textContent = e.target.value + "%";
     updateVideoFilters();
   };
   $("bgBlur").onchange = updateVideoFilters;
@@ -185,34 +181,7 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
   function updateVideoFilters() {
     const b = $("brightnessRange").value;
     const blur = $("bgBlur").checked ? "blur(4px)" : "none";
-    // Apply soft blur to background elements or use filter on preview if supported
     $("localVideo").style.filter = `brightness(${b}%) ${blur}`;
-  }
-
-  // Auto-orientation tracking
-  window.addEventListener("deviceorientation", () => {
-    if (!$("autoRotate").checked || !localStream) return;
-    const isPortrait = window.innerHeight > window.innerWidth;
-    if (isPortrait !== (currentOrientation === "portrait")) {
-      currentOrientation = isPortrait ? "portrait" : "landscape";
-      // Restart local stream constraints smoothly on orientation shift
-      renegotiateStreamConstraints();
-    }
-  }, true);
-
-  async function renegotiateStreamConstraints() {
-    if (!localStream) return;
-    try {
-      const w = Number($("quality").value);
-      const isPortrait = currentOrientation === "portrait";
-      const width = isPortrait ? Math.round(w * 9 / 16) : w;
-      const height = isPortrait ? w : Math.round(w * 9 / 16);
-      
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack && videoTrack.applyConstraints) {
-        await videoTrack.applyConstraints({ width: { ideal: width }, height: { ideal: height } });
-      }
-    } catch (e) {}
   }
 
   function startMeter(stream, fillEl, key) {
@@ -260,10 +229,12 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     $("phoneStart").disabled = true;
     setStatus("phone", "Requesting camera & microphone permissions...");
     try {
-      const w = Number($("quality").value);
-      const isPortrait = currentOrientation === "portrait";
-      const width = isPortrait ? Math.round(w * 9 / 16) : w;
-      const height = isPortrait ? w : Math.round(w * 9 / 16);
+      const baseRes = Number($("quality").value);
+      const landscape = $("forceLandscape").checked;
+      
+      // Force landscape dimensions (width > height) so video stream stays horizontal
+      const width = landscape ? Math.max(baseRes, Math.round(baseRes * 16 / 9)) : baseRes;
+      const height = landscape ? Math.min(baseRes, Math.round(baseRes * 9 / 16)) : Math.round(baseRes * 16 / 9);
       const on = $("noise").checked;
 
       localStream = await navigator.mediaDevices.getUserMedia({
