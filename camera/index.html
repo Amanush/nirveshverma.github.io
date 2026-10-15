@@ -97,14 +97,14 @@ ol.steps li{margin:4px 0}
     <select id="facing"><option value="environment">Rear Camera</option><option value="user">Front Camera</option></select>
     
     <label for="quality">Resolution Quality</label>
-    <select id="quality"><option value="1280">HD 720p (Recommended)</option><option value="1920">Full HD 1080p</option><option value="640">SD 480p</option></select>
+    <select id="quality"><option value="720">HD 720p (Recommended)</option><option value="1080">Full HD 1080p</option><option value="480">SD 480p</option></select>
 
     <div class="slider-group">
       <label for="brightnessRange" style="margin-top:0">Brightness <span id="brightnessVal" class="slider-val">100%</span></label>
       <input id="brightnessRange" type="range" min="50" max="150" value="100" step="5">
     </div>
 
-    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Force True Landscape Stream<br><small>Swaps camera axis mapping so video outputs in proper 16:9 ratio.</small></span></label>
+    <label class="check"><input id="forceLandscape" type="checkbox" checked><span>Landscape Widescreen Mode<br><small>Requests 16:9 widescreen dimensions.</small></span></label>
     <label class="check"><input id="bgBlur" type="checkbox"><span>Soft Background Blur Filter<br><small>Applies a soft-focus bokeh effect on the preview.</small></span></label>
     <label class="check"><input id="noise" type="checkbox" checked><span>Echo & Noise Suppression<br><small>Filters background chatter and audio feedback.</small></span></label>
 
@@ -129,7 +129,7 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
 (() => {
   const $ = id => document.getElementById(id);
   let role = "pc", peer = null, call = null, localStream = null, remoteStream = null;
-  let wantConnection = false, retryTimer = null, wakeLock = null;
+  let wantConnection = false, retryTimer = null;
   let recorder = null, chunks = [], isRecording = false, timerId = null, recStart = 0;
   let audioCtx = null, meterStop = {};
 
@@ -229,22 +229,18 @@ function loadFallback(){var s=document.createElement('script');s.src='https://cd
     $("phoneStart").disabled = true;
     setStatus("phone", "Requesting camera & microphone permissions...");
     try {
-     // Replace your localStream constraints block with this:
-const baseRes = Number($("quality").value);
-const isLandscape = $("forceLandscape").checked;
+      const targetRes = Number($("quality").value);
+      const landscape = $("forceLandscape").checked;
+      
+      // Use ideal constraints without forced hard axis inversion to prevent sensor zoom clipping
+      const width = landscape ? { ideal: targetRes === 1080 ? 1920 : targetRes === 720 ? 1280 : 854 } : { ideal: 720 };
+      const height = landscape ? { ideal: targetRes } : { ideal: targetRes === 1080 ? 1920 : targetRes === 720 ? 1280 : 480 };
+      const on = $("noise").checked;
 
-const width = isLandscape ? 1920 : 1080;
-const height = isLandscape ? 1080 : 1920;
-
-localStream = await navigator.mediaDevices.getUserMedia({
-  audio: { echoCancellation: on, noiseSuppression: on, autoGainControl: on },
-  video: { 
-    facingMode: { ideal: $("facing").value }, 
-    width: { ideal: width }, 
-    height: { ideal: height }, 
-    frameRate: { ideal: 30 } 
-  }
-});
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: on, noiseSuppression: on, autoGainControl: on },
+        video: { facingMode: { ideal: $("facing").value }, width, height, frameRate: { ideal: 30 } }
+      });
     } catch (err) {
       $("phoneStart").disabled = false;
       return setStatus("phone", "Camera error: " + (err.message || err.name), "bad");
@@ -341,7 +337,7 @@ localStream = await navigator.mediaDevices.getUserMedia({
   function fmt(s) { return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
   
   $("record").onclick = () => {
-    if (!remoteStream) return;
+    if (!remoteStream || !remoteStream.active) return setStatus("pc", "No active remote stream to record.", "bad");
     try {
       chunks = [];
       const type = mime();
