@@ -531,4 +531,320 @@
         let items = [];
         try {
           const fxUrl = parsed.handle
-            ? `
+            ? `https://api.fxtwitter.com/${parsed.handle}/status/${parsed.id}`
+            : `https://api.fxtwitter.com/status/${parsed.id}`;
+          const res = await fetch(fxUrl);
+          if (res.ok) {
+            const data = await res.json();
+            const tw = data.tweet || data.status;
+            if (tw) {
+              const text = cleanText(tw.text || '');
+              const image = extractImage(tw);
+              if (text || image) items.push({ text: text || '', image });
+            }
+          }
+        } catch (e) { console.warn('fx', e); }
+
+        if (items.length === 0) {
+          toast('Could not fetch. Paste the text instead.');
+          return;
+        }
+
+        document.getElementById('thread-input').value = items
+          .map((it, i) => `${i + 1}/ ${it.text}`)
+          .join('\n\n');
+
+        slides = items.map(it => ({ text: it.text, image: it.image || null }));
+        renderSlides();
+        confetti({ particleCount: 35, spread: 45, origin: { y: 0.7 }, colors: ['#3b82f6','#8b5cf6','#f59e0b'] });
+        toast(`${slides.length} slides ready`);
+      } catch (err) {
+        toast('Fetch failed. Paste the text.');
+      } finally {
+        btn.disabled = false;
+        label.classList.remove('hidden');
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function parseThread(raw) {
+      const text = raw.trim();
+      if (!text) return [];
+      const numbered = text.split(/(?:^|\n)\s*(?:\d+[\.\/\)]\s*)/g).map(s => s.trim()).filter(Boolean);
+      if (numbered.length > 1) return numbered.map(t => ({ text: cleanText(t), image: null }));
+      return text.split(/\n\s*\n+/).map(s => s.trim()).filter(Boolean).map(t => ({ text: cleanText(t), image: null }));
+    }
+
+    function buildSlides() {
+      const items = parseThread(document.getElementById('thread-input').value);
+      if (items.length === 0) { toast('Paste thread text first'); return; }
+      slides = items;
+      renderSlides();
+      confetti({ particleCount: 40, spread: 50, origin: { y: 0.75 }, colors: ['#3b82f6','#8b5cf6','#f59e0b'] });
+    }
+
+    function renderSlides() {
+      const stage = document.getElementById('stage');
+      stage.innerHTML = '';
+
+      slides.forEach((item, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide' + (i === 0 ? ' active' : '');
+        const hasImage = !!item.image;
+        const hasText = !!(item.text && item.text.trim());
+
+        let inner = '<div class="slide-content-box">';
+
+        if (hasText) {
+          inner += `<div class="tweet-text" contenteditable="true" spellcheck="false" data-idx="${i}">${escapeHtml(item.text)}</div>`;
+        } else {
+          inner += `<div class="tweet-text" contenteditable="true" data-idx="${i}">(tap to add text)</div>`;
+        }
+
+        let imgSrc = item.image || '';
+        if (imgSrc && !imgSrc.startsWith('data:') && (imgSrc.includes('pbs.twimg.com') || imgSrc.includes('twimg.com'))) {
+          imgSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(imgSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
+        }
+        inner += `<div id="img-container-${i}" class="w-full flex flex-col items-center" style="${hasImage ? '' : 'display:none;'}">
+          <img id="slide-img-${i}" class="slide-image" src="${escapeHtml(imgSrc)}" alt="" loading="lazy"
+            onerror="if(this.dataset.tried!=='1'&&this.src.indexOf('weserv')!==-1){this.dataset.tried='1';this.src='${escapeHtml(item.image||'')}';}else{this.style.display='none';}">
+        </div>`;
+
+        inner += '</div>';
+
+        slide.innerHTML = `
+          ${inner}
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" style="width:${((i+1)/slides.length)*100}%"></div></div>
+            <div class="slide-footer">
+              <span>${i + 1} / ${slides.length}</span>
+              <span>Ctrl+V to paste image</span>
+            </div>
+          </div>`;
+        stage.appendChild(slide);
+      });
+
+      stage.querySelectorAll('.tweet-text[contenteditable]').forEach(el => {
+        el.addEventListener('input', () => {
+          const idx = +el.dataset.idx;
+          if (slides[idx]) slides[idx].text = el.innerText.trim();
+        });
+      });
+
+      current = 0;
+      updateUI();
+      document.getElementById('home-screen').classList.add('hidden');
+      document.getElementById('player-screen').classList.remove('hidden');
+      toast(`${slides.length} slides ready`);
+    }
+
+    window.addEventListener('paste', e => {
+      if (document.getElementById('player-screen').classList.contains('hidden')) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.indexOf('image') === 0) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const base64 = event.target.result;
+            slides[current].image = base64;
+            updateSlideImage(current, base64);
+            toast('Image pasted on slide ' + (current + 1));
+          };
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          break;
+        }
+      }
+    });
+
+    function updateSlideImage(idx, url) {
+      slides[idx].image = url ? url.trim() : null;
+      const imgElem = document.getElementById(`slide-img-${idx}`);
+      const container = document.getElementById(`img-container-${idx}`);
+      if (!imgElem || !container) return;
+
+      if (url && url.trim()) {
+        let finalSrc = url.trim();
+        if (!finalSrc.startsWith('data:') && (finalSrc.includes('pbs.twimg.com') || finalSrc.includes('twimg.com'))) {
+          finalSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(finalSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
+        }
+        imgElem.onerror = function() {
+          if (this.dataset.tried !== '1' && !url.startsWith('data:')) {
+            this.dataset.tried = '1';
+            this.src = url.trim();
+          } else {
+            this.style.display = 'none';
+          }
+        };
+        imgElem.src = finalSrc;
+        imgElem.style.display = 'block';
+        container.style.display = 'flex';
+      } else {
+        imgElem.src = '';
+        container.style.display = 'none';
+      }
+    }
+
+    function loadDemo() {
+      document.getElementById('thread-input').value = `1/ Most people treat Twitter threads like bulky blog posts.
+
+2/ The highest-retention format uses vertical short-form: one idea per slide.
+
+3/ Copy any image from X and press Ctrl+V on a slide to attach it.
+
+4/ Then record and export ready-to-post Shorts in under a minute.`;
+      buildSlides();
+    }
+
+    function goTo(index) {
+      if (index < 0 || index >= slides.length) return;
+      document.querySelectorAll('.slide').forEach((s, i) => s.classList.toggle('active', i === index));
+      current = index;
+      updateUI();
+      if (isSpeaking) stopTTS();
+    }
+    function nextSlide() { goTo(current + 1); }
+    function prevSlide() { goTo(current - 1); }
+    function updateUI() {
+      document.getElementById('slide-counter').textContent = `${current + 1} / ${slides.length}`;
+      document.getElementById('prev-btn').disabled = current === 0;
+      document.getElementById('next-btn').disabled = current === slides.length - 1;
+    }
+    function goHome() {
+      stopTTS();
+      if (mediaRecorder?.state === 'recording') stopRecording();
+      document.getElementById('player-screen').classList.add('hidden');
+      document.getElementById('home-screen').classList.remove('hidden');
+    }
+
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('player-screen').classList.contains('hidden')) return;
+      if (document.activeElement?.isContentEditable || document.activeElement?.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'Escape') goHome();
+    });
+
+    let touchStartX = 0;
+    document.getElementById('stage').addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    document.getElementById('stage').addEventListener('touchend', e => {
+      if (document.activeElement?.isContentEditable) return;
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      if (dx < -60) nextSlide();
+      if (dx > 60) prevSlide();
+    }, { passive: true });
+
+    // TTS
+    function getBestVoice() {
+      const voices = speechSynthesis.getVoices();
+      return voices.find(v => v.lang === 'en-IN' || /india|ravi|neerja/i.test(v.name))
+        || voices.find(v => v.lang.startsWith('en'))
+        || voices[0];
+    }
+    function toggleTTS() {
+      if (isSpeaking) { stopTTS(); return; }
+      speakCurrent();
+    }
+    function speakCurrent() {
+      if (!('speechSynthesis' in window)) { toast('TTS not supported'); return; }
+      stopTTS();
+      const text = slides[current]?.text;
+      if (!text) { toast('No text on this slide'); return; }
+      const utt = new SpeechSynthesisUtterance(text);
+      const voice = getBestVoice();
+      if (voice) utt.voice = voice;
+      utt.rate = 0.93;
+      utt.onstart = () => {
+        isSpeaking = true;
+        document.getElementById('tts-btn').style.boxShadow = '0 0 0 2px #3b82f6';
+      };
+      utt.onend = utt.onerror = () => {
+        isSpeaking = false;
+        document.getElementById('tts-btn').style.boxShadow = '';
+      };
+      speechSynthesis.speak(utt);
+    }
+    function stopTTS() {
+      speechSynthesis.cancel();
+      isSpeaking = false;
+      const btn = document.getElementById('tts-btn');
+      if (btn) btn.style.boxShadow = '';
+    }
+    if ('speechSynthesis' in window) {
+      speechSynthesis.onvoiceschanged = () => {};
+      speechSynthesis.getVoices();
+    }
+
+    // RECORDING
+    async function startRecording() {
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        toast('Recording not supported on this browser');
+        return;
+      }
+      try {
+        let displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: 30 },
+          audio: false,
+          preferCurrentTab: true
+        }).catch(() => null);
+
+        if (!displayStream) {
+          toast('Screen share permission required. Use desktop Chrome/Edge.');
+          return;
+        }
+
+        let audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true }
+        }).catch(() => null);
+
+        const tracks = [...displayStream.getVideoTracks()];
+        if (audioStream) tracks.push(...audioStream.getAudioTracks());
+        stream = new MediaStream(tracks);
+        recordedChunks = [];
+
+        const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+          ? 'video/webm;codecs=vp9,opus'
+          : 'video/webm';
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+        mediaRecorder.ondataavailable = e => { if (e.data.size) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `thread-short-${Date.now()}.webm`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast('Video downloaded!');
+          confetti({ particleCount: 50, spread: 55, origin: { y: 0.65 }, colors: ['#3b82f6','#8b5cf6'] });
+          stream.getTracks().forEach(t => t.stop());
+          stream = null;
+        };
+        mediaRecorder.start(250);
+        document.getElementById('rec-btn').classList.add('hidden');
+        document.getElementById('stop-btn').classList.remove('hidden');
+        document.getElementById('rec-indicator').classList.remove('hidden');
+        document.getElementById('rec-indicator').classList.add('flex');
+        toast('Recording… advance slides while speaking');
+      } catch (err) {
+        console.error(err);
+        toast('Recording failed. Use desktop Chrome/Edge.');
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+      document.getElementById('rec-btn').classList.remove('hidden');
+      document.getElementById('stop-btn').classList.add('hidden');
+      document.getElementById('rec-indicator').classList.add('hidden');
+      document.getElementById('rec-indicator').classList.remove('flex');
+    }
+  </script>
+</body>
+</html>
