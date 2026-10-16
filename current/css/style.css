@@ -538,7 +538,7 @@ main { overflow: auto; padding: 36px; }
 .badge.tagx { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
 /* ---- Vertical (9:16) Mobile Format Tweaks ---- */
-.a9x16 .st-body { padding: calc(var(--u)*2.2) calc(var(--u)*3); }
+.a9x16 .st-body { padding: 20px;}
 .a9x16 .q { font-size: calc(var(--u)*3); }
 .a9x16 .opt { font-size: calc(var(--u)*2.4); padding: 0.5em 0.9em; }
 .a9x16 .quiz { gap: calc(var(--u)*1.1); }
