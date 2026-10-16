@@ -6,6 +6,7 @@
   <title>Thread → Shorts</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
     
@@ -542,8 +543,14 @@
       document.getElementById('custom-backdrop').classList.remove('open');
     }
     function setTheme(cls) {
-      document.body.className = cls;
+      // clear previous theme classes
+      document.body.classList.remove('theme-light', 'theme-midnight', 'theme-warm', 'theme-mint');
+      if (cls) document.body.classList.add(cls);
       document.querySelectorAll('.theme-swatch').forEach(b => b.classList.toggle('active', b.dataset.theme === cls));
+      // force stage + slides to pick up new CSS vars
+      document.querySelectorAll('.stage-wrapper, .slide').forEach(el => {
+        el.style.background = '';
+      });
       toast(cls ? cls.replace('theme-','') + ' theme' : 'Dark theme');
     }
     function setTextSize(size, btn) {
@@ -876,31 +883,82 @@
     }
 
     // Recording
+    // Record ONLY the slide stage (not browser chrome / controls)
+    let recordCanvas = null;
+    let recordAnimId = null;
+
     async function startRecording() {
-      if (!navigator.mediaDevices || !window.MediaRecorder) {
-        toast('Recording not supported');
+      if (!window.MediaRecorder) {
+        toast('Recording not supported in this browser');
         return;
       }
+      const stageEl = document.querySelector('.stage-wrapper');
+      if (!stageEl) { toast('No slide stage'); return; }
+
       try {
-        let displayStream = await navigator.mediaDevices.getDisplayMedia({
-          video: { frameRate: 30 }, audio: false, preferCurrentTab: true
-        }).catch(() => null);
-        if (!displayStream) {
-          toast('Screen share required. Use desktop Chrome/Edge.');
-          return;
+        // Mic (optional)
+        let audioStream = null;
+        try {
+          audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true }
+          });
+        } catch (e) {
+          toast('Mic denied – recording video only');
         }
-        let audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true }
-        }).catch(() => null);
-        const tracks = [...displayStream.getVideoTracks()];
+
+        // Canvas that mirrors the stage only
+        const rect = stageEl.getBoundingClientRect();
+        const w = Math.round(rect.width);
+        const h = Math.round(rect.height);
+        recordCanvas = document.createElement('canvas');
+        recordCanvas.width = w * 2;   // retina sharpness
+        recordCanvas.height = h * 2;
+        const ctx = recordCanvas.getContext('2d');
+
+        async function drawFrame() {
+          if (!recordCanvas) return;
+          try {
+            const shot = await html2canvas(stageEl, {
+              backgroundColor: null,
+              scale: 2,
+              logging: false,
+              useCORS: true,
+              allowTaint: true,
+              width: w,
+              height: h
+            });
+            ctx.clearRect(0, 0, recordCanvas.width, recordCanvas.height);
+            ctx.drawImage(shot, 0, 0, recordCanvas.width, recordCanvas.height);
+          } catch (e) {
+            // fallback: solid fill so recording continues
+            ctx.fillStyle = getComputedStyle(stageEl).backgroundColor || '#1e293b';
+            ctx.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
+          }
+          recordAnimId = requestAnimationFrame(() => {
+            // throttle ~8–10 fps for performance (shorts don't need 30fps of redraw)
+            setTimeout(drawFrame, 120);
+          });
+        }
+        await drawFrame();
+
+        const canvasStream = recordCanvas.captureStream(10);
+        const tracks = [...canvasStream.getVideoTracks()];
         if (audioStream) tracks.push(...audioStream.getAudioTracks());
         stream = new MediaStream(tracks);
+
         recordedChunks = [];
         const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-          ? 'video/webm;codecs=vp9,opus' : 'video/webm';
-        mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+          ? 'video/webm;codecs=vp9,opus'
+          : MediaRecorder.isTypeSupported('video/webm')
+            ? 'video/webm'
+            : '';
+        mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+
         mediaRecorder.ondataavailable = e => { if (e.data.size) recordedChunks.push(e.data); };
         mediaRecorder.onstop = () => {
+          if (recordAnimId) cancelAnimationFrame(recordAnimId);
+          recordAnimId = null;
+          recordCanvas = null;
           const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -908,23 +966,27 @@
           a.download = `thread-short-${Date.now()}.webm`;
           a.click();
           URL.revokeObjectURL(url);
-          toast('Video downloaded!');
+          toast('Video downloaded (slide only)!');
           confetti({ particleCount: 50, spread: 55, origin: { y: 0.65 }, colors: ['#3b82f6','#8b5cf6'] });
           stream.getTracks().forEach(t => t.stop());
           stream = null;
         };
-        mediaRecorder.start(250);
+
+        mediaRecorder.start(200);
         document.getElementById('rec-btn').classList.add('hidden');
         document.getElementById('stop-btn').classList.remove('hidden');
         document.getElementById('rec-indicator').classList.remove('hidden');
         document.getElementById('rec-indicator').classList.add('flex');
-        toast('Recording…');
+        toast('Recording slide only… advance slides while speaking');
       } catch (err) {
-        toast('Recording failed. Use desktop Chrome/Edge.');
+        console.error(err);
+        toast('Recording failed');
       }
     }
     function stopRecording() {
       if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+      if (recordAnimId) { cancelAnimationFrame(recordAnimId); recordAnimId = null; }
+      recordCanvas = null;
       document.getElementById('rec-btn').classList.remove('hidden');
       document.getElementById('stop-btn').classList.add('hidden');
       document.getElementById('rec-indicator').classList.add('hidden');
