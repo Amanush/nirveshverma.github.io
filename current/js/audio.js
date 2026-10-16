@@ -31,9 +31,11 @@
   async function record(i) {
     if (rec) { rec.stop(); return; }
     try {
-      const st = await navigator.mediaDevices.getUserMedia({ audio: true }), mr = new MediaRecorder(st), chunks = [];
+      const V = root.GKVoice, st = await navigator.mediaDevices.getUserMedia(V ? V.constraints : { audio: true }); let ps = null;
+      if (V) { try { ps = await V.processStream(st); } catch (e) { ps = null; } }                 // live voice enhancement; falls back to the plain mic
+      const mr = new MediaRecorder(ps ? ps.stream : st), chunks = [];
       mr.ondataavailable = e => chunks.push(e.data);
-      mr.onstop = async () => { st.getTracks().forEach(t => t.stop()); rec = null; await saveBlob(new Blob(chunks, { type: mr.mimeType || "audio/webm" }), i, "recording"); };
+      mr.onstop = async () => { if (ps) ps.close(); else st.getTracks().forEach(t => t.stop()); rec = null; await saveBlob(new Blob(chunks, { type: mr.mimeType || "audio/webm" }), i, "recording"); };
       mr.start(); rec = mr; if (R.rec) R.rec.textContent = L().stop;
     } catch (e) { if (R.msg) R.msg.textContent = L().micErr; }
   }
@@ -54,7 +56,7 @@
     if (ed) {
       const f = el("input", { type: "file", accept: "audio/*", hidden: true, onchange: e => e.target.files[0] && saveBlob(e.target.files[0], c.idx, e.target.files[0].name) });
       R.rec = btn(rec ? l.stop : l.rec, () => record(c.idx));
-      ctl.push(btn(l.up, () => f.click()), f, R.rec); if (path) ctl.push(btn("✕ " + l.rm, () => root.GKApp.setAudio(c.idx, null), { title: l.rm }));
+      ctl.push(btn(l.up, () => f.click()), f, R.rec); if (root.GKVoice) ctl.push(root.GKVoice.selector(), btn("🎙 " + root.GKVoice.L().check, () => root.GKVoice.micCheck())); if (path) ctl.push(btn("✕ " + l.rm, () => root.GKApp.setAudio(c.idx, null), { title: l.rm }));
     }
     R.bar = el("div", { class: "st-audio" }, el("span", { class: "ai", "aria-hidden": "true" }, "🔊"), el("b", {}, l.audio + ":"), el("span", { class: "seq" }, seq), el("span", { class: "grow" }), R.msg, el("span", { class: "actl ctl" }, ctl),
       ed ? el("span", { class: "nscript", "data-path": "slides." + c.idx + ".narration.script", "data-ph": l.script }, (s.narration && s.narration.script) || "") : null);

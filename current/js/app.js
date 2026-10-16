@@ -11,14 +11,27 @@ function showError(msg, ok) { const b = $("#err"); if (!b) return; b.textContent
 const label = s => ((s.heading || s.statement || s.type) + "").slice(0, 34);
 
 /* ---------- shell: header / aside / main are rendered independently so the stage never loses focus ---------- */
+const BL = { en: { tools: "Tools", menu: "Menu", slides: "Slides" }, hi: { tools: "औज़ार", menu: "मेन्यू", slides: "स्लाइड" }, hinglish: { tools: "Tools", menu: "Menu", slides: "Slides" } }, bl = () => BL[lang] || BL.hinglish;
+const wide = () => matchMedia("(min-width:1100px)").matches, autoAspect = () => (innerWidth < innerHeight && innerWidth < 700) ? "9:16" : "16:9";
+let bnav;
 function shell() {
   const root = $("#root"); root.replaceChildren();
-  hdr = el("header"); aside = el("aside");
+  hdr = el("header"); aside = el("aside"); bnav = el("nav", { class: "bnav", "aria-label": "Main" });
   app = el("div", { class: "app" + (localStorage.getItem("gk.sb") === "0" ? " collapsed" : "") }, hdr, aside,
-    el("main", {}, el("div", { id: "err", class: "err", hidden: true }), el("div", { id: "toolbar" }), el("div", { class: "stagewrap", id: "stage-host" })));
+    el("main", {}, el("div", { id: "err", class: "err", hidden: true }), el("div", { id: "toolbar" }), el("div", { class: "stagewrap", id: "stage-host" })),
+    el("div", { class: "backdrop", onclick: () => setSheet(null) }), bnav);
   root.append(app);
 }
-function refresh() { renderHeader(); renderAside(); renderToolbar(); }
+const sheetIs = n => app.classList.contains(n);
+function setSheet(name) { ["drawer", "sheet-tools", "sheet-menu"].forEach(c => app.classList.remove(c)); if (name) app.classList.add(name); renderBnav(); }
+function toggleDrawer() { if (wide()) { localStorage.setItem("gk.sb", app.classList.contains("collapsed") ? "1" : "0"); app.classList.toggle("collapsed"); } else setSheet(sheetIs("drawer") ? null : "drawer"); }
+function toggleEdit() { GKEdit.mode = !GKEdit.mode; sel = null; refresh(); restage(); }
+function renderBnav() {
+  const tab = (ic, txt, fn, on) => el("button", { class: on ? "on" : "", type: "button", onclick: fn, "aria-label": txt }, el("span", { class: "ic", "aria-hidden": "true" }, ic), el("span", {}, txt));
+  bnav.replaceChildren(tab("☰", bl().slides, toggleDrawer, sheetIs("drawer")), tab("✎", GKEdit.mode ? E().editing : E().edit, () => topic && toggleEdit(), GKEdit.mode), tab("▶", E().present, () => topic && setPresent(true), false),
+    tab("⚙", bl().tools, () => setSheet(sheetIs("sheet-tools") ? null : "sheet-tools"), sheetIs("sheet-tools")), tab("⋯", bl().menu, () => setSheet(sheetIs("sheet-menu") ? null : "sheet-menu"), sheetIs("sheet-menu")));
+}
+function refresh() { renderHeader(); renderAside(); renderToolbar(); renderBnav(); }
 function restage() {
   const h = $("#stage-host"); if (!h) return;
   if (!topic) return h.replaceChildren(el("div", { class: "empty" }, el("h2", {}, L().emptyTitle), el("p", {}, L().emptyBody)));
@@ -26,15 +39,19 @@ function restage() {
   GKImages.needsPrime(topic) ? GKImages.prime(topic).then(go) : go();
 }
 function renderHeader() {
-  const d = dirty(), sb = el("button", { class: "btn", "aria-label": "Toggle sidebar", onclick: () => { localStorage.setItem("gk.sb", app.classList.contains("collapsed") ? "1" : "0"); app.classList.toggle("collapsed"); } }, "☰");
-  H.status = el("span", { class: "status" }); H.undo = el("button", { class: "btn", onclick: () => { topic = hist.undo(); refresh(); restage(); } }, "↶ " + L().undo);
-  H.redo = el("button", { class: "btn", onclick: () => { topic = hist.redo(); refresh(); restage(); } }, "↷ " + L().redo); H.save = el("button", { class: "btn primary", onclick: save }, L().save);
+  const hb = (ic, txt, fn, o = {}) => el("button", { class: "btn hb" + (o.cls ? " " + o.cls : "") + (o.primary ? " primary" : ""), type: "button", title: txt, "aria-label": txt, disabled: o.dis, onclick: fn }, el("span", { class: "ic", "aria-hidden": "true" }, ic), el("span", { class: "t" }, txt));
+  const sb = el("button", { class: "btn hb-menu", type: "button", "aria-label": "Toggle sidebar", onclick: toggleDrawer }, "☰");
+  H.status = el("span", { class: "status" }); H.undo = hb("↶", L().undo, () => { topic = hist.undo(); refresh(); restage(); });
+  H.redo = hb("↷", L().redo, () => { topic = hist.redo(); refresh(); restage(); }); H.save = hb("💾", L().save, save, { primary: true, cls: "keep" });
   const sel_ = el("select", { "aria-label": L().language, onchange: e => { lang = e.target.value; localStorage.setItem("gk.lang", lang); refresh(); restage(); } },
     ...[["en", "English"], ["hi", "हिन्दी"], ["hinglish", "Hinglish"]].map(([v, n]) => { const o = el("option", { value: v }, n); if (v === lang) o.selected = true; return o; }));
-  hdr.replaceChildren(sb, el("div", {}, el("div", { class: "logo" }, "GK Turbo"), el("div", { class: "tag" }, "Learn • Recall • Crack")), el("div", { class: "grow" }), H.status,
-    el("button", { class: "btn", disabled: !topic, onclick: () => { GKPlayer.view.aspect = GKPlayer.view.aspect === "16:9" ? "9:16" : "16:9"; refresh(); restage(); } }, GKPlayer.view.aspect),
-    el("button", { class: "btn" + (GKEdit.mode ? " primary" : ""), disabled: !topic, onclick: () => { GKEdit.mode = !GKEdit.mode; sel = null; refresh(); restage(); } }, "✎ " + (GKEdit.mode ? E().editing : E().edit)),
-    el("button", { class: "btn", disabled: !topic, onclick: () => setPresent(true) }, "▶ " + E().present), H.undo, H.redo, H.save, sel_);
+  const recOk = window.GKRecorder && GKRecorder.supported();
+  hdr.replaceChildren(sb, el("div", { class: "brand" }, el("div", { class: "mark" }, "GK"), el("div", {}, el("div", { class: "logo" }, "GK Turbo"), el("div", { class: "tag" }, "Learn • Recall • Crack"))), el("div", { class: "grow" }), H.status,
+    el("div", { class: "hactions" },
+      hb("▭", GKPlayer.view.aspect, () => { GKPlayer.view.aspect = GKPlayer.view.aspect === "16:9" ? "9:16" : "16:9"; localStorage.setItem("gk.aspect", GKPlayer.view.aspect); refresh(); restage(); }, { dis: !topic }),
+      hb("✎", GKEdit.mode ? E().editing : E().edit, toggleEdit, { dis: !topic, primary: GKEdit.mode }),
+      ...(recOk ? [hb("●", GKRecorder.L().rec, () => { setSheet(null); GKRecorder.open(); })] : []),
+      hb("▶", E().present, () => { setSheet(null); setPresent(true); }, { dis: !topic, cls: "keep" }), H.undo, H.redo, H.save, sel_));
   updateQuiet();
 }
 function updateQuiet() {            // in-place patch: never replaces a node the user might be clicking
@@ -48,7 +65,7 @@ function renderAside() {
   const f = el("input", { type: "file", accept: ".json", hidden: true, onchange: e => e.target.files[0] && importFile(e.target.files[0]) });
   const b = (t, fn, dis) => el("button", { class: "btn item", disabled: dis, onclick: fn }, t);
   aside.replaceChildren(
-    ...(topic ? [el("h3", {}, E().slides), ...topic.slides.map((s, i) => el("button", { class: "btn item sl-item" + (i === GKPlayer.view.idx ? " on" : ""), "data-i": i, onclick: () => GKPlayer.goto(i) }, el("span", { class: "lbl" }, (i + 1) + ". " + label(s)), el("small", {}, s.type)))] : []),
+    ...(topic ? [el("h3", {}, E().slides), ...topic.slides.map((s, i) => el("button", { class: "btn item sl-item" + (i === GKPlayer.view.idx ? " on" : ""), "data-i": i, onclick: () => { GKPlayer.goto(i); setSheet(null); } }, el("span", { class: "lbl" }, (i + 1) + ". " + label(s)), el("small", {}, s.type)))] : []),
     el("h3", {}, L().topics), ...topics.map(t => el("button", { class: "btn item" + (topic && topic.id === t.id ? " on" : ""), onclick: () => openTopic(t.meta) }, t.meta.title, el("small", {}, t.meta.slides.length + " " + L().slides))),
     el("h3", {}, L().banks), ...banks.map(bk => el("button", { class: "btn item", onclick: () => openBank(bk) }, bk.name, el("small", {}, bk.count))),
     el("h3", {}, " "), b(L().import, () => f.click()), f, b(L().export, () => download(topic.id + ".json", GK.toJSON(topic)), !topic),
@@ -56,7 +73,7 @@ function renderAside() {
     b(L().backup, () => download(topic.id + "-backup-" + Date.now() + ".json", GK.toJSON(topic)), !topic), b(L().restore, restore, !topic), (H.reset = b(L().reset, reset, !dirty())));
 }
 function renderToolbar() {
-  const tb = $("#toolbar"); if (!tb) return; tb.replaceChildren(); if (!topic) return setTbh(0);
+  const tb = $("#toolbar"); if (!tb) return; tb.replaceChildren(); if (!topic) return;
   const e = E(), pr = GKPlayer.prefs, i = GKPlayer.view.idx, s = topic.slides[i] || {};
   const btn = (t, title, fn, o = {}) => el("button", { class: "btn" + (o.on ? " on" : ""), title, disabled: o.dis, onclick: fn }, t);
   const vg = (t, key) => el("label", { class: "tg" }, el("input", { type: "checkbox", checked: !!pr.view[key], onchange: ev => GKPlayer.setView(key, ev.target.checked) }), t);
@@ -64,8 +81,8 @@ function renderToolbar() {
   tb.append(el("div", { class: "tbrow" }, el("b", {}, e.panels), tg(e.explain, "explain"), tg(e.trick, "trick"), tg(e.pyq, "pyq"), el("span", { class: "sep" }), vg(e.safe, "safe"), vg(e.guides, "guides"), vg(e.audio, "audio"), el("span", { class: "sep" }),
     btn("⏮ " + e.resetPres, e.resetPres + " (Shift+R)", resetPresentation), btn("✎ " + e.wb, e.wb + " (W)", () => GKWhiteboard.toggle()),
     btn("⌂ " + e.homeKey + ": " + GKPlayer.homeKey, e.homeKey, ev => captureHomeKey(ev.currentTarget, e)), btn("↺ " + e.resetLayout, e.resetLayout, resetLayout)));
-  if (!GKEdit.mode) return setTbh(tb.offsetHeight + 10);
-  const go = (next, idx) => { GKPlayer.view.idx = idx; GKPlayer.view.step = 0; edit(next); };
+  if (!GKEdit.mode) return;
+  const go = (next, idx) => { GKPlayer.view.idx = idx; GKPlayer.view.page = 0; GKPlayer.view.step = 0; edit(next); };
   const typeSel = el("select", {}, ...GK.SLIDE_TYPES.map(t => el("option", { value: t }, t)));
   tb.append(el("div", { class: "tbrow" }, el("b", {}, e.slide + " " + (i + 1)), typeSel, btn("＋ " + e.add, e.add, () => go(GKEdit.addSlide(topic, i, typeSel.value), i + 1)),
     btn("⧉ " + e.dup, e.dup, () => go(GK.duplicateSlide(topic, i), i + 1)), btn("✕ " + e.del, e.del, () => confirm(e.confirmDel) && go(GK.deleteSlide(topic, i), Math.max(0, Math.min(i, topic.slides.length - 2))), { dis: topic.slides.length < 2 }),
@@ -85,9 +102,7 @@ function renderToolbar() {
     el("label", { class: "tg" }, e.lh, lh), el("label", { class: "tg" }, e.color, col), el("span", { class: "sep" }), el("b", {}, e.move),
     btn("←", "", () => mv(-.5, 0), { dis: d }), btn("↑", "", () => mv(0, -.5), { dis: d }), btn("↓", "", () => mv(0, .5), { dis: d }), btn("→", "", () => mv(.5, 0), { dis: d }),
     btn("↺ " + e.resetEl, e.resetEl, () => edit(GKEdit.resetElement(topic, i, rp)), { dis: d })));
-  setTbh(tb.offsetHeight + 10);
 }
-function setTbh(px) { document.documentElement.style.setProperty("--tbh", px + "px"); }
 /* ---------- presentation mode / recording ---------- */
 let presenting = false, mt = null;
 function setPresent(on) {
@@ -102,17 +117,20 @@ function captureHomeKey(b, e) {
   document.addEventListener("keydown", h, true);
 }
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && presenting) setPresent(false); });
-document.addEventListener("mousemove", () => { document.body.classList.add("moving"); clearTimeout(mt); mt = setTimeout(() => document.body.classList.remove("moving"), 2000); });
+const showNav = () => { document.body.classList.add("moving"); clearTimeout(mt); mt = setTimeout(() => document.body.classList.remove("moving"), 2000); };
+document.addEventListener("mousemove", showNav); document.addEventListener("pointerdown", showNav);
 document.addEventListener("keydown", e => {
   if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest("input,textarea,select,[contenteditable=true]")) return;
-  if (e.key === "Escape" && presenting) { setPresent(false); e.preventDefault(); }
+  if (e.key === "F9" && window.GKRecorder) { GKRecorder.quick(); e.preventDefault(); }
+  else if (e.key === "F10" && window.GKRecorder) { GKRecorder.pause(); e.preventDefault(); }
+  else if (e.key === "Escape" && presenting) { setPresent(false); e.preventDefault(); }
   else if (e.key === "p" || e.key === "P") { if (topic) { setPresent(!presenting); e.preventDefault(); } }
   else if (e.key === "w" || e.key === "W") { GKWhiteboard.toggle(); e.preventDefault(); }
   else if (e.key === "n" || e.key === "N") { GKAudio.toggle(); e.preventDefault(); }
   else if (e.key === "m" || e.key === "M") { GKAudio.mute(); e.preventDefault(); }
   else if (e.key === "R" && e.shiftKey && topic) { resetPresentation(); e.preventDefault(); }
 });
-function resetLayout() { localStorage.removeItem("gk.sb"); app.classList.remove("collapsed"); GKPlayer.resetPrefs(); refresh(); restage(); }
+function resetLayout() { localStorage.removeItem("gk.aspect"); GKPlayer.view.aspect = autoAspect(); localStorage.removeItem("gk.sb"); app.classList.remove("collapsed"); GKPlayer.resetPrefs(); refresh(); restage(); }
 
 /* ---------- editing ---------- */
 function edit(next, quiet) { if (hist.push(next)) topic = next; if (quiet) updateQuiet(); else { refresh(); restage(); } }
@@ -130,7 +148,10 @@ GKPlayer.onChange = () => {
 };
 
 /* ---------- topics, banks, save/import ---------- */
+let rzT = null;
+addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(() => { if (!localStorage.getItem("gk.aspect")) { const a = autoAspect(); if (a !== GKPlayer.view.aspect) { GKPlayer.view.aspect = a; refresh(); restage(); } } }, 200); });
 async function init() {
+  GKPlayer.view.aspect = localStorage.getItem("gk.aspect") || autoAspect();
   shell();
   try { topics = await Promise.all((await getJSON("topics/index.json")).map(async x => ({ ...x, meta: await getJSON("topics/" + x.file) }))); }
   catch (e) { showError("Could not load topics. Run the app through a local server (see README). " + e.message); }
@@ -139,7 +160,7 @@ async function init() {
   refresh(); restage();
 }
 function setTopic(t, savedCopy) { GKImages.normalizeTopic(t); GKPlayer.reset(); sel = null; lastIdx = -1; topic = t; saved = savedCopy; hist = new GK.History(topic); showError(""); refresh(); restage(); }
-async function openTopic(t) { const rec = await GK.Storage.load(t.id).catch(() => null); const d = GKImages.normalizeTopic(clone(rec ? rec.data : t)); setTopic(d, clone(d)); }
+async function openTopic(t) { setSheet(null); const rec = await GK.Storage.load(t.id).catch(() => null); const d = GKImages.normalizeTopic(clone(rec ? rec.data : t)); setTopic(d, clone(d)); }
 async function save() {
   const v = GK.validateTopic(topic); if (v.length) return showError(v.join("\n"));
   await GK.Storage.save(topic); saved = clone(topic); const ex = topics.find(t => t.id === topic.id); ex ? ex.meta = clone(topic) : topics.push({ id: topic.id, meta: clone(topic) }); showError(""); refresh();
@@ -156,6 +177,7 @@ async function restore() {
   if (x && confirm(L().confirmReset)) { topic = x.data; hist = new GK.History(topic); refresh(); restage(); }
 }
 async function openBank(b) {
+  setSheet(null);
   try {
     if (!bankCache[b.id]) { const raw = await getJSON("banks/" + b.file); bankCache[b.id] = Array.isArray(raw) ? raw : Object.values(raw).find(Array.isArray) || []; }
     const items = bankCache[b.id];
@@ -163,6 +185,6 @@ async function openBank(b) {
       topics = topics.filter(x => x.id !== t.id).concat({ id: t.id, meta: t }); setTopic(t, null); });
   } catch (e) { showError("Could not load bank " + b.name + ": " + e.message); }
 }
-window.GKApp = { setAudio(i, path) { edit(GKEdit.setPath(topic, "slides." + i + ".narration.audio", path)); }, get lang() { return lang; }, setPresent, resetPresentation, get topic() { return topic; }, get saved() { return saved; }, edit, render() { refresh(); restage(); }, save, restage };
+window.GKApp = { note: m => showError(m, true), warn: m => showError(m), setAudio(i, path) { edit(GKEdit.setPath(topic, "slides." + i + ".narration.audio", path)); }, get lang() { return lang; }, setPresent, resetPresentation, get topic() { return topic; }, get saved() { return saved; }, edit, render() { refresh(); restage(); }, save, restage };
 init();
 })();
