@@ -131,7 +131,7 @@
       width: 100%;
       max-width: 400px;
       aspect-ratio: 9 / 16;
-      max-height: calc(100dvh - 140px);
+      max-height: calc(100dvh - 150px);
       margin: 0 auto;
       position: relative;
       border-radius: 20px;
@@ -149,7 +149,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 1.5rem 1.25rem 1.25rem;
+      padding: 1.25rem 1.15rem 1.15rem;
       opacity: 0;
       transform: translateY(12px);
       transition: all 0.25s ease-out;
@@ -172,15 +172,15 @@
       justify-content: center;
       align-items: center;
       min-height: 0;
-      gap: 0.6rem;
+      gap: 0.5rem;
       overflow-y: auto;
-      padding: 0.2rem 0;
+      padding: 0.1rem 0;
       -webkit-overflow-scrolling: touch;
     }
     
     .tweet-text {
-      font-size: clamp(1.05rem, 4vw, 1.35rem);
-      line-height: 1.5;
+      font-size: clamp(1rem, 3.8vw, 1.25rem);
+      line-height: 1.45;
       font-weight: 500;
       letter-spacing: -0.01em;
       color: var(--text-main);
@@ -198,17 +198,24 @@
     
     .slide-image {
       width: 100%;
-      max-height: 38vh;
+      max-height: 32vh;
       object-fit: contain;
-      border-radius: 10px;
+      border-radius: 8px;
       background: var(--bg-main);
+      flex-shrink: 0;
+    }
+    
+    .slide-img-controls {
+      display: flex;
+      gap: 0.4rem;
+      width: 100%;
       flex-shrink: 0;
     }
     
     .progress-wrap {
       flex-shrink: 0;
       width: 100%;
-      margin-top: 0.4rem;
+      margin-top: 0.3rem;
     }
     
     .progress-bar {
@@ -228,17 +235,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 0.3rem;
-      font-size: 0.68rem;
+      margin-top: 0.2rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       font-weight: 500;
     }
     
     .ctrl-btn {
-      width: 44px;
-      height: 44px;
-      min-width: 44px;
-      min-height: 44px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
       border-radius: 9999px;
       display: flex;
       align-items: center;
@@ -265,8 +272,20 @@
       box-shadow: 0 2px 8px rgba(59,130,246,0.3);
     }
     .primary-btn:active { transform: scale(0.97); }
-    .primary-btn:disabled { opacity: 0.5; pointer-events: none; }
     
+    .sub-action-btn {
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .sub-action-btn:hover { opacity: 0.8; }
+
     .danger-btn {
       background: #ef4444;
       color: white;
@@ -337,6 +356,7 @@
 <body class="theme-slate">
   <div id="toast" class="toast">Ready</div>
 
+  <!-- HOME -->
   <div id="home-screen">
     <div class="home-card space-y-4">
       <div class="text-center space-y-1">
@@ -358,29 +378,8 @@
       </div>
 
       <div class="space-y-1.5">
-        <label class="label">Thread URL (optional)</label>
-        <div class="flex gap-2">
-          <input type="url" id="url-input" placeholder="https://x.com/user/status/…" inputmode="url" />
-          <button id="fetch-btn" onclick="fetchFromUrl()" class="primary-btn shrink-0 text-sm py-2 px-3">
-            <span id="fetch-label">Fetch</span>
-            <span id="fetch-spinner" class="hidden" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin 0.65s linear infinite;"></span>
-          </button>
-        </div>
-      </div>
-
-      <div class="relative flex items-center gap-3 py-1">
-        <div class="flex-1 h-px" style="background:var(--border-color);"></div>
-        <span style="color:var(--text-muted);" class="text-xs">or paste text</span>
-        <div class="flex-1 h-px" style="background:var(--border-color);"></div>
-      </div>
-
-      <div class="space-y-1.5">
-        <label class="label">Thread text</label>
-        <textarea id="thread-input" rows="5" placeholder="1/ Paste your thread text here
-
-2/ Usernames and handles are automatically stripped out!
-
-3/ Copy any image from X and press Ctrl+V on the slide."></textarea>
+        <label class="label">Paste Thread Text</label>
+        <textarea id="thread-input" rows="6" placeholder="1/ Paste your tweet thread here...&#10;&#10;2/ Usernames and handles are automatically removed!&#10;&#10;3/ Add images via URL/Upload or press Ctrl+V on any slide."></textarea>
       </div>
 
       <div class="flex gap-2 pt-1">
@@ -394,6 +393,7 @@
     </div>
   </div>
 
+  <!-- PLAYER -->
   <div id="player-screen" class="hidden">
     <div class="top-bar">
       <button onclick="goHome()" class="ctrl-btn" aria-label="Home">
@@ -407,19 +407,24 @@
         </span>
       </div>
       
-      <button onclick="toggleTTS()" id="tts-btn" class="ctrl-btn" aria-label="Read aloud">
-        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-      </button>
+      <div class="flex items-center gap-1.5">
+        <button onclick="addSlide()" class="sub-action-btn px-2.5 py-2 font-semibold" title="Add new slide">+ Slide</button>
+        <button onclick="toggleTTS()" id="tts-btn" class="ctrl-btn" aria-label="Read aloud">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+        </button>
+      </div>
     </div>
 
+    <!-- Stage -->
     <div class="stage-wrapper" id="stage"></div>
     
-    <p class="hint">Copy image from X → press <b>Ctrl+V</b> / Cmd+V on the slide</p>
+    <p class="hint">💡 Tip: Tap text to edit · Paste URL, Upload, or Ctrl+V image on each slide</p>
 
     <div class="bottom-bar">
       <button onclick="prevSlide()" id="prev-btn" class="ctrl-btn" disabled aria-label="Previous">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
       </button>
+
       <div class="flex gap-2">
         <button onclick="startRecording()" id="rec-btn" class="primary-btn">
           <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
@@ -427,6 +432,7 @@
         </button>
         <button onclick="stopRecording()" id="stop-btn" class="danger-btn hidden">Stop</button>
       </div>
+
       <button onclick="nextSlide()" id="next-btn" class="ctrl-btn" aria-label="Next">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
       </button>
@@ -457,10 +463,10 @@
       return (t || '')
         .replace(/https?:\/\/t\.co\/\S+/g, '')
         .replace(/https?:\/\/\S+/g, '')
-        .replace(/@\w+/g, '') // strip usernames/handles
-        .replace(/^[A-Za-z0-9_\s.'-]{1,40}\s*[·•\-|–—]\s*@?\w+.*$/gm, '') // strip "Name · @handle"
+        .replace(/@\w+/g, '') // remove handles
+        .replace(/^[A-Za-z0-9_\s.'-]{1,40}\s*[·•\-|–—]\s*@?\w+.*$/gm, '') // remove "Name · @handle"
         .replace(/^(RT|via|from)\s+/i, '')
-        .replace(/^\s*[A-Z][\w.'-]+(?:\s+[A-Z][\w.'-]+)?\s*:\s*/gm, '') // strip "Name:" prefixes
+        .replace(/^\s*[A-Z][\w.'-]+(?:\s+[A-Z][\w.'-]+)?\s*:\s*/gm, '') // remove name prefixes
         .replace(/^\s*[·•\-–—]+\s*$/gm, '')
         .replace(/\s+/g, ' ')
         .replace(/^\s*[·•\-–—]+\s*/g, '')
@@ -473,98 +479,6 @@
         .replace(/</g,'&lt;')
         .replace(/>/g,'&gt;')
         .replace(/"/g,'&quot;');
-    }
-
-    function parseUrl(url) {
-      const m = url.match(/(?:x|twitter|fxtwitter|vxtwitter)\.com\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/i);
-      if (m) return { handle: m[1], id: m[2] };
-      const idOnly = url.match(/status\/(\d+)/i) || url.match(/^(\d{10,})$/);
-      if (idOnly) return { handle: null, id: idOnly[1] };
-      return null;
-    }
-
-    function extractImage(tw) {
-      if (!tw) return null;
-      const media = tw.media || {};
-      if (Array.isArray(media.photos) && media.photos.length) {
-        const p = media.photos[0];
-        return (typeof p === 'string' ? p : (p.url || p.media_url_https || p.src)) || null;
-      }
-      if (Array.isArray(media.images) && media.images.length) {
-        const p = media.images[0];
-        return (typeof p === 'string' ? p : (p.url || p.media_url_https || p.src)) || null;
-      }
-      if (Array.isArray(media.all) && media.all.length) {
-        const photo = media.all.find(x => !x.type || x.type === 'photo');
-        if (photo) return photo.url || photo.media_url_https || photo.src || null;
-        const first = media.all[0];
-        if (first) return first.thumbnail_url || first.url || first.media_url_https || null;
-      }
-      if (Array.isArray(media.videos) && media.videos.length) {
-        const v = media.videos[0];
-        return v.thumbnail_url || v.thumbnail || null;
-      }
-      for (const key of ['entities', 'extended_entities']) {
-        const arr = tw[key]?.media;
-        if (Array.isArray(arr)) {
-          const p = arr.find(x => x.type === 'photo') || arr[0];
-          if (p) return p.media_url_https || p.media_url || p.url || null;
-        }
-      }
-      return tw.image || tw.thumbnail_url || null;
-    }
-
-    async function fetchFromUrl() {
-      const rawUrl = document.getElementById('url-input').value.trim();
-      if (!rawUrl) { toast('Paste a URL first'); return; }
-      const parsed = parseUrl(rawUrl);
-      if (!parsed) { toast('Invalid URL'); return; }
-
-      const btn = document.getElementById('fetch-btn');
-      const label = document.getElementById('fetch-label');
-      const spinner = document.getElementById('fetch-spinner');
-      btn.disabled = true;
-      label.classList.add('hidden');
-      spinner.classList.remove('hidden');
-
-      try {
-        let items = [];
-        try {
-          const fxUrl = parsed.handle
-            ? `https://api.fxtwitter.com/${parsed.handle}/status/${parsed.id}`
-            : `https://api.fxtwitter.com/status/${parsed.id}`;
-          const res = await fetch(fxUrl);
-          if (res.ok) {
-            const data = await res.json();
-            const tw = data.tweet || data.status;
-            if (tw) {
-              const text = cleanText(tw.text || '');
-              const image = extractImage(tw);
-              if (text || image) items.push({ text: text || '', image });
-            }
-          }
-        } catch (e) { console.warn('fx', e); }
-
-        if (items.length === 0) {
-          toast('Could not fetch. Paste the text instead.');
-          return;
-        }
-
-        document.getElementById('thread-input').value = items
-          .map((it, i) => `${i + 1}/ ${it.text}`)
-          .join('\n\n');
-
-        slides = items.map(it => ({ text: it.text, image: it.image || null }));
-        renderSlides();
-        confetti({ particleCount: 35, spread: 45, origin: { y: 0.7 }, colors: ['#3b82f6','#8b5cf6','#f59e0b'] });
-        toast(`${slides.length} slides ready`);
-      } catch (err) {
-        toast('Fetch failed. Paste the text.');
-      } finally {
-        btn.disabled = false;
-        label.classList.remove('hidden');
-        spinner.classList.add('hidden');
-      }
     }
 
     function parseThread(raw) {
@@ -589,25 +503,35 @@
 
       slides.forEach((item, i) => {
         const slide = document.createElement('div');
-        slide.className = 'slide' + (i === 0 ? ' active' : '');
+        slide.className = 'slide' + (i === current ? ' active' : '');
         const hasImage = !!item.image;
         const hasText = !!(item.text && item.text.trim());
 
-        let inner = '<div class="slide-content-box">';
+        let imgSrc = item.image || '';
+        if (imgSrc && !imgSrc.startsWith('data:') && (imgSrc.includes('pbs.twimg.com') || imgSrc.includes('twimg.com'))) {
+          imgSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(imgSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
+        }
 
+        let inner = '<div class="slide-content-box">';
         if (hasText) {
           inner += `<div class="tweet-text" contenteditable="true" spellcheck="false" data-idx="${i}">${escapeHtml(item.text)}</div>`;
         } else {
           inner += `<div class="tweet-text" contenteditable="true" data-idx="${i}">(tap to add text)</div>`;
         }
 
-        let imgSrc = item.image || '';
-        if (imgSrc && !imgSrc.startsWith('data:') && (imgSrc.includes('pbs.twimg.com') || imgSrc.includes('twimg.com'))) {
-          imgSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(imgSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
-        }
+        // Image Display Box
         inner += `<div id="img-container-${i}" class="w-full flex flex-col items-center" style="${hasImage ? '' : 'display:none;'}">
-          <img id="slide-img-${i}" class="slide-image" src="${escapeHtml(imgSrc)}" alt="" loading="lazy"
-            onerror="if(this.dataset.tried!=='1'&&this.src.indexOf('weserv')!==-1){this.dataset.tried='1';this.src='${escapeHtml(item.image||'')}';}else{this.style.display='none';}">
+          <img id="slide-img-${i}" class="slide-image" src="${escapeHtml(imgSrc)}" alt="" loading="lazy" onerror="this.style.display='none'">
+        </div>`;
+
+        // Manual Controls per slide (URL input + Upload + Delete button)
+        inner += `<div class="slide-img-controls">
+          <input type="text" id="img-url-input-${i}" placeholder="Paste image URL here..." value="${escapeHtml(item.image || '')}" oninput="updateSlideImage(${i}, this.value)" class="text-xs py-1.5 px-2" />
+          <label class="sub-action-btn flex items-center justify-center shrink-0 cursor-pointer">
+            Upload
+            <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(${i}, event)" />
+          </label>
+          ${slides.length > 1 ? `<button onclick="deleteSlide(${i})" class="sub-action-btn bg-red-900/40 border-red-700 text-red-300 px-2 py-1.5" title="Delete Slide">✕</button>` : ''}
         </div>`;
 
         inner += '</div>';
@@ -618,7 +542,7 @@
             <div class="progress-bar"><div class="progress-fill" style="width:${((i+1)/slides.length)*100}%"></div></div>
             <div class="slide-footer">
               <span>${i + 1} / ${slides.length}</span>
-              <span>Ctrl+V to paste image</span>
+              <span>tap text to edit</span>
             </div>
           </div>`;
         stage.appendChild(slide);
@@ -631,34 +555,25 @@
         });
       });
 
-      current = 0;
       updateUI();
       document.getElementById('home-screen').classList.add('hidden');
       document.getElementById('player-screen').classList.remove('hidden');
-      toast(`${slides.length} slides ready`);
     }
 
-    window.addEventListener('paste', e => {
-      if (document.getElementById('player-screen').classList.contains('hidden')) return;
-      const items = e.clipboardData?.items;
-      if (!items) return;
+    function addSlide() {
+      slides.splice(current + 1, 0, { text: 'New slide content...', image: null });
+      current++;
+      renderSlides();
+      toast('Added new slide');
+    }
 
-      for (const item of items) {
-        if (item.type.indexOf('image') === 0) {
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            const base64 = event.target.result;
-            slides[current].image = base64;
-            updateSlideImage(current, base64);
-            toast('Image pasted on slide ' + (current + 1));
-          };
-          reader.readAsDataURL(blob);
-          e.preventDefault();
-          break;
-        }
-      }
-    });
+    function deleteSlide(idx) {
+      if (slides.length <= 1) return;
+      slides.splice(idx, 1);
+      if (current >= slides.length) current = slides.length - 1;
+      renderSlides();
+      toast('Slide removed');
+    }
 
     function updateSlideImage(idx, url) {
       slides[idx].image = url ? url.trim() : null;
@@ -671,14 +586,6 @@
         if (!finalSrc.startsWith('data:') && (finalSrc.includes('pbs.twimg.com') || finalSrc.includes('twimg.com'))) {
           finalSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(finalSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
         }
-        imgElem.onerror = function() {
-          if (this.dataset.tried !== '1' && !url.startsWith('data:')) {
-            this.dataset.tried = '1';
-            this.src = url.trim();
-          } else {
-            this.style.display = 'none';
-          }
-        };
         imgElem.src = finalSrc;
         imgElem.style.display = 'block';
         container.style.display = 'flex';
@@ -688,14 +595,52 @@
       }
     }
 
+    function handleFileUpload(idx, event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Str = e.target.result;
+        document.getElementById(`img-url-input-${idx}`).value = base64Str;
+        updateSlideImage(idx, base64Str);
+        toast('Image uploaded!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Global Paste Support (Ctrl+V)
+    window.addEventListener('paste', e => {
+      if (document.getElementById('player-screen').classList.contains('hidden')) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.indexOf('image') === 0) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const base64 = event.target.result;
+            slides[current].image = base64;
+            const urlInput = document.getElementById(`img-url-input-${current}`);
+            if (urlInput) urlInput.value = base64;
+            updateSlideImage(current, base64);
+            toast('Image pasted on slide ' + (current + 1));
+          };
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          break;
+        }
+      }
+    });
+
     function loadDemo() {
       document.getElementById('thread-input').value = `1/ Most people treat Twitter threads like bulky blog posts.
 
 2/ The highest-retention format uses vertical short-form: one idea per slide.
 
-3/ Copy any image from X and press Ctrl+V on a slide to attach it.
+3/ Use the image controls or press Ctrl+V to paste visuals onto any slide.
 
-4/ Then record and export ready-to-post Shorts in under a minute.`;
+4/ Record and export ready-to-post Shorts instantly!`;
       buildSlides();
     }
 
