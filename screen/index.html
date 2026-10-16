@@ -1,1 +1,247 @@
-
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio — Screen + Phone Mic</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#f5f5f7;--panel:#fff;--ink:#1d1d1f;--muted:#6e6e73;--line:#e5e5ea;--blue:#0071e3;--red:#e5484d;--green:#16803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+header{height:64px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(255,255,255,.9)}
+.brand{font-weight:700;font-size:17px;letter-spacing:-.4px}.brand span{color:var(--muted);font-weight:400}
+.pill{font-size:12px;color:var(--muted);background:#f0f0f3;border-radius:99px;padding:6px 10px}
+main{max-width:1180px;margin:24px auto;padding:0 18px;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.8fr);gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 4px 18px #00000006}
+h1{font-size:25px;letter-spacing:-.8px;margin:0 0 5px}h2{font-size:15px;margin:0 0 12px;letter-spacing:-.2px}
+.sub{color:var(--muted);margin:0 0 18px}.preview{background:#151518;border-radius:12px;overflow:hidden;aspect-ratio:16/9;position:relative;display:flex;align-items:center;justify-content:center;color:#a1a1aa}
+canvas{width:100%;height:100%;object-fit:contain;display:block;touch-action:none} .placeholder{position:absolute;text-align:center;padding:20px;pointer-events:none}
+.toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px}
+button,.tool{font:inherit;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:9px 12px;cursor:pointer}
+button:hover,.tool:hover{background:#f5f5f7}button.primary{background:var(--blue);border-color:var(--blue);color:#fff}button.danger{background:var(--red);border-color:var(--red);color:white}button:disabled{opacity:.45;cursor:not-allowed}
+.tool.active{border-color:var(--blue);color:var(--blue);background:#eef6ff}
+input,select,textarea{font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:var(--ink);max-width:100%}
+textarea{width:100%;resize:vertical;min-height:100px;font:12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace}
+label{display:block;color:var(--muted);font-size:12px;margin:12px 0 5px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{min-width:0}
+.status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;margin-top:12px}.dot{width:7px;height:7px;border-radius:50%;background:#aaa}.dot.on{background:var(--green)}
+.section{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
+.timer{font-variant-numeric:tabular-nums;font-size:13px;font-weight:600}
+.color{width:28px;height:28px;padding:0;border-radius:50%;border:2px solid white;box-shadow:0 0 0 1px #ccc}
+.color.active{box-shadow:0 0 0 2px var(--blue)}
+.small{font-size:12px}.download{display:none;margin-top:12px}
+footer{max-width:1180px;margin:0 auto;padding:0 18px 24px;color:var(--muted);font-size:12px}
+@media(max-width:850px){main{grid-template-columns:1fr}header{padding:0 16px}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<header><div class="brand">Studio <span>/ Screen + Phone Mic</span></div><div class="pill">Simple phone pairing · Browser recording</div></header>
+<main>
+<section class="panel">
+  <h1>Record your screen.</h1>
+  <p class="sub">Use your phone as a wireless microphone. Mark the screen while you teach.</p>
+  <div class="preview" id="preview">
+    <canvas id="stage" width="1280" height="720"></canvas>
+    <div class="placeholder" id="placeholder">Choose <b>Share screen</b> to begin.<br><span class="small">Your annotations are included in the recording.</span></div>
+  </div>
+  <div class="toolbar">
+    <button class="primary" id="shareBtn">Share screen</button>
+    <button id="recordBtn" disabled>● Record</button>
+    <button class="danger" id="stopBtn" disabled>Stop & save</button>
+    <span class="timer" id="timer">00:00</span>
+  </div>
+  <div class="toolbar">
+    <button class="tool active" data-tool="cursor">↖ Cursor</button>
+    <button class="tool" data-tool="pen">✎ Pen</button>
+    <button class="tool" data-tool="highlighter">▰ Highlight</button>
+    <button class="tool" data-tool="arrow">↗ Arrow</button>
+    <button class="tool" data-tool="eraser">⌫ Eraser</button>
+    <span style="width:1px;height:26px;background:var(--line);margin:0 3px"></span>
+    <button class="color active" data-color="#ff3b30" style="background:#ff3b30" aria-label="Red"></button>
+    <button class="color" data-color="#007aff" style="background:#007aff" aria-label="Blue"></button>
+    <button class="color" data-color="#30a46c" style="background:#30a46c" aria-label="Green"></button>
+    <button class="color" data-color="#ffcc00" style="background:#ffcc00" aria-label="Yellow"></button>
+    <select id="width" aria-label="Pen thickness"><option value="3">Thin</option><option value="6" selected>Medium</option><option value="12">Thick</option></select>
+    <button id="clearBtn">Clear marks</button>
+  </div>
+  <div class="status"><span class="dot" id="screenDot"></span><span id="screenStatus">Screen not shared</span><span style="margin-left:auto" class="dot" id="micDot"></span><span id="micStatus">Phone mic not connected</span></div>
+  <p class="hint">Tip: annotations are drawn over the preview and included in the recording. Keep the preview visible while presenting.</p>
+  <div id="savePanel" style="display:none;margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#f8f8fa">
+    <div id="saveStatus" style="font-weight:600;margin-bottom:8px">Recording ready</div>
+    <button class="primary" id="saveBtn" type="button">Save video to this PC</button>
+    <a class="download" id="downloadLink" style="margin-left:10px">Download link (fallback)</a>
+    <p class="hint">If clicking Save does nothing, use the fallback link. Check your browser's Downloads list and allow downloads for this site.</p>
+  </div>
+</section>
+<aside class="panel">
+  <h2>Connect phone microphone</h2>
+  <p class="sub">Both devices should be on the same Wi-Fi. No account needed.</p>
+  <div class="row">
+    <button class="primary" id="pcMode">This is the PC</button>
+    <button id="phoneMode">This is the phone</button>
+  </div>
+  <div id="pcPanel">
+    <label>1. Start phone pairing on this PC</label>
+    <button class="primary" id="makeOffer">Generate connection code</button>
+    <div id="peerCode" style="font-size:25px;font-weight:700;letter-spacing:1px;padding:12px 0;word-break:break-word">Not connected yet</div>
+    <p class="hint">Open this same HTTPS page on your phone, tap “This is the phone”, and enter the code above. Keep this PC page open.</p>
+  </div>
+  <div id="phonePanel" hidden>
+    <label>1. Enter the code shown on the PC</label>
+    <input id="pcCodeIn" placeholder="e.g. studio-a1b2c3" style="width:100%" autocomplete="off" />
+    <button class="primary" id="makeAnswer" style="margin-top:10px">Connect microphone</button>
+    <p class="hint">Allow microphone access when asked. Keep this page open and stop the phone from sleeping during recording.</p>
+  </div>
+  <p id="pairMessage" class="hint">Pairing status: not started.</p>
+  <div class="section">
+    <h2>Recording options</h2>
+    <label for="quality">Capture quality</label>
+    <select id="quality" style="width:100%"><option value="high">High (native screen size)</option><option value="medium">Balanced (720p canvas)</option></select>
+    <label for="audioMode">PC audio</label>
+    <select id="audioMode" style="width:100%"><option value="mic">Phone microphone only</option><option value="system">Screen audio if browser supports it + phone mic</option></select>
+    <p class="hint">Browser permissions are required each time. Screen-audio capture depends on browser and operating system.</p>
+  </div>
+  <div class="section">
+    <h2>How it works</h2>
+    <p class="hint">1. Open this page on the PC and choose “Set up on this PC”.<br>2. Create the offer, copy it to the phone (message, notes, or nearby sharing).<br>3. Open the same page on the phone, choose “Use on phone”, paste the offer and allow microphone access.<br>4. Copy the phone answer back to the PC and connect.<br>5. Share screen, record, then stop to save.</p>
+    <p class="hint">The connection code exchange is manual in this static-page version; GitHub Pages alone cannot relay pairing messages.</p>
+  </div>
+</aside>
+</main>
+<footer>Prototype · Screen and microphone data are processed in your browser. WebRTC connection can fail on Wi-Fi networks that isolate connected devices.</footer>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const canvas=$('stage'),ctx=canvas.getContext('2d');
+let screenStream=null,screenVideo=null,pc=null,phoneStream=null,remoteStream=null,recorder=null,chunks=[],recording=false,startAt=0,timerInt=null;
+let mode='pc',tool='cursor',color='#ff3b30',lineWidth=6,marks=[],current=null,lastPoint=null,animation=null,screenAudio=null;
+const setStatus=(id,text,on)=>{$(id).textContent=text;$(id.replace('Status','Dot')).classList.toggle('on',!!on)};
+function showMode(m){mode=m;$('pcPanel').hidden=m!=='pc';$('phonePanel').hidden=m!=='phone';$('pcMode').classList.toggle('primary',m==='pc');$('phoneMode').classList.toggle('primary',m==='phone')}
+$('pcMode').onclick=()=>showMode('pc');$('phoneMode').onclick=()=>showMode('phone');
+let peer=null,peerId=null,phoneCall=null;
+function setPairMessage(message){$('pairMessage').textContent=message}
+function peerOptions(){return {debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478?transport=udp'}]}}}
+$('makeOffer').onclick=()=>{
+ try{
+  if(!window.Peer)throw Error('Pairing library did not load. Check internet access and reload the HTTPS page.');
+  if(peer){try{peer.destroy()}catch(e){}}
+  $('peerCode').textContent='Creating code…';setPairMessage('Connecting to pairing service…');
+  peer=new Peer(undefined,peerOptions());
+  peer.on('open',id=>{peerId=id;$('peerCode').textContent=id;setPairMessage('Ready. Enter this code on your phone.');});
+  peer.on('call',call=>{phoneCall=call;call.answer();call.on('stream',stream=>{remoteStream=stream;$('micStatus').textContent='Phone mic connected';$('micDot').classList.add('on');setPairMessage('Phone microphone connected.');});call.on('close',()=>{$('micStatus').textContent='Phone mic disconnected';$('micDot').classList.remove('on')});call.on('error',e=>setPairMessage('Audio connection error: '+e.message));});
+  peer.on('error',e=>{setPairMessage('Pairing error: '+e.type+'. Try generating a new code.');$('peerCode').textContent='Connection unavailable';});
+ }catch(e){alert('Could not start pairing: '+e.message)}
+};
+$('makeAnswer').onclick=async()=>{
+ try{
+  const id=$('pcCodeIn').value.trim();if(!id)throw Error('Enter the connection code shown on the PC.');
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw Error('Microphone access needs this page to be opened over HTTPS in a supported mobile browser.');
+  $('micStatus').textContent='Requesting microphone…';setPairMessage('Requesting microphone permission…');
+  phoneStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+  if(peer){try{peer.destroy()}catch(e){}}
+  peer=new Peer(undefined,peerOptions());peer.on('open',()=>{setPairMessage('Calling PC…');const call=peer.call(id,phoneStream);if(!call)throw Error('Could not start the call. Generate a fresh PC code.');call.on('stream',()=>{});call.on('close',()=>setPairMessage('Call ended.'));call.on('error',e=>setPairMessage('Connection failed: '+e.message+'. Try a new code.'));setPairMessage('Calling PC. Wait for the PC status to say Phone mic connected.');});
+  peer.on('error',e=>setPairMessage('Pairing error: '+e.type+'. Check the code and try again.'));
+ }catch(e){alert('Phone connection failed: '+e.message);setPairMessage('Connection failed. Check permissions and try again.')}
+};
+function fitCanvas(w,h){canvas.width=w;canvas.height=h}
+function drawFrame(){
+ if(screenVideo&&screenVideo.readyState>=2){
+  if(canvas.width!==screenVideo.videoWidth||canvas.height!==screenVideo.videoHeight)fitCanvas(screenVideo.videoWidth||1280,screenVideo.videoHeight||720);
+  ctx.drawImage(screenVideo,0,0,canvas.width,canvas.height);
+ }else{ctx.fillStyle='#151518';ctx.fillRect(0,0,canvas.width,canvas.height)}
+ marks.forEach(m=>drawMark(m));
+ if(current)drawMark(current);
+ animation=requestAnimationFrame(drawFrame);
+}
+function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
+function drawMark(m){
+ if(!m.points||!m.points.length)return;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=m.color;ctx.fillStyle=m.color;ctx.lineWidth=m.tool==='highlighter'?Math.max(16,m.width*3):m.width;
+ if(m.tool==='highlighter')ctx.globalAlpha=.28;
+ if(m.tool==='arrow'&&m.points.length>1){
+  const a=m.points[0],b=m.points[m.points.length-1],ang=Math.atan2(b.y-a.y,b.x-a.x),head=Math.max(12,m.width*3);
+  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x-head*Math.cos(ang-.5),b.y-head*Math.sin(ang-.5));ctx.lineTo(b.x-head*Math.cos(ang+.5),b.y-head*Math.sin(ang+.5));ctx.closePath();ctx.fill();
+ }else{
+  ctx.beginPath();ctx.moveTo(m.points[0].x,m.points[0].y);for(let i=1;i<m.points.length;i++)ctx.lineTo(m.points[i].x,m.points[i].y);if(m.points.length===1)ctx.lineTo(m.points[0].x+.1,m.points[0].y+.1);ctx.stroke();
+ }
+ ctx.restore();
+}
+canvas.addEventListener('pointerdown',e=>{if(tool==='cursor'||!screenStream)return;canvas.setPointerCapture(e.pointerId);current={tool,color,width:lineWidth,points:[point(e)]}});
+canvas.addEventListener('pointermove',e=>{if(current)current.points.push(point(e))});
+canvas.addEventListener('pointerup',()=>{if(current){marks.push(current);current=null}});
+$('clearBtn').onclick=()=>marks=[];
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));canvas.style.cursor=tool==='cursor'?'default':tool==='eraser'?'cell':'crosshair';if(tool==='eraser'){tool='pen';marks=[];document.querySelector('[data-tool="eraser"]').classList.remove('active');document.querySelector('[data-tool="pen"]').classList.add('active')}});
+document.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{color=b.dataset.color;document.querySelectorAll('[data-color]').forEach(x=>x.classList.toggle('active',x===b))});
+$('width').onchange=()=>lineWidth=Number($('width').value);
+$('shareBtn').onclick=async()=>{
+ try{
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)throw Error('This browser does not support screen capture. Use a recent Chrome or Edge browser on HTTPS.');
+  const opts={video:true,audio:$('audioMode').value==='system'};
+  screenStream=await navigator.mediaDevices.getDisplayMedia(opts);
+  screenVideo=document.createElement('video');screenVideo.srcObject=screenStream;screenVideo.muted=true;screenVideo.playsInline=true;await screenVideo.play();
+  $('placeholder').style.display='none';$('screenStatus').textContent='Screen shared';$('screenDot').classList.add('on');$('recordBtn').disabled=false;
+  screenStream.getVideoTracks()[0].addEventListener('ended',()=>{if(recording)stopRecording();screenStream=null;$('screenStatus').textContent='Screen sharing stopped';$('screenDot').classList.remove('on');$('recordBtn').disabled=true});
+  if(!animation)drawFrame();
+ }catch(e){alert('Screen sharing could not start: '+e.message)}
+};
+function combinedStream(){
+ if(!canvas.captureStream)throw Error('Canvas recording is not supported by this browser. Try a newer Chrome or Edge.');
+ const video=canvas.captureStream(30),mix=new MediaStream();
+ video.getVideoTracks().forEach(t=>mix.addTrack(t));
+ const ac=new (window.AudioContext||window.webkitAudioContext)(),dest=ac.createMediaStreamDestination();
+ let connected=false;
+ if(remoteStream&&remoteStream.getAudioTracks().length){ac.createMediaStreamSource(remoteStream).connect(dest);connected=true}
+ if(screenStream&&screenStream.getAudioTracks().length){ac.createMediaStreamSource(screenStream).connect(dest);connected=true}
+ if(connected)dest.stream.getAudioTracks().forEach(t=>mix.addTrack(t));
+ return {stream:mix,ac};
+}
+$('recordBtn').onclick=()=>{
+ try{
+  if(!screenStream)throw Error('Share your screen first.');
+  if(!window.MediaRecorder)throw Error('This browser does not support browser recording. Use a supported Chrome or Edge browser.');
+  const combo=combinedStream();let mime='';
+  if(MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus'))mime='video/webm;codecs=vp9,opus';
+  else if(MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus'))mime='video/webm;codecs=vp8,opus';
+  else if(MediaRecorder.isTypeSupported('video/webm'))mime='video/webm';
+  $('savePanel').style.display='none';
+  recorder=new MediaRecorder(combo.stream,mime?{mimeType:mime}:undefined);chunks=[];
+  recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  recorder.onerror=e=>{const msg=(e.error&&e.error.message)||'Browser recorder error';$('saveStatus').textContent='Recording error: '+msg;$('savePanel').style.display='block';$('pairMessage').textContent=msg};
+  recorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});
+    const url=URL.createObjectURL(blob);
+    const a=$('downloadLink');
+    a.href=url;
+    a.download='studio-recording-'+new Date().toISOString().replace(/[:.]/g,'-')+'.webm';
+    a.textContent='Download link (fallback · '+(blob.size/1024/1024).toFixed(1)+' MB)';
+    a.style.display='inline-block';
+    $('savePanel').style.display='block';
+    $('saveStatus').textContent=blob.size ? 'Recording ready · '+(blob.size/1024/1024).toFixed(1)+' MB · WebM video' : 'The recording is empty. Keep screen sharing active and record for a few seconds, then try again.';
+    $('saveBtn').disabled=!blob.size;
+    $('pairMessage').textContent=blob.size ? 'Recording finalized. Click “Save video to this PC” below the preview.' : 'No video data was captured; recording is empty.';
+    if(blob.size){setTimeout(()=>{try{a.click()}catch(e){}},300);}
+    try{combo.ac.close()}catch(e){}
+    combo.stream.getTracks().forEach(t=>t.stop());
+  };
+  recorder.start(1000);recording=true;startAt=Date.now();$('recordBtn').disabled=true;$('stopBtn').disabled=false;$('shareBtn').disabled=true;
+  timerInt=setInterval(()=>{const s=Math.floor((Date.now()-startAt)/1000);$('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},250);
+ }catch(e){alert('Recording could not start: '+e.message)}
+};
+function stopRecording(){
+ if(recorder&&recorder.state!=='inactive'){
+   try{recorder.requestData()}catch(e){}
+   recorder.stop();
+ }
+ recording=false;clearInterval(timerInt);$('recordBtn').disabled=!screenStream;$('stopBtn').disabled=true;$('shareBtn').disabled=false;
+}
+$('stopBtn').onclick=stopRecording;
+$('saveBtn').onclick=()=>{
+ const a=$('downloadLink');
+ if(!a.href){$('saveStatus').textContent='No recording is ready yet.';return}
+ try{a.click()}catch(e){window.open(a.href,'_blank')}
+};
+showMode('pc');
+})();
+</script>
+</body>
+</html>
