@@ -232,7 +232,6 @@
   </section>
 
 </main>
-
 <script type="module">
 /* =====================================================================
    Enhanced DSP core – cleaner, less metallic, Adobe/Dolby-like
@@ -276,20 +275,17 @@ function makeFFT(n){
 }
 
 /* ---------- Improved spectral denoise ----------
-   - Larger FFT + 75 % overlap
-   - Spectral + temporal smoothing of the gain mask
-   - Soft residual floor that only rises in noise-only regions
-   - Much less musical / metallic noise
+   Larger FFT + 75% overlap, spectral+temporal gain smoothing,
+   softer residual floor → far less musical / metallic noise
 */
 async function denoise(x, strength, cb){
-  const N = 2048;                 // larger → better frequency resolution
+  const N = 2048;
   const H = N >> 2;               // 75 % overlap
   const B = N/2 + 1;
   const NB = 200;
   const DB0 = -160;
   const fft = makeFFT(N);
 
-  // Hann window (better sidelobes than the previous sqrt-Hann)
   const win = new Float64Array(N);
   for(let i=0;i<N;i++) win[i] = 0.5 - 0.5*Math.cos(2*Math.PI*i/N);
 
@@ -300,7 +296,7 @@ async function denoise(x, strength, cb){
   const frames = Math.floor((xp.length - N)/H) + 1;
   const re = new Float64Array(N), im = new Float64Array(N);
 
-  // ---- Pass 1: noise floor (quietest ~18 % of frames) ----
+  // Pass 1: noise floor (quietest ~18 % of frames)
   const hist = new Uint32Array(B * NB);
   let counted = 0;
   for(let f=0; f<frames; f+=2){
@@ -325,7 +321,7 @@ async function denoise(x, strength, cb){
     noiseDb[k] = DB0 + d + 0.5;
   }
 
-  // Smooth noise estimate across frequency (reduces tonal artefacts)
+  // Smooth noise estimate across frequency
   const smoothNoise = new Float64Array(B);
   for(let k=0;k<B;k++){
     let s=0, c=0;
@@ -336,42 +332,39 @@ async function denoise(x, strength, cb){
     smoothNoise[k] = s / c;
   }
 
-  // Strength → how aggressively we push the floor
-  const alpha = 1.0 + strength/100 * 1.8;   // 1.0 … 2.8
+  const alpha = 1.0 + strength/100 * 1.8;
   const nPow = new Float64Array(B);
   for(let k=0;k<B;k++) nPow[k] = Math.pow(10, smoothNoise[k]/10) * alpha;
 
-  // Soft residual floor (higher strength → lower floor, but never zero)
-  const floorDb = - (8 + strength * 0.28);   // –8 … –36 dB
+  const floorDb = - (8 + strength * 0.28);
   const floor = Math.pow(10, floorDb / 20);
 
-  // ---- Pass 2: decision-directed Wiener with temporal + spectral smoothing ----
+  // Pass 2: decision-directed Wiener + spectral/temporal smoothing
   const out = new Float32Array(len + 2*N);
-  const prevP = new Float64Array(B);        // previous a-priori SNR
-  const prevG = new Float64Array(B);        // previous gain (temporal smooth)
-  const beta = 0.98;                        // decision-directed smoothing
-  const tau  = 0.35;                        // temporal gain smoothing
+  const prevP = new Float64Array(B);
+  const prevG = new Float64Array(B);
+  const beta = 0.98;
+  const tau  = 0.35;
 
   for(let f=0; f<frames; f++){
     const o = f*H;
     for(let i=0;i<N;i++){ re[i]=xp[o+i]*win[i]; im[i]=0; }
     fft(re, im, false);
 
-    // first compute raw gain
     const Graw = new Float64Array(B);
     for(let k=0;k<B;k++){
       const p = (re[k]*re[k] + im[k]*im[k]) / (N*N);
       const nk = nPow[k];
-      const gamma = p / (nk + 1e-20);                 // a-posteriori SNR
+      const gamma = p / (nk + 1e-20);
       const xi = beta * prevP[k] / (nk + 1e-20) + (1-beta) * Math.max(gamma - 1, 0);
-      prevP[k] = xi * nk;                             // store for next frame
+      prevP[k] = xi * nk;
 
-      let G = xi / (1 + xi);                           // Wiener
+      let G = xi / (1 + xi);
       if(G < floor) G = floor;
       Graw[k] = G;
     }
 
-    // spectral smoothing of the gain mask (kills musical noise)
+    // spectral smoothing of gain mask
     const Gs = new Float64Array(B);
     for(let k=0;k<B;k++){
       let s=0, c=0;
@@ -386,7 +379,6 @@ async function denoise(x, strength, cb){
     for(let k=0;k<B;k++){
       const G = tau * prevG[k] + (1-tau) * Gs[k];
       prevG[k] = G;
-
       re[k] *= G;
       im[k] *= G;
       if(k > 0 && k < N/2){
@@ -397,7 +389,7 @@ async function denoise(x, strength, cb){
 
     fft(re, im, true);
 
-    // overlap-add (Hann → COLA factor = 1.5 for 75 % overlap)
+    // overlap-add (Hann 75% → COLA gain ≈ 2/3)
     const gain = 2/3;
     for(let i=0;i<N;i++) out[o+i] += re[i] * win[i] * gain;
 
@@ -412,9 +404,9 @@ async function denoise(x, strength, cb){
 /* ---------- Softer look-ahead expander ---------- */
 function expander(x){
   const n = x.length;
-  const thr = -48;          // a little higher than before
+  const thr = -48;
   const ratio = 2.2;
-  const maxCut = -18;       // less aggressive
+  const maxCut = -18;
   const atk = Math.exp(-1 / (0.003 * SR));
   const rel = Math.exp(-1 / (0.18 * SR));
   const env = new Float32Array(n);
@@ -424,7 +416,7 @@ function expander(x){
     e = a > e ? atk*e + (1-atk)*a : rel*e + (1-rel)*a;
     env[i] = e;
   }
-  const L = Math.round(0.006 * SR);   // 6 ms look-ahead
+  const L = Math.round(0.006 * SR);
   const y = new Float32Array(n);
   for(let i=0;i<n;i++){
     const db = 20 * Math.log10(env[Math.min(n-1, i+L)] + 1e-9);
@@ -482,11 +474,11 @@ const TONES = {
 };
 
 const studio = (x, tone) => chain(x, [
-  ['highpass', 70],                     // milder than 80 Hz
-  ['peaking', 220, -1.8, 0.9],          // gentle body control
+  ['highpass', 70],
+  ['peaking', 220, -1.8, 0.9],
   'comp',
-  ['peaking', 3200, 1.3, 1.1],          // presence
-  ['highshelf', 7500, 0.8],             // soft air (does not boost residual noise)
+  ['peaking', 3200, 1.3, 1.1],
+  ['highshelf', 7500, 0.8],
   ...TONES[tone]
 ]);
 
@@ -511,7 +503,7 @@ async function applyVoice(y, v){
   return y;
 }
 
-/* ---------- ITU-R BS.1770 loudness (unchanged, already solid) ---------- */
+/* ---------- ITU-R BS.1770 loudness ---------- */
 function biquad(x, b, a){
   const y = new Float32Array(x.length);
   let x1=0, x2=0, y1=0, y2=0;
@@ -544,7 +536,7 @@ function lufs(x){
   return L(g.reduce((a,b)=>a+b,0)/g.length);
 }
 
-/* ---------- Look-ahead limiter (unchanged) ---------- */
+/* ---------- Look-ahead limiter ---------- */
 function limiter(x, ceil=CEILING, lookMs=5){
   const n = x.length, L = Math.max(1, Math.round(SR*lookMs/1000));
   const tgt = new Float32Array(n);
@@ -571,111 +563,116 @@ function limiter(x, ceil=CEILING, lookMs=5){
 }
 
 function finalizeLoud(x){
-  const l=lufs(x); let y=x;
-  if(isFinite(l)){
-    const gn=Math.pow(10, Math.min(30,Math.max(-30,TARGET_LUFS-l))/20);
-    y=new Float32Array(x.length); for(let i=0;i<x.length;i++) y[i]=x[i]*gn;
-  }
-  return limiter(y);
+  const l = lufs(x);
+  let y = x;
+  if(isFinite(l)){
+    const gn = Math.pow(10, Math.min(24, Math.max(-24, TARGET_LUFS - l)) / 20);
+    y = new Float32Array(x.length);
+    for(let i=0;i<x.length;i++) y[i] = x[i] * gn;
+  }
+  return limiter(y);
 }
-/* WSOLA time-scale modification: q>1 faster, q<1 slower, pitch unchanged */
+
+/* WSOLA time-scale modification */
 async function wsola(x, q, cb){
-  const win=Math.round(0.032*SR)&~1, hs=win>>1, ha=hs*q, tol=Math.round(0.010*SR), DEC=4, STEP=4;
-  const maxPos=x.length-win; if(maxPos<=0) return x;
-  const w=new Float32Array(win); for(let i=0;i<win;i++) w[i]=0.5-0.5*Math.cos(2*Math.PI*i/win);
-  const w0=w.slice(); for(let i=0;i<hs;i++) w0[i]=1;          // no fade-in on the first frame
-  const nF=Math.max(1,Math.ceil((x.length-win)/ha)+1);
-  const y=new Float32Array(nF*hs+win);
-  let prev=0;
-  for(let k=0;k<nF;k++){
-    let pos=0;
-    if(k>0){
-      const center=Math.round(k*ha), lo=Math.max(0,center-tol), hi=Math.min(maxPos,center+tol);
-      if(lo>hi) pos=Math.min(maxPos,Math.max(0,center));
-      else{
-        const tm=prev+hs;
-        const score=c=>{ let d=0,e=1e-9; for(let j=0;j<hs;j+=DEC){ const a=x[c+j]; d+=a*x[tm+j]; e+=a*a; } return d/Math.sqrt(e); };
-        let best=-Infinity; pos=lo;
-        for(let c=lo;c<=hi;c+=STEP){ const s=score(c); if(s>best){best=s;pos=c;} }
-        const l2=Math.max(lo,pos-STEP), h2=Math.min(hi,pos+STEP);
-        for(let c=l2;c<=h2;c++){ const s=score(c); if(s>best){best=s;pos=c;} }
-      }
-    }
-    const o=k*hs, ww=k===0?w0:w;
-    for(let i=0;i<win;i++) y[o+i]+=x[pos+i]*ww[i];
-    prev=pos;
-    if((k&255)===0){ cb && cb(k/nF); await tick(); }
-  }
-  return y.slice(0, Math.floor(x.length/q));
+  const win=Math.round(0.032*SR)&~1, hs=win>>1, ha=hs*q, tol=Math.round(0.010*SR), DEC=4, STEP=4;
+  const maxPos=x.length-win; if(maxPos<=0) return x;
+  const w=new Float32Array(win); for(let i=0;i<win;i++) w[i]=0.5-0.5*Math.cos(2*Math.PI*i/win);
+  const w0=w.slice(); for(let i=0;i<hs;i++) w0[i]=1;
+  const nF=Math.max(1,Math.ceil((x.length-win)/ha)+1);
+  const y=new Float32Array(nF*hs+win);
+  let prev=0;
+  for(let k=0;k<nF;k++){
+    let pos=0;
+    if(k>0){
+      const center=Math.round(k*ha), lo=Math.max(0,center-tol), hi=Math.min(maxPos,center+tol);
+      if(lo>hi) pos=Math.min(maxPos,Math.max(0,center));
+      else{
+        const tm=prev+hs;
+        const score=c=>{ let d=0,e=1e-9; for(let j=0;j<hs;j+=DEC){ const a=x[c+j]; d+=a*x[tm+j]; e+=a*a; } return d/Math.sqrt(e); };
+        let best=-Infinity; pos=lo;
+        for(let c=lo;c<=hi;c+=STEP){ const s=score(c); if(s>best){best=s;pos=c;} }
+        const l2=Math.max(lo,pos-STEP), h2=Math.min(hi,pos+STEP);
+        for(let c=l2;c<=h2;c++){ const s=score(c); if(s>best){best=s;pos=c;} }
+      }
+    }
+    const o=k*hs, ww=k===0?w0:w;
+    for(let i=0;i<win;i++) y[o+i]+=x[pos+i]*ww[i];
+    prev=pos;
+    if((k&255)===0){ cb && cb(k/nF); await tick(); }
+  }
+  return y.slice(0, Math.floor(x.length/q));
 }
-/* Cubic resampler: ratio>1 plays faster (pitch up, shorter) */
+
+/* Cubic resampler */
 function resample(x, ratio){
-  const n=Math.floor(x.length/ratio), y=new Float32Array(n), last=x.length-1;
-  const g=k=>x[k<0?0:k>last?last:k];
-  for(let i=0;i<n;i++){
-    const p=i*ratio, i0=Math.floor(p), t=p-i0;
-    const a=g(i0-1), b=g(i0), c=g(i0+1), d=g(i0+2);
-    y[i]=0.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t);
-  }
-  return y;
+  const n=Math.floor(x.length/ratio), y=new Float32Array(n), last=x.length-1;
+  const g=k=>x[k<0?0:k>last?last:k];
+  for(let i=0;i<n;i++){
+    const p=i*ratio, i0=Math.floor(p), t=p-i0;
+    const a=g(i0-1), b=g(i0), c=g(i0+1), d=g(i0+2);
+    y[i]=0.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t);
+  }
+  return y;
 }
+
 /* ---- UI ---- */
 const $ = id => document.getElementById(id);
 const S = { orig:null, clean:null, final:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
 let busy = false, stopAt = null, asrP = null, asrName = '';
-/* ---------- status / progress ---------- */
+
 function setStatus(t, err){ $('status').textContent = t; $('status').classList.toggle('err', !!err); }
 function prog(label, p){
-  $('prog').hidden = false;
-  const bar = $('bar');
-  if(p < 0){ bar.classList.add('indet'); setStatus(label); return; }
-  bar.classList.remove('indet'); bar.style.width = Math.round(p*100)+'%';
-  setStatus(`${label} (${Math.round(p*100)}%)`);
+  $('prog').hidden = false;
+  const bar = $('bar');
+  if(p < 0){ bar.classList.add('indet'); setStatus(label); return; }
+  bar.classList.remove('indet'); bar.style.width = Math.round(p*100)+'%';
+  setStatus(`${label} (${Math.round(p*100)}%)`);
 }
 function refreshButtons(){
-  const has = !!S.orig;
-  ['bBoth','bEnh','bTr'].forEach(id => $(id).disabled = busy || !has);
-  $('dlAudio').disabled = busy || !S.final;
-  const hs = S.segs.length>0;
-  ['xJson','xTxt','xSrt','doRepl'].forEach(id => $(id).disabled = !hs);
-  $('addSeg').disabled = !S.final && !hs;
+  const has = !!S.orig;
+  ['bBoth','bEnh','bTr'].forEach(id => $(id).disabled = busy || !has);
+  $('dlAudio').disabled = busy || !S.final;
+  const hs = S.segs.length>0;
+  ['xJson','xTxt','xSrt','doRepl'].forEach(id => $(id).disabled = !hs);
+  $('addSeg').disabled = !S.final && !hs;
 }
 async function run(fn){
-  if(busy) return;
-  busy = true; refreshButtons(); setStatus('');
-  try{ await fn(); }
-  catch(e){ console.error(e); setStatus('Something went wrong: ' + (e && e.message || e), true); }
-  finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
+  if(busy) return;
+  busy = true; refreshButtons(); setStatus('');
+  try{ await fn(); }
+  catch(e){ console.error(e); setStatus('Something went wrong: ' + (e && e.message || e), true); }
+  finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
 }
 const fmtDur = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-/* ---------- settings ---------- */
-const settings = () => ({ nr:+$$ ('nr').value, gate: $$('gate').checked, tone:$('tone').value,
-  speed:+$$ ('speed').value, pitch:+ $$('pitch').value, voice:$('voice').value });
+
+const settings = () => ({ nr:+$('nr').value, gate:$('gate').checked, tone:$('tone').value,
+  speed:+$('speed').value, pitch:+$('pitch').value, voice:$('voice').value });
 $('nr').oninput = () => $('nrO').textContent = $('nr').value + '%';
-$('speed').oninput = () => $$ ('speedO').textContent = (+ $$('speed').value).toFixed(2) + 'x';
-$$ ('pitch').oninput = () => { const v=+ $$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
-/* ---------- loading audio ---------- */
+$('speed').oninput = () => $('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';
+$('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
+
 async function decodeFile(file){
-  const ctx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR});
-  const buf = await ctx.decodeAudioData(await file.arrayBuffer());
-  ctx.close();
-  const n=buf.length, ch=buf.numberOfChannels, out=new Float32Array(n);
-  for(let c=0;c<ch;c++){ const d=buf.getChannelData(c); for(let i=0;i<n;i++) out[i]+=d[i]/ch; }
-  return out;
+  const ctx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR});
+  const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+  ctx.close();
+  const n=buf.length, ch=buf.numberOfChannels, out=new Float32Array(n);
+  for(let c=0;c<ch;c++){ const d=buf.getChannelData(c); for(let i=0;i<n;i++) out[i]+=d[i]/ch; }
+  return out;
 }
 async function loadFile(f){
-  await run(async () => {
-    setStatus('Reading audio');
-    S.orig = await decodeFile(f);
-    S.clean = S.final = null; S.segs = [];
-    if(S.srcURL) URL.revokeObjectURL(S.srcURL);
-    S.srcURL = URL.createObjectURL(f);
-    $('aOrig').src = S.srcURL;
-    $('aFinal').removeAttribute('src'); $('aFinal').load();
-    $('srcinfo').textContent = `${f.name}, ${fmtDur(S.orig.length/SR)} long`;
-    renderSegs(); drawWave();
-    setStatus('Ready. Adjust the settings, then press Enhance and transcribe.');
-  });
+  await run(async () => {
+    setStatus('Reading audio');
+    S.orig = await decodeFile(f);
+    S.clean = S.final = null; S.segs = [];
+    if(S.srcURL) URL.revokeObjectURL(S.srcURL);
+    S.srcURL = URL.createObjectURL(f);
+    $('aOrig').src = S.srcURL;
+    $('aFinal').removeAttribute('src'); $('aFinal').load();
+    $('srcinfo').textContent = `${f.name}, ${fmtDur(S.orig.length/SR)} long`;
+    renderSegs(); drawWave();
+    setStatus('Ready. Adjust the settings, then press Enhance and transcribe.');
+  });
 }
 $('file').onchange = e => { if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
 const drop = $('drop');
@@ -684,216 +681,217 @@ const drop = $('drop');
 drop.addEventListener('drop', e => { const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
 let rec=null, recStream=null, recChunks=[];
 $('rec').onclick = async () => {
-  if(rec){ rec.stop(); return; }
-  try{
-    recStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-  }catch(e){ setStatus('Microphone access was blocked. Allow it in the address bar, or load a file instead.', true); return; }
-  recChunks = []; const r = new MediaRecorder(recStream); rec = r;
-  r.ondataavailable = e => recChunks.push(e.data);
-  r.onstop = async () => {
-    recStream.getTracks().forEach(t => t.stop());
-    $('rec').textContent = 'Record with microphone'; $('rec').classList.remove('rec-on');
-    const blob = new Blob(recChunks, {type:r.mimeType}); rec = null;
-    await loadFile(new File([blob], 'recording.webm', {type:r.mimeType}));
-  };
-  r.start(); $('rec').textContent = 'Stop recording'; $('rec').classList.add('rec-on');
+  if(rec){ rec.stop(); return; }
+  try{
+    recStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  }catch(e){ setStatus('Microphone access was blocked. Allow it in the address bar, or load a file instead.', true); return; }
+  recChunks = []; const r = new MediaRecorder(recStream); rec = r;
+  r.ondataavailable = e => recChunks.push(e.data);
+  r.onstop = async () => {
+    recStream.getTracks().forEach(t => t.stop());
+    $('rec').textContent = 'Record with microphone'; $('rec').classList.remove('rec-on');
+    const blob = new Blob(recChunks, {type:r.mimeType}); rec = null;
+    await loadFile(new File([blob], 'recording.webm', {type:r.mimeType}));
+  };
+  r.start(); $('rec').textContent = 'Stop recording'; $('rec').classList.add('rec-on');
 };
-/* ---------- enhance ---------- */
+
 async function enhance(){
-  const s = settings();
-  let x = S.orig;
-  if(s.nr > 0) x = await denoise(x, s.nr, p => prog('Removing noise', 0.6*p));
-  if(s.gate){ prog('Silencing gaps', 0.62); await tick(); x = expander(x); }
-  prog('Applying studio polish', 0.7); await tick();
-  x = finalizeLoud(await studio(x, s.tone));
-  S.clean = x;
-  const v = VOICES[s.voice], semi = s.pitch + v.semi, r = Math.pow(2, semi/12), q = s.speed / r;
-  let y = x, changed = false;
-  if(Math.abs(q-1) > 1e-3){ y = await wsola(y, q, p => prog('Changing speed and pitch', 0.75+0.2*p)); changed = true; }
-  if(Math.abs(r-1) > 1e-4){ y = resample(y, r); changed = true; }
-  if(v.eq.length || v.drive || v.ring){ y = await applyVoice(y, v); changed = true; }
-  if(changed){ prog('Final level check', 0.97); await tick(); y = finalizeLoud(y); }
-  S.final = y; S.speedUsed = s.speed;
-  if(S.finURL) URL.revokeObjectURL(S.finURL);
-  S.finURL = URL.createObjectURL(encodeWav(y, SR, 16));
-  $('aFinal').src = S.finURL;
-  drawWave();
-  setStatus(`Enhanced audio ready, ${fmtDur(y.length/SR)} long, about ${TARGET_LUFS} LUFS.`);
+  const s = settings();
+  let x = S.orig;
+  if(s.nr > 0) x = await denoise(x, s.nr, p => prog('Removing noise', 0.6*p));
+  if(s.gate){ prog('Silencing gaps', 0.62); await tick(); x = expander(x); }
+  prog('Applying studio polish', 0.7); await tick();
+  x = finalizeLoud(await studio(x, s.tone));
+  S.clean = x;
+  const v = VOICES[s.voice], semi = s.pitch + v.semi, r = Math.pow(2, semi/12), q = s.speed / r;
+  let y = x, changed = false;
+  if(Math.abs(q-1) > 1e-3){ y = await wsola(y, q, p => prog('Changing speed and pitch', 0.75+0.2*p)); changed = true; }
+  if(Math.abs(r-1) > 1e-4){ y = resample(y, r); changed = true; }
+  if(v.eq.length || v.drive || v.ring){ y = await applyVoice(y, v); changed = true; }
+  if(changed){ prog('Final level check', 0.97); await tick(); y = finalizeLoud(y); }
+  S.final = y; S.speedUsed = s.speed;
+  if(S.finURL) URL.revokeObjectURL(S.finURL);
+  S.finURL = URL.createObjectURL(encodeWav(y, SR, 16));
+  $('aFinal').src = S.finURL;
+  drawWave();
+  setStatus(`Enhanced audio ready, ${fmtDur(y.length/SR)} long, about ${TARGET_LUFS} LUFS.`);
 }
-/* ---------- waveform ---------- */
+
 function peaks(x, w){
-  const out = new Float32Array(w*2), step = x.length / w; let mx = 1e-9;
-  for(let i=0;i<w;i++){
-    const s=Math.floor(i*step), e=Math.min(x.length, Math.floor((i+1)*step)+1), st=Math.max(1,(e-s)>>5);
-    let lo=0, hi=0;
-    for(let j=s;j<e;j+=st){ const v=x[j]; if(v<lo) lo=v; if(v>hi) hi=v; }
-    out[2*i]=lo; out[2*i+1]=hi; mx=Math.max(mx,-lo,hi);
-  }
-  for(let i=0;i<out.length;i++) out[i]/=mx;
-  return out;
+  const out = new Float32Array(w*2), step = x.length / w; let mx = 1e-9;
+  for(let i=0;i<w;i++){
+    const s=Math.floor(i*step), e=Math.min(x.length, Math.floor((i+1)*step)+1), st=Math.max(1,(e-s)>>5);
+    let lo=0, hi=0;
+    for(let j=s;j<e;j+=st){ const v=x[j]; if(v<lo) lo=v; if(v>hi) hi=v; }
+    out[2*i]=lo; out[2*i+1]=hi; mx=Math.max(mx,-lo,hi);
+  }
+  for(let i=0;i<out.length;i++) out[i]/=mx;
+  return out;
 }
 function drawWave(){
-  const c=$('wave'), dpr=window.devicePixelRatio||1;
-  const w=Math.max(200,Math.floor(c.clientWidth*dpr)), h=Math.floor(190*dpr);
-  c.width=w; c.height=h;
-  const g=c.getContext('2d'); g.clearRect(0,0,w,h);
-  const mid=h/2;
-  g.fillStyle='#e3e7ec'; g.fillRect(0,mid,w,Math.max(1,dpr));
-  const draw=(x,color)=>{
-    if(!x) return; const p=peaks(x,w); g.fillStyle=color;
-    for(let i=0;i<w;i++){
-      const a=mid-p[2*i+1]*mid*0.92, b=mid-p[2*i]*mid*0.92;
-      g.fillRect(i,a,1,Math.max(1,b-a));
-    }
-  };
-  draw(S.orig, getComputedStyle(document.documentElement).getPropertyValue('--orig').trim());
-  draw(S.final, getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+  const c=$('wave'), dpr=window.devicePixelRatio||1;
+  const w=Math.max(200,Math.floor(c.clientWidth*dpr)), h=Math.floor(190*dpr);
+  c.width=w; c.height=h;
+  const g=c.getContext('2d'); g.clearRect(0,0,w,h);
+  const mid=h/2;
+  g.fillStyle='#e3e7ec'; g.fillRect(0,mid,w,Math.max(1,dpr));
+  const draw=(x,color)=>{
+    if(!x) return; const p=peaks(x,w); g.fillStyle=color;
+    for(let i=0;i<w;i++){
+      const a=mid-p[2*i+1]*mid*0.92, b=mid-p[2*i]*mid*0.92;
+      g.fillRect(i,a,1,Math.max(1,b-a));
+    }
+  };
+  draw(S.orig, getComputedStyle(document.documentElement).getPropertyValue('--orig').trim());
+  draw(S.final, getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
 }
 window.addEventListener('resize', () => drawWave());
 const aF = $('aFinal');
 $('wavewrap').onclick = e => {
-  if(!aF.duration) return;
-  const r=$('wavewrap').getBoundingClientRect();
-  aF.currentTime = (e.clientX-r.left)/r.width*aF.duration;
+  if(!aF.duration) return;
+  const r=$('wavewrap').getBoundingClientRect();
+  aF.currentTime = (e.clientX-r.left)/r.width*aF.duration;
 };
 function movePlayhead(){
-  const h=$('head');
-  if(aF.duration){ h.style.display='block'; h.style.left=(aF.currentTime/aF.duration*100)+'%'; }
-  if(!aF.paused) requestAnimationFrame(movePlayhead);
+  const h=$('head');
+  if(aF.duration){ h.style.display='block'; h.style.left=(aF.currentTime/aF.duration*100)+'%'; }
+  if(!aF.paused) requestAnimationFrame(movePlayhead);
 }
 aF.addEventListener('play', movePlayhead);
 aF.addEventListener('seeked', movePlayhead);
 aF.addEventListener('timeupdate', () => { if(stopAt!=null && aF.currentTime>=stopAt){ aF.pause(); stopAt=null; } });
 aF.addEventListener('pause', () => { stopAt = null; });
-/* ---------- audio export ---------- */
+
 function encodeWav(x, sr, bits){
-  const bps=bits/8, dl=x.length*bps, buf=new ArrayBuffer(44+dl), v=new DataView(buf);
-  const ws=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
-  ws(0,'RIFF'); v.setUint32(4,36+dl,true); ws(8,'WAVE'); ws(12,'fmt ');
-  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
-  v.setUint32(24,sr,true); v.setUint32(28,sr*bps,true); v.setUint16(32,bps,true); v.setUint16(34,bits,true);
-  ws(36,'data'); v.setUint32(40,dl,true);
-  let o=44;
-  for(let i=0;i<x.length;i++){
-    const s=Math.max(-1,Math.min(1,x[i]));
-    if(bits===16){ v.setInt16(o, Math.round(s<0?s*32768:s*32767), true); o+=2; }
-    else{ const n=Math.round(s<0?s*8388608:s*8388607); v.setUint8(o,n&255); v.setUint8(o+1,(n>>8)&255); v.setUint8(o+2,(n>>16)&255); o+=3; }
-  }
-  return new Blob([buf],{type:'audio/wav'});
+  const bps=bits/8, dl=x.length*bps, buf=new ArrayBuffer(44+dl), v=new DataView(buf);
+  const ws=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  ws(0,'RIFF'); v.setUint32(4,36+dl,true); ws(8,'WAVE'); ws(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*bps,true); v.setUint16(32,bps,true); v.setUint16(34,bits,true);
+  ws(36,'data'); v.setUint32(40,dl,true);
+  let o=44;
+  for(let i=0;i<x.length;i++){
+    const s=Math.max(-1,Math.min(1,x[i]));
+    if(bits===16){ v.setInt16(o, Math.round(s<0?s*32768:s*32767), true); o+=2; }
+    else{ const n=Math.round(s<0?s*8388608:s*8388607); v.setUint8(o,n&255); v.setUint8(o+1,(n>>8)&255); v.setUint8(o+2,(n>>16)&255); o+=3; }
+  }
+  return new Blob([buf],{type:'audio/wav'});
 }
 async function encodeMp3(x){
-  const enc=new lamejs.Mp3Encoder(1,SR,192), parts=[], BL=1152;
-  for(let i=0,c=0;i<x.length;i+=BL,c++){
-    const n=Math.min(BL,x.length-i), b=new Int16Array(n);
-    for(let j=0;j<n;j++){ const s=Math.max(-1,Math.min(1,x[i+j])); b[j]=s<0?s*32768:s*32767; }
-    const d=enc.encodeBuffer(b); if(d.length) parts.push(new Uint8Array(d));
-    if((c&255)===0) await tick();
-  }
-  const f=enc.flush(); if(f.length) parts.push(new Uint8Array(f));
-  return new Blob(parts,{type:'audio/mpeg'});
+  const enc=new lamejs.Mp3Encoder(1,SR,192), parts=[], BL=1152;
+  for(let i=0,c=0;i<x.length;i+=BL,c++){
+    const n=Math.min(BL,x.length-i), b=new Int16Array(n);
+    for(let j=0;j<n;j++){ const s=Math.max(-1,Math.min(1,x[i+j])); b[j]=s<0?s*32768:s*32767; }
+    const d=enc.encodeBuffer(b); if(d.length) parts.push(new Uint8Array(d));
+    if((c&255)===0) await tick();
+  }
+  const f=enc.flush(); if(f.length) parts.push(new Uint8Array(f));
+  return new Blob(parts,{type:'audio/mpeg'});
 }
 function save(name, blob){
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
 $('dlAudio').onclick = () => run(async () => {
-  const f=$('fmt').value;
-  if(f==='mp3'){
-    if(typeof lamejs==='undefined') throw new Error('The MP3 encoder could not be loaded (check your connection). Use WAV instead.');
-    prog('Encoding MP3', -1); save('voice-studio.mp3', await encodeMp3(S.final));
-  } else save('voice-studio.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
-  setStatus('Audio downloaded.');
+  const f=$('fmt').value;
+  if(f==='mp3'){
+    if(typeof lamejs==='undefined') throw new Error('The MP3 encoder could not be loaded (check your connection). Use WAV instead.');
+    prog('Encoding MP3', -1); save('voice-studio.mp3', await encodeMp3(S.final));
+  } else save('voice-studio.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
+  setStatus('Audio downloaded.');
 });
 if(typeof lamejs==='undefined'){ $('fmt').querySelector('option[value=mp3]').disabled = true; }
-/* ---------- transcription (Whisper in the browser via transformers.js) ---------- */
+
 function getASR(model, cb){
-  const name='Xenova/whisper-'+model;
-  if(asrP && asrName===name) return asrP;
-  asrName=name;
-  asrP=(async()=>{
-    const {pipeline, env}=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-    env.allowLocalModels=false;
-    return pipeline('automatic-speech-recognition', name, {progress_callback:cb});
-  })();
-  asrP.catch(()=>{ asrP=null; asrName=''; });
-  return asrP;
+  const name='Xenova/whisper-'+model;
+  if(asrP && asrName===name) return asrP;
+  asrName=name;
+  asrP=(async()=>{
+    const {pipeline, env}=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    env.allowLocalModels=false;
+    return pipeline('automatic-speech-recognition', name, {progress_callback:cb});
+  })();
+  asrP.catch(()=>{ asrP=null; asrName=''; });
+  return asrP;
 }
 async function to16k(x){
-  const oc=new OfflineAudioContext(1, Math.ceil(x.length*16000/SR), 16000);
-  const b=oc.createBuffer(1, x.length, SR); b.copyToChannel(x,0);
-  const s=oc.createBufferSource(); s.buffer=b; s.connect(oc.destination); s.start();
-  return (await oc.startRendering()).getChannelData(0);
+  const oc=new OfflineAudioContext(1, Math.ceil(x.length*16000/SR), 16000);
+  const b=oc.createBuffer(1, x.length, SR); b.copyToChannel(x,0);
+  const s=oc.createBufferSource(); s.buffer=b; s.connect(oc.destination); s.start();
+  return (await oc.startRendering()).getChannelData(0);
 }
 async function transcribe(){
-  prog('Loading speech model', 0);
-  const asr = await getASR($('model').value, p => {
-    if(p.status==='progress') prog('Downloading speech model (first time only)', (p.progress||0)/100);
-  });
-  prog('Preparing audio', -1);
-  const a16 = await to16k(S.clean);
-  prog('Transcribing on your device. Longer files take a few minutes', -1);
-  const lang=$('lang').value, opts={chunk_length_s:30, stride_length_s:5, return_timestamps:true, task:'transcribe'};
-  if(lang!=='auto') opts.language=lang;
-  const out = await asr(a16, opts), sp=S.speedUsed||1, total=S.clean.length/SR;
-  S.langUsed = lang==='auto' ? 'auto' : (lang==='hindi' ? 'hi' : 'en');
-  const chunks = out.chunks && out.chunks.length ? out.chunks : [{timestamp:[0,total], text:out.text||''}];
-  S.segs = chunks.map(c => {
-    const st=(c.timestamp[0]??0)/sp, en=(c.timestamp[1]==null?total:c.timestamp[1])/sp;
-    return {start:+st.toFixed(2), end:+en.toFixed(2), text:(c.text||'').trim()};
-  }).filter(s => s.text);
-  renderSegs();
-  setStatus(S.segs.length ? `Script ready: ${S.segs.length} lines. Correct anything below, then download.` : 'No speech was detected.');
+  prog('Loading speech model', 0);
+  const asr = await getASR($('model').value, p => {
+    if(p.status==='progress') prog('Downloading speech model (first time only)', (p.progress||0)/100);
+  });
+  prog('Preparing audio', -1);
+  const a16 = await to16k(S.clean);
+  prog('Transcribing on your device. Longer files take a few minutes', -1);
+  const lang=$('lang').value, opts={chunk_length_s:30, stride_length_s:5, return_timestamps:true, task:'transcribe'};
+  if(lang!=='auto') opts.language=lang;
+  const out = await asr(a16, opts), sp=S.speedUsed||1, total=S.clean.length/SR;
+  S.langUsed = lang==='auto' ? 'auto' : (lang==='hindi' ? 'hi' : 'en');
+  const chunks = out.chunks && out.chunks.length ? out.chunks : [{timestamp:[0,total], text:out.text||''}];
+  S.segs = chunks.map(c => {
+    const st=(c.timestamp[0]??0)/sp, en=(c.timestamp[1]==null?total:c.timestamp[1])/sp;
+    return {start:+st.toFixed(2), end:+en.toFixed(2), text:(c.text||'').trim()};
+  }).filter(s => s.text);
+  renderSegs();
+  setStatus(S.segs.length ? `Script ready: ${S.segs.length} lines. Correct anything below, then download.` : 'No speech was detected.');
 }
-/* ---------- editable script ---------- */
+
 function sizeTA(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
 function renderSegs(){
-  const box=$('segs'); box.replaceChildren();
-  if(!S.segs.length){
-    const p=document.createElement('p'); p.className='empty';
-    p.textContent='Your script will appear here. Every line has its own start and end time and can be played, edited or removed.';
-    box.append(p); refreshButtons(); return;
-  }
-  S.segs.forEach((s,i)=>{
-    const row=document.createElement('div'); row.className='seg';
-    const play=document.createElement('button'); play.type='button'; play.textContent='Play'; play.setAttribute('aria-label','Play line '+(i+1));
-    play.onclick=()=>{ if(!S.final) return; aF.currentTime=S.segs[i].start; stopAt=S.segs[i].end; aF.play(); };
-    const times=document.createElement('div'); times.className='times';
-    const mk=(key,label)=>{ const n=document.createElement('input'); n.type='number'; n.step='0.01'; n.min='0'; n.value=s[key]; n.setAttribute('aria-label',label+' time in seconds'); n.oninput=()=>{ S.segs[i][key]=parseFloat(n.value)||0; }; return n; };
-    times.append(mk('start','Start'), mk('end','End'));
-    const ta=document.createElement('textarea'); ta.rows=1; ta.value=s.text; ta.setAttribute('aria-label','Caption text for line '+(i+1));
-    ta.oninput=()=>{ S.segs[i].text=ta.value; sizeTA(ta); };
-    const del=document.createElement('button'); del.type='button'; del.textContent='Remove'; del.setAttribute('aria-label','Remove line '+(i+1));
-    del.onclick=()=>{ S.segs.splice(i,1); renderSegs(); };
-    row.append(play,times,ta,del); box.append(row); sizeTA(ta);
-  });
-  refreshButtons();
+  const box=$('segs'); box.replaceChildren();
+  if(!S.segs.length){
+    const p=document.createElement('p'); p.className='empty';
+    p.textContent='Your script will appear here. Every line has its own start and end time and can be played, edited or removed.';
+    box.append(p); refreshButtons(); return;
+  }
+  S.segs.forEach((s,i)=>{
+    const row=document.createElement('div'); row.className='seg';
+    const play=document.createElement('button'); play.type='button'; play.textContent='Play'; play.setAttribute('aria-label','Play line '+(i+1));
+    play.onclick=()=>{ if(!S.final) return; aF.currentTime=S.segs[i].start; stopAt=S.segs[i].end; aF.play(); };
+    const times=document.createElement('div'); times.className='times';
+    const mk=(key,label)=>{ const n=document.createElement('input'); n.type='number'; n.step='0.01'; n.min='0'; n.value=s[key]; n.setAttribute('aria-label',label+' time in seconds'); n.oninput=()=>{ S.segs[i][key]=parseFloat(n.value)||0; }; return n; };
+    times.append(mk('start','Start'), mk('end','End'));
+    const ta=document.createElement('textarea'); ta.rows=1; ta.value=s.text; ta.setAttribute('aria-label','Caption text for line '+(i+1));
+    ta.oninput=()=>{ S.segs[i].text=ta.value; sizeTA(ta); };
+    const del=document.createElement('button'); del.type='button'; del.textContent='Remove'; del.setAttribute('aria-label','Remove line '+(i+1));
+    del.onclick=()=>{ S.segs.splice(i,1); renderSegs(); };
+    row.append(play,times,ta,del); box.append(row); sizeTA(ta);
+  });
+  refreshButtons();
 }
 $('addSeg').onclick = () => {
-  const last=S.segs[S.segs.length-1], st=last?last.end:0;
-  S.segs.push({start:st, end:+(st+2).toFixed(2), text:''}); renderSegs();
-  const t=$('segs').querySelectorAll('textarea'); t[t.length-1].focus();
+  const last=S.segs[S.segs.length-1], st=last?last.end:0;
+  S.segs.push({start:st, end:+(st+2).toFixed(2), text:''}); renderSegs();
+  const t=$('segs').querySelectorAll('textarea'); t[t.length-1].focus();
 };
 $('doRepl').onclick = () => {
-  const f=$$ ('find').value, r= $$('repl').value;
-  if(!f){ setStatus('Type the text to find first.', true); return; }
-  let n=0;
-  S.segs.forEach(s => { const parts=s.text.split(f); n+=parts.length-1; s.text=parts.join(r); });
-  renderSegs(); setStatus(n ? `Replaced ${n} occurrence${n===1?'':'s'}.` : 'Nothing matched.');
+  const f=$('find').value, r=$('repl').value;
+  if(!f){ setStatus('Type the text to find first.', true); return; }
+  let n=0;
+  S.segs.forEach(s => { const parts=s.text.split(f); n+=parts.length-1; s.text=parts.join(r); });
+  renderSegs(); setStatus(n ? `Replaced ${n} occurrence${n===1?'':'s'}.` : 'Nothing matched.');
 };
-/* ---------- script export ---------- */
+
 const srtTime = t => { let ms=Math.round(t*1000); const h=Math.floor(ms/3600000); ms-=h*3600000; const m=Math.floor(ms/60000); ms-=m*60000; const s=Math.floor(ms/1000); ms-=s*1000;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(ms).padStart(3,'0')}`; };
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(ms).padStart(3,'0')}`; };
 $('xJson').onclick = () => save('script.json', new Blob([JSON.stringify({
-  language:S.langUsed, duration:S.final?+(S.final.length/SR).toFixed(2):null,
-  segments:S.segs.map((s,i)=>({id:i+1,start:+s.start,end:+s.end,text:s.text})),
-  text:S.segs.map(s=>s.text).join(' ')}, null, 2)], {type:'application/json'}));
+  language:S.langUsed, duration:S.final?+(S.final.length/SR).toFixed(2):null,
+  segments:S.segs.map((s,i)=>({id:i+1,start:+s.start,end:+s.end,text:s.text})),
+  text:S.segs.map(s=>s.text).join(' ')}, null, 2)], {type:'application/json'}));
 $('xTxt').onclick = () => save('script.txt', new Blob([S.segs.map(s=>s.text).join('\n')], {type:'text/plain;charset=utf-8'}));
 $('xSrt').onclick = () => save('script.srt', new Blob([S.segs.map((s,i)=>`${i+1}\n${srtTime(s.start)} --> ${srtTime(s.end)}\n${s.text}\n`).join('\n')], {type:'text/plain;charset=utf-8'}));
-/* ---------- main buttons ---------- */
+
 $('bEnh').onclick  = () => run(enhance);
 $('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });
 $('bTr').onclick   = () => run(async () => { if(!S.clean) await enhance(); await transcribe(); });
 renderSegs(); drawWave();
 </script>
+
 </body>
 </html>
