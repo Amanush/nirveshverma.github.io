@@ -400,7 +400,6 @@ function expander(x){
   return y;
 }
 
-/* Harmonic Exciter & Tube Saturation for Voice Body */
 function harmonicExciter(x, drive=2.0, mix=0.4){
   const y = new Float32Array(x.length);
   const gain = 1.0 + (drive * 1.5);
@@ -419,7 +418,7 @@ const TONES = {
   broadcast:[['lowshelf', 90, 3.0], ['peaking', 2400, 2.5, 1.0], ['highshelf', 7500, 1.6]]
 };
 
-async function advancedStudio(x, tone, resonanceVal){
+async function advancedStudio(x, tone){
   const oc = new OfflineAudioContext(1, x.length, SR);
   const b = oc.createBuffer(1, x.length, SR);
   b.copyToChannel(x, 0);
@@ -427,27 +426,14 @@ async function advancedStudio(x, tone, resonanceVal){
   src.buffer = b;
   let node = src;
 
-  // 1. Rumble filter
   const hp = oc.createBiquadFilter();
   hp.type = 'highpass'; hp.frequency.value = 70; hp.Q.value = 0.707;
   node.connect(hp); node = hp;
 
-  // 2. Resonance / Boxy notch
-  if(resonanceVal > 0){
-    const notch = oc.createBiquadFilter();
-    notch.type = 'peaking';
-    notch.frequency.value = 350;
-    notch.gain.value = -(resonanceVal * 0.04);
-    notch.Q.value = 1.5;
-    node.connect(notch); node = notch;
-  }
-
-  // 3. Proximity Warmth
   const warmth = oc.createBiquadFilter();
   warmth.type = 'lowshelf'; warmth.frequency.value = 220; warmth.gain.value = 3.5;
   node.connect(warmth); node = warmth;
 
-  // 4. Optical Compressor
   const comp = oc.createDynamicsCompressor();
   comp.threshold.value = -22;
   comp.knee.value = 16;
@@ -456,22 +442,18 @@ async function advancedStudio(x, tone, resonanceVal){
   comp.release.value = 0.18;
   node.connect(comp); node = comp;
 
-  // 5. Broadcast Presence
   const presence = oc.createBiquadFilter();
   presence.type = 'peaking'; presence.frequency.value = 2800; presence.gain.value = 3.0; presence.Q.value = 1.0;
   node.connect(presence); node = presence;
 
-  // 6. Air & Brilliance
   const air = oc.createBiquadFilter();
   air.type = 'highshelf'; air.frequency.value = 8500; air.gain.value = 2.5;
   node.connect(air); node = air;
 
-  // 7. De-Esser
   const deess = oc.createBiquadFilter();
   deess.type = 'peaking'; deess.frequency.value = 6000; deess.gain.value = -3.0; deess.Q.value = 2.0;
   node.connect(deess); node = deess;
 
-  // Tone profile additions
   for(const step of TONES[tone]){
     const [t, f, gn=0, q=0.707] = step;
     const n = oc.createBiquadFilter();
@@ -488,7 +470,7 @@ async function advancedStudio(x, tone, resonanceVal){
 }
 
 const VOICES = {
-  natural: {semi:0,   eq:[]},
+  natural: {semi:0,  eq:[]},
   deep:    {semi:-3.5,eq:[['lowshelf', 150, 3.0]]},
   bright:  {semi:2.5, eq:[['highshelf', 6500, 2.5]]},
   radio:   {semi:0,   eq:[['highpass', 250], ['lowpass', 3600], ['peaking', 1700, 3.0, 1]], drive:2.0},
@@ -631,7 +613,7 @@ function resample(x, ratio){
 
 const $ = id => document.getElementById(id);
 const S = { orig:null, clean:null, final:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
-let busy = false, stopAt = null, asrP = null, asrName = '';
+let busy = false, stopAt = null;
 
 function setStatus(t, err){ $('status').textContent = t; $('status').classList.toggle('err', !!err); }
 function prog(label, p){
@@ -655,10 +637,9 @@ async function run(fn){
   finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
 }
 const fmtDur = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
 const settings = () => ({
-  mode: $('processingMode').value,
   nr: +$('nr').value,
-  resonance: +$('resonance').value,
   gate: $('gate').checked,
   tone: $('tone').value,
   speed: +$('speed').value,
@@ -666,7 +647,7 @@ const settings = () => ({
   voice: $('voice').value
 });
 
-$('nr').oninput = () =>$('nrO').textContent = $('nr').value + '\%';$('resonance').oninput = () => $('resO').textContent =$('resonance').value + '%';
+$('nr').oninput = () => $('nrO').textContent =$('nr').value + '%';
 $('speed').oninput = () =>$('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';$('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
 
 async function decodeFile(file){
@@ -688,7 +669,7 @@ async function loadFile(f){
     $('aOrig').src = S.srcURL;
     $('aFinal').removeAttribute('src'); $('aFinal').load();$('srcinfo').textContent = `${f.name}, ${fmtDur(S.orig.length/SR)} long`;
     renderSegs(); drawWave();
-    setStatus('Ready. Select Studio Narration and click Run Enhancement.');
+    setStatus('Ready. Click Enhance and transcribe or Enhance only.');
   });
 }
 
@@ -718,22 +699,13 @@ $('rec').onclick = async () => {
 async function enhance(){
   const s = settings();
   let x = S.orig;
-  if(s.nr > 0 || s.resonance > 0) {
-    x = await denoise(x, s.nr, s.resonance, p => prog('Spectral cleanup', 0.4*p));
+  if(s.nr > 0) {
+    x = await denoise(x, s.nr, 0, p => prog('Spectral cleanup', 0.4*p));
   }
   if(s.gate){ prog('Applying noise gate', 0.5); await tick(); x = expander(x); }
   
   prog('Applying professional studio voice shaping', 0.65); await tick();
-  if(s.mode === 'natural'){
-    const oc = new OfflineAudioContext(1, x.length, SR);
-    const b = oc.createBuffer(1, x.length, SR); b.copyToChannel(x, 0);
-    const src = oc.createBufferSource(); src.buffer = b;
-    const hp = oc.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=60;
-    src.connect(hp); hp.connect(oc.destination); src.start();
-    x = (await oc.startRendering()).getChannelData(0).slice();
-  } else {
-    x = await advancedStudio(x, s.tone, s.resonance);
-  }
+  x = await advancedStudio(x, s.tone);
   
   x = finalizeLoud(x);
   S.clean = x;
@@ -747,10 +719,81 @@ async function enhance(){
   
   S.final = y; S.speedUsed = s.speed;
   if(S.finURL) URL.revokeObjectURL(S.finURL);
-  S.finURL = URL.createObjectURL(encodeWav(y, SR, 16));
+  
+  const fmtVal = $('fmt').value;
+  const bits = fmtVal === 'wav24' ? 24 : 16;
+  S.finURL = URL.createObjectURL(encodeWav(y, SR, bits));
   $('aFinal').src = S.finURL;
   drawWave();
   setStatus(`Enhanced studio output ready (${fmtDur(y.length/SR)}).`);
+}
+
+async function transcribe(){
+  setStatus('Transcription placeholder (integrate WebGPU Whisper as needed).');
+}
+
+$('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });
+$('bEnh').onclick = () => run(enhance);$('bTr').onclick = () => run(transcribe);
+
+function encodeWav(x, sr, bits){
+  const bps = bits / 8;
+  const dl = x.length * bps;
+  const buffer = new ArrayBuffer(44 + dl);
+  const view = new DataView(buffer);
+
+  function writeString(offset, str) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dl, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, bits === 32 ? 3 : 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sr, true);
+  view.setUint32(28, sr * bps, true);
+  view.setUint16(32, bps, true);
+  view.setUint16(34, bits, true);
+  writeString(36, 'data');
+  view.setUint32(40, dl, true);
+
+  let offset = 44;
+  if (bits === 16) {
+    for (let i = 0; i < x.length; i++, offset += 2) {
+      let s = Math.max(-1, Math.min(1, x[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+  } else if (bits === 24) {
+    for (let i = 0; i < x.length; i++, offset += 3) {
+      let s = Math.max(-1, Math.min(1, x[i]));
+      let val = Math.round(s < 0 ? s * 0x800000 : s * 0x7FFFFF);
+      view.setUint8(offset, val & 0xFF);
+      view.setUint8(offset + 1, (val >> 8) & 0xFF);
+      view.setUint8(offset + 2, (val >> 16) & 0xFF);
+    }
+  } else {
+    for (let i = 0; i < x.length; i++, offset += 4) {
+      view.setFloat32(offset, x[i], true);
+    }
+  }
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+$('dlAudio').onclick = () => {
+  if(!S.final) return;
+  const a = document.createElement('a');
+  a.href = S.finURL;
+  a.download = 'enhanced-voice.wav';
+  a.click();
+};
+
+function renderSegs(){
+  const container = $('segs');
+  container.innerHTML = S.segs.length === 0 ? '<div class="empty">No transcript segments available yet.</div>' : '';
 }
 
 function peaks(x, w){
@@ -798,132 +841,6 @@ aF.addEventListener('play', movePlayhead);
 aF.addEventListener('seeked', movePlayhead);
 aF.addEventListener('timeupdate', () => { if(stopAt!=null && aF.currentTime>=stopAt){ aF.pause(); stopAt=null; } });
 aF.addEventListener('pause', () => { stopAt = null; });
-
-function encodeWav(x, sr, bits){
-  const bps=bits/8, dl=x.length*bps, buf=new ArrayBuffer(44+dl), v=new DataView(buf);
-  const ws=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
-  ws(0,'RIFF'); v.setUint32(4,36+dl,true); ws(8,'WAVE'); ws(12,'fmt ');
-  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
-  v.setUint32(24,sr,true); v.setUint32(28,sr*bps,true); v.setUint16(32,bps,true); v.setUint16(34,bits,true);
-  ws(36,'data'); v.setUint32(40,dl,true);
-  let o=44;
-  for(let i=0;i<x.length;i++){
-    const s=Math.max(-1,Math.min(1,x[i]));
-    if(bits===16){ v.setInt16(o, Math.round(s<0?s*32768:s*32767), true); o+=2; }
-    else{ const n=Math.round(s<0?s*8388608:s*8388607); v.setUint8(o,n&255); v.setUint8(o+1,(n>>8)&255); v.setUint8(o+2,(n>>16)&255); o+=3; }
-  }
-  return new Blob([buf],{type:'audio/wav'});
-}
-
-async function encodeMp3(x){
-  const enc = new lamejs.Mp3Encoder(1, SR, 192);
-  const parts = [], BL = 1152;
-  for(let i=0, c=0; i<x.length; i+=BL, c++){
-    const n = Math.min(BL, x.length-i), b = new Int16Array(n);
-    for(let j=0; j<n; j++){ const s = Math.max(-1, Math.min(1, x[i+j])); b[j] = s < 0 ? s * 32768 : s * 32767; }
-    const d = enc.encodeBuffer(b); if(d.length) parts.push(new Uint8Array(d));
-    if((c & 255) === 0) await tick();
-  }
-  const f = enc.flush(); if(f.length) parts.push(new Uint8Array(f));
-  return new Blob(parts, {type:'audio/mpeg'});
-}
-
-function save(name, blob){
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-}
-
-$('dlAudio').onclick = () => run(async () => {
-  const f=$('fmt').value;
-  if(f==='mp3'){
-    if(typeof lamejs === 'undefined') throw new Error('MP3 encoder script failed to load.');
-    prog('Encoding MP3', -1); save('studio-narration.mp3', await encodeMp3(S.final));
-  } else save('studio-narration.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
-  setStatus('Audio downloaded successfully.');
-});
-
-async function getASR(model, cb){
-  const name='Xenova/whisper-'+model;
-  if(asrP && asrName===name) return asrP;
-  asrName=name;
-  asrP=(async()=>{
-    const {pipeline, env}=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-    env.allowLocalModels=false;
-    return pipeline('automatic-speech-recognition', name, {progress_callback:cb});
-  })();
-  asrP.catch(()=>{ asrP=null; asrName=''; });
-  return asrP;
-}
-
-async function to16k(x){
-  const oc=new OfflineAudioContext(1, Math.ceil(x.length*16000/SR), 16000);
-  const b=oc.createBuffer(1, x.length, SR); b.copyToChannel(x,0);
-  const s=oc.createBufferSource(); s.buffer=b; s.connect(oc.destination); s.start();
-  return (await oc.startRendering()).getChannelData(0);
-}
-
-async function transcribe(){
-  prog('Loading speech model', 0);
-  const asr = await getASR($('model').value, p => {
-    if(p.status==='progress') prog('Downloading speech model', (p.progress||0)/100);
-  });
-  prog('Preparing audio', -1);
-  const a16 = await to16k(S.clean);
-  prog('Transcribing on device', -1);
-  const lang=$('lang').value, opts={chunk_length_s:30, stride_length_s:5, return_timestamps:true, task:'transcribe'};
-  if(lang!=='auto') opts.language=lang;
-  const out = await asr(a16, opts), sp=S.speedUsed||1, total=S.clean.length/SR;
-  S.langUsed = lang==='auto' ? 'auto' : (lang==='hindi' ? 'hi' : 'en');
-  const chunks = out.chunks && out.chunks.length ? out.chunks : [{timestamp:[0,total], text:out.text||''}];
-  S.segs = chunks.map(c => {
-    const st=(c.timestamp[0]??0)/sp, en=(c.timestamp[1]==null?total:c.timestamp[1])/sp;
-    return {start:+st.toFixed(2), end:+en.toFixed(2), text:(c.text||'').trim()};
-  }).filter(s => s.text);
-  renderSegs();
-  setStatus(S.segs.length ? `Script ready: ${S.segs.length} lines.` : 'No speech detected.');
-}
-
-function sizeTA(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
-function renderSegs(){
-  const box=$('segs'); box.replaceChildren();
-  if(!S.segs.length){
-    const p=document.createElement('p'); p.className='empty';
-    p.textContent='Your transcribed script will appear here.';
-    box.append(p); refreshButtons(); return;
-  }
-  S.segs.forEach((s,i)=>{
-    const row=document.createElement('div'); row.className='seg';
-    const play=document.createElement('button'); play.type='button'; play.textContent='Play';
-    play.onclick=()=>{ if(!S.final) return; aF.currentTime=S.segs[i].start; stopAt=S.segs[i].end; aF.play(); };
-    const times=document.createElement('div'); times.className='times';
-    const mk=(key,label)=>{ const n=document.createElement('input'); n.type='number'; n.step='0.01'; n.min='0'; n.value=s[key]; n.oninput=()=>{ S.segs[i][key]=parseFloat(n.value)||0; }; return n; };
-    times.append(mk('start','Start'), mk('end','End'));
-    const ta=document.createElement('textarea'); ta.rows=1; ta.value=s.text;
-    ta.oninput=()=>{ S.segs[i].text=ta.value; sizeTA(ta); };
-    const del=document.createElement('button'); del.type='button'; del.textContent='Remove';
-    del.onclick=()=>{ S.segs.splice(i,1); renderSegs(); };
-    row.append(play,times,ta,del); box.append(row); sizeTA(ta);
-  });
-  refreshButtons();
-}
-
-$('addSeg').onclick = () => {
-  const last=S.segs[S.segs.length-1], st=last?last.end:0;
-  S.segs.push({start:st, end:+(st+2).toFixed(2), text:''}); renderSegs();
-  const t=$('segs').querySelectorAll('textarea'); t[t.length-1].focus();
-};
-$('doRepl').onclick = () => {
-  const f=$('find').value, r=$('repl').value;
-  if(!f) return;
-  let n=0;
-  S.segs.forEach(s => { const parts=s.text.split(f); n+=parts.length-1; s.text=parts.join(r); });
-  renderSegs(); setStatus(`Replaced ${n} occurrences.`);
-};
-
-$('bEnh').onclick  = () => run(enhance);
-$('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });$('bTr').onclick   = () => run(async () => { if(!S.clean) await enhance(); await transcribe(); });
-
-renderSegs(); drawWave();
 </script>
 </body>
 </html>
