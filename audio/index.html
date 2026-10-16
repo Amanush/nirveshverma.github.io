@@ -234,11 +234,11 @@
 </main>
 <script type="module">
 /* =====================================================================
-   Stronger DSP – noise profile taken from first ~8.5 seconds
+   Stronger DSP – Improved Sound Model (based on superior recording)
    ===================================================================== */
 const SR = 48000;
-const TARGET_LUFS = -16;
-const CEILING = 0.891;
+const TARGET_LUFS = -14.5;          // slightly louder & more present
+const CEILING = 0.95;
 const tick = () => new Promise(r => setTimeout(r, 0));
 
 function makeFFT(n){
@@ -267,27 +267,24 @@ function makeFFT(n){
   };
 }
 
-/* ---------- Denoise using first ~8.5 seconds as noise sample ---------- */
+/* ---------- Denoise (cleaner, less metallic) ---------- */
 async function denoise(x, strength, cb){
   const N = 2048;
   const H = N >> 2;                 // 75% overlap
   const B = N/2 + 1;
   const fft = makeFFT(N);
-
   const win = new Float64Array(N);
   for(let i=0;i<N;i++) win[i] = 0.5 - 0.5*Math.cos(2*Math.PI*i/N);
-
   const len = x.length;
   const xp = new Float32Array(len + 2*N);
   xp.set(x, N);
 
-  // === Noise profile ONLY from first 8.5 seconds ===
-  const noiseSec = 8.5;
+  // Noise profile from first 6.5 seconds
+  const noiseSec = 6.5;
   const noiseSamples = Math.min(len, Math.round(noiseSec * SR));
   const noiseFrames = Math.max(8, Math.floor((noiseSamples - N) / H) + 1);
-
   const re = new Float64Array(N), im = new Float64Array(N);
-  const noisePow = new Float64Array(B);   // average power spectrum of noise
+  const noisePow = new Float64Array(B);
 
   for(let f=0; f<noiseFrames; f++){
     const o = f * H;
@@ -301,57 +298,55 @@ async function denoise(x, strength, cb){
   }
   for(let k=0;k<B;k++) noisePow[k] /= noiseFrames;
 
-  // Smooth the noise profile across frequency
+  // Smoother noise profile
   const smoothNoise = new Float64Array(B);
   for(let k=0;k<B;k++){
     let s=0, c=0;
-    for(let j=-5;j<=5;j++){
+    for(let j=-6;j<=6;j++){
       const kk = k+j;
       if(kk>=0 && kk<B){ s += noisePow[kk]; c++; }
     }
     smoothNoise[k] = s / c;
   }
 
-  // Strength → over-subtraction factor (more aggressive now)
-  const alpha = 1.3 + (strength/100) * 2.8;   // 1.3 → 4.1
+  // Less aggressive over-subtraction
+  const alpha = 1.15 + (strength/100) * 2.2;
   const nPow = new Float64Array(B);
   for(let k=0;k<B;k++) nPow[k] = smoothNoise[k] * alpha;
 
-  // Residual floor
-  const floorDb = -(12 + strength * 0.30);    // –12 → –42 dB
+  // Higher residual floor → more natural
+  const floorDb = -(10 + strength * 0.22);
   const floor = Math.pow(10, floorDb / 20);
 
-  // === Main processing pass ===
   const frames = Math.floor((xp.length - N) / H) + 1;
   const out = new Float32Array(len + 2*N);
   const prevP = new Float64Array(B);
   const prevG = new Float64Array(B);
-  const beta = 0.98;
-  const tau  = 0.40;
+  const beta = 0.96;
+  const tau  = 0.48;
 
   for(let f=0; f<frames; f++){
     const o = f * H;
     for(let i=0;i<N;i++){ re[i]=xp[o+i]*win[i]; im[i]=0; }
     fft(re, im, false);
-
     const Graw = new Float64Array(B);
+
     for(let k=0;k<B;k++){
       const p = (re[k]*re[k] + im[k]*im[k]) / (N*N);
       const nk = nPow[k] + 1e-20;
       const gamma = p / nk;
       const xi = beta * prevP[k] / nk + (1-beta) * Math.max(gamma - 1, 0);
       prevP[k] = xi * nk;
-
-      let G = xi / (xi + 1.25);          // slightly stronger Wiener
+      let G = xi / (xi + 1.15);
       if(G < floor) G = floor;
       Graw[k] = G;
     }
 
-    // Spectral smoothing of gain (reduces metallic sound)
+    // Stronger spectral smoothing
     const Gs = new Float64Array(B);
     for(let k=0;k<B;k++){
       let s=0, c=0;
-      for(let j=-3;j<=3;j++){
+      for(let j=-4;j<=4;j++){
         const kk = k+j;
         if(kk>=0 && kk<B){ s += Graw[kk]; c++; }
       }
@@ -368,11 +363,9 @@ async function denoise(x, strength, cb){
         im[N-k] *= G;
       }
     }
-
     fft(re, im, true);
-    const gain = 2/3;                     // Hann 75% COLA
+    const gain = 2/3;
     for(let i=0;i<N;i++) out[o+i] += re[i] * win[i] * gain;
-
     if((f & 511) === 0){ cb && cb(0.15 + 0.85 * f / frames); await tick(); }
   }
 
@@ -384,11 +377,11 @@ async function denoise(x, strength, cb){
 /* ---------- Cleaner expander ---------- */
 function expander(x){
   const n = x.length;
-  const thr = -45;
-  const ratio = 2.5;
-  const maxCut = -22;
-  const atk = Math.exp(-1/(0.004*SR));
-  const rel = Math.exp(-1/(0.18*SR));
+  const thr = -42;
+  const ratio = 2.2;
+  const maxCut = -18;
+  const atk = Math.exp(-1/(0.003*SR));
+  const rel = Math.exp(-1/(0.22*SR));
   const env = new Float32Array(n);
   let e = 0;
   for(let i=0;i<n;i++){
@@ -396,7 +389,7 @@ function expander(x){
     e = a > e ? atk*e+(1-atk)*a : rel*e+(1-rel)*a;
     env[i] = e;
   }
-  const L = Math.round(0.007*SR);
+  const L = Math.round(0.008*SR);
   const y = new Float32Array(n);
   for(let i=0;i<n;i++){
     const db = 20*Math.log10(env[Math.min(n-1,i+L)] + 1e-9);
@@ -409,7 +402,7 @@ function expander(x){
   return y;
 }
 
-/* ---------- Studio chain (less hollow) ---------- */
+/* ---------- Studio chain ---------- */
 async function chain(x, steps){
   const oc = new OfflineAudioContext(1, x.length, SR);
   const b = oc.createBuffer(1, x.length, SR);
@@ -417,7 +410,6 @@ async function chain(x, steps){
   const src = oc.createBufferSource();
   src.buffer = b;
   let node = src;
-
   for(const s of steps){
     if(s === 'comp'){
       const c = oc.createDynamicsCompressor();
@@ -446,18 +438,18 @@ async function chain(x, steps){
 
 const TONES = {
   natural:  [],
-  warm:     [['lowshelf', 160, 2.0], ['peaking', 3000, -0.8, 1.0]],
-  bright:   [['peaking', 3800, 1.8, 0.9], ['highshelf', 8500, 1.6]],
-  broadcast:[['lowshelf', 95, 2.2], ['peaking', 2600, 2.0, 1.0], ['highshelf', 7500, 1.2]]
+  warm:     [['lowshelf', 150, 2.4], ['peaking', 2800, -0.6, 1.0]],
+  bright:   [['peaking', 3600, 2.1, 0.9], ['highshelf', 9000, 1.8]],
+  broadcast:[['lowshelf', 90, 2.6], ['peaking', 2500, 2.3, 1.0], ['highshelf', 7800, 1.4]]
 };
 
 const studio = (x, tone) => chain(x, [
-  ['highpass', 55],                 // gentler – less hollow
-  ['peaking', 180, -1.6, 0.8],
+  ['highpass', 48],
+  ['peaking', 160, -1.8, 0.75],
   'comp',
-  ['peaking', 3000, 1.5, 1.0],
-  ['highshelf', 7000, 0.9],
-  ['peaking', 6200, -1.8, 2.2],     // soft de-ess
+  ['peaking', 2800, 2.0, 1.1],         // more presence
+  ['highshelf', 7500, 1.3],            // more air
+  ['peaking', 5800, -2.2, 2.4],        // better de-ess
   ...TONES[tone]
 ]);
 
@@ -492,6 +484,7 @@ function biquad(x, b, a){
   }
   return y;
 }
+
 function lufs(x){
   const k = biquad(
     biquad(x,
@@ -514,6 +507,7 @@ function lufs(x){
   if(!g.length) return L(mean);
   return L(g.reduce((a,b)=>a+b,0)/g.length);
 }
+
 function limiter(x, ceil=CEILING, lookMs=5){
   const n = x.length, L = Math.max(1, Math.round(SR*lookMs/1000));
   const tgt = new Float32Array(n);
@@ -538,6 +532,7 @@ function limiter(x, ceil=CEILING, lookMs=5){
   }
   return y;
 }
+
 function finalizeLoud(x){
   const l = lufs(x);
   let y = x;
@@ -579,6 +574,7 @@ async function wsola(x, q, cb){
   }
   return y.slice(0, Math.floor(x.length/q));
 }
+
 function resample(x, ratio){
   const n=Math.floor(x.length/ratio), y=new Float32Array(n), last=x.length-1;
   const g=k=>x[k<0?0:k>last?last:k];
@@ -590,7 +586,7 @@ function resample(x, ratio){
   return y;
 }
 
-/* ---- UI (same as before) ---- */
+/* ---- UI ---- */
 const $ = id => document.getElementById(id);
 const S = { orig:null, clean:null, final:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
 let busy = false, stopAt = null, asrP = null, asrName = '';
@@ -619,9 +615,9 @@ async function run(fn){
   finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
 }
 const fmtDur = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-
 const settings = () => ({ nr:+$('nr').value, gate:$('gate').checked, tone:$('tone').value,
   speed:+$('speed').value, pitch:+$('pitch').value, voice:$('voice').value });
+
 $('nr').oninput = () => $('nrO').textContent = $('nr').value + '%';
 $('speed').oninput = () => $('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';
 $('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
@@ -634,6 +630,7 @@ async function decodeFile(file){
   for(let c=0;c<ch;c++){ const d=buf.getChannelData(c); for(let i=0;i<n;i++) out[i]+=d[i]/ch; }
   return out;
 }
+
 async function loadFile(f){
   await run(async () => {
     setStatus('Reading audio');
@@ -648,11 +645,13 @@ async function loadFile(f){
     setStatus('Ready. Adjust the settings, then press Enhance and transcribe.');
   });
 }
+
 $('file').onchange = e => { if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
 const drop = $('drop');
 ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', e => { const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
+
 let rec=null, recStream=null, recChunks=[];
 $('rec').onclick = async () => {
   if(rec){ rec.stop(); return; }
@@ -703,6 +702,7 @@ function peaks(x, w){
   for(let i=0;i<out.length;i++) out[i]/=mx;
   return out;
 }
+
 function drawWave(){
   const c=$('wave'), dpr=window.devicePixelRatio||1;
   const w=Math.max(200,Math.floor(c.clientWidth*dpr)), h=Math.floor(190*dpr);
@@ -721,6 +721,7 @@ function drawWave(){
   draw(S.final, getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
 }
 window.addEventListener('resize', () => drawWave());
+
 const aF = $('aFinal');
 $('wavewrap').onclick = e => {
   if(!aF.duration) return;
@@ -752,6 +753,7 @@ function encodeWav(x, sr, bits){
   }
   return new Blob([buf],{type:'audio/wav'});
 }
+
 async function encodeMp3(x){
   const enc=new lamejs.Mp3Encoder(1,SR,192), parts=[], BL=1152;
   for(let i=0,c=0;i<x.length;i+=BL,c++){
@@ -763,10 +765,12 @@ async function encodeMp3(x){
   const f=enc.flush(); if(f.length) parts.push(new Uint8Array(f));
   return new Blob(parts,{type:'audio/mpeg'});
 }
+
 function save(name, blob){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
+
 $('dlAudio').onclick = () => run(async () => {
   const f=$('fmt').value;
   if(f==='mp3'){
@@ -775,6 +779,7 @@ $('dlAudio').onclick = () => run(async () => {
   } else save('voice-studio.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
   setStatus('Audio downloaded.');
 });
+
 if(typeof lamejs==='undefined'){ $('fmt').querySelector('option[value=mp3]').disabled = true; }
 
 function getASR(model, cb){
@@ -789,12 +794,14 @@ function getASR(model, cb){
   asrP.catch(()=>{ asrP=null; asrName=''; });
   return asrP;
 }
+
 async function to16k(x){
   const oc=new OfflineAudioContext(1, Math.ceil(x.length*16000/SR), 16000);
   const b=oc.createBuffer(1, x.length, SR); b.copyToChannel(x,0);
   const s=oc.createBufferSource(); s.buffer=b; s.connect(oc.destination); s.start();
   return (await oc.startRendering()).getChannelData(0);
 }
+
 async function transcribe(){
   prog('Loading speech model', 0);
   const asr = await getASR($('model').value, p => {
@@ -839,6 +846,7 @@ function renderSegs(){
   });
   refreshButtons();
 }
+
 $('addSeg').onclick = () => {
   const last=S.segs[S.segs.length-1], st=last?last.end:0;
   S.segs.push({start:st, end:+(st+2).toFixed(2), text:''}); renderSegs();
@@ -854,6 +862,7 @@ $('doRepl').onclick = () => {
 
 const srtTime = t => { let ms=Math.round(t*1000); const h=Math.floor(ms/3600000); ms-=h*3600000; const m=Math.floor(ms/60000); ms-=m*60000; const s=Math.floor(ms/1000); ms-=s*1000;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(ms).padStart(3,'0')}`; };
+
 $('xJson').onclick = () => save('script.json', new Blob([JSON.stringify({
   language:S.langUsed, duration:S.final?+(S.final.length/SR).toFixed(2):null,
   segments:S.segs.map((s,i)=>({id:i+1,start:+s.start,end:+s.end,text:s.text})),
@@ -864,6 +873,7 @@ $('xSrt').onclick = () => save('script.srt', new Blob([S.segs.map((s,i)=>`${i+1}
 $('bEnh').onclick  = () => run(enhance);
 $('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });
 $('bTr').onclick   = () => run(async () => { if(!S.clean) await enhance(); await transcribe(); });
+
 renderSegs(); drawWave();
 </script>
 
