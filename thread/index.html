@@ -17,13 +17,51 @@
       overflow-x: hidden;
     }
     
+    /* Theme variables */
+    :root {
+      --bg-main: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-grad: linear-gradient(135deg, #3b82f6, #6366f1);
+    }
+
+    body.theme-paper {
+      --bg-main: #f4f2ef;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --accent-grad: linear-gradient(135deg, #0284c7, #2563eb);
+    }
+
+    body.theme-emerald {
+      --bg-main: #064e3b;
+      --card-bg: #065f46;
+      --border-color: #047857;
+      --text-main: #ecfdf5;
+      --text-muted: #a7f3d0;
+      --accent-grad: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    body.theme-neon {
+      --bg-main: #09090b;
+      --card-bg: #18181b;
+      --border-color: #27272a;
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+      --accent-grad: linear-gradient(135deg, #ec4899, #8b5cf6);
+    }
+    
     body {
       font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
+      background: var(--bg-main);
+      color: var(--text-main);
       min-height: 100dvh;
       min-height: -webkit-fill-available;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.3s ease, color 0.3s ease;
     }
     
     #home-screen {
@@ -39,8 +77,8 @@
     .home-card {
       width: 100%;
       max-width: 480px;
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       border-radius: 20px;
       padding: 1.75rem 1.5rem;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -48,11 +86,11 @@
       overflow-y: auto;
     }
     
-    input[type="url"], input[type="text"], textarea {
-      background: #0f172a;
-      border: 1.5px solid #334155;
+    input[type="url"], input[type="text"], textarea, select {
+      background: var(--bg-main);
+      border: 1.5px solid var(--border-color);
       border-radius: 12px;
-      color: #f8fafc;
+      color: var(--text-main);
       font-size: 15px;
       line-height: 1.5;
       width: 100%;
@@ -61,10 +99,10 @@
       -webkit-appearance: none;
       transition: border-color 0.2s;
     }
-    input[type="url"]:focus, input[type="text"]:focus, textarea:focus {
+    input[type="url"]:focus, input[type="text"]:focus, textarea:focus, select:focus {
       outline: none;
       border-color: #3b82f6;
-      background: #0f172a;
+      background: var(--bg-main);
     }
     
     #player-screen {
@@ -76,7 +114,7 @@
       justify-content: space-between;
       padding: 0.75rem;
       gap: 0.5rem;
-      background: #0f172a;
+      background: var(--bg-main);
     }
     
     .top-bar, .bottom-bar {
@@ -98,8 +136,8 @@
       position: relative;
       border-radius: 20px;
       overflow: hidden;
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       box-shadow: 0 12px 40px rgba(0,0,0,0.4);
       flex-shrink: 1;
       min-height: 0;
@@ -116,7 +154,7 @@
       transform: translateY(12px);
       transition: all 0.25s ease-out;
       pointer-events: none;
-      background: #1e293b;
+      background: var(--card-bg);
       overflow: hidden;
     }
     
@@ -145,7 +183,7 @@
       line-height: 1.5;
       font-weight: 500;
       letter-spacing: -0.01em;
-      color: #f1f5f9;
+      color: var(--text-main);
       width: 100%;
       outline: none;
       border-radius: 8px;
@@ -153,7 +191,7 @@
       text-align: center;
     }
     .tweet-text:focus {
-      background: #0f172a;
+      background: var(--bg-main);
       box-shadow: inset 0 0 0 1.5px #3b82f6;
       padding: 0.4rem;
     }
@@ -163,14 +201,7 @@
       max-height: 38vh;
       object-fit: contain;
       border-radius: 10px;
-      background: #0f172a;
-      flex-shrink: 0;
-    }
-    
-    .slide-img-controls {
-      display: flex;
-      gap: 0.4rem;
-      width: 100%;
+      background: var(--bg-main);
       flex-shrink: 0;
     }
     
@@ -182,13 +213,13 @@
     
     .progress-bar {
       height: 3px;
-      background: #334155;
+      background: var(--border-color);
       border-radius: 3px;
       overflow: hidden;
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      background: var(--accent-grad);
       border-radius: 3px;
       transition: width 0.3s ease;
     }
@@ -199,7 +230,7 @@
       align-items: center;
       margin-top: 0.3rem;
       font-size: 0.68rem;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-weight: 500;
     }
     
@@ -212,16 +243,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #cbd5e1;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
       transition: all 0.15s;
     }
-    .ctrl-btn:active { transform: scale(0.93); background: #334155; }
+    .ctrl-btn:active { transform: scale(0.93); background: var(--border-color); }
     .ctrl-btn:disabled { opacity: 0.3; pointer-events: none; }
     
     .primary-btn {
-      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      background: var(--accent-grad);
       color: white;
       font-weight: 600;
       font-size: 0.9rem;
@@ -236,18 +267,6 @@
     .primary-btn:active { transform: scale(0.97); }
     .primary-btn:disabled { opacity: 0.5; pointer-events: none; }
     
-    .sub-action-btn {
-      background: #334155;
-      color: #e2e8f0;
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 0.35rem 0.7rem;
-      border-radius: 8px;
-      border: 1px solid #475569;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    
     .danger-btn {
       background: #ef4444;
       color: white;
@@ -259,13 +278,13 @@
     }
     
     .ghost-btn {
-      background: #1e293b;
-      color: #cbd5e1;
+      background: var(--card-bg);
+      color: var(--text-main);
       font-weight: 600;
       font-size: 0.9rem;
       padding: 0.7rem 1.2rem;
       border-radius: 9999px;
-      border: 1px solid #334155;
+      border: 1px solid var(--border-color);
     }
     
     .rec-dot {
@@ -285,8 +304,9 @@
       bottom: max(1.5rem, env(safe-area-inset-bottom));
       left: 50%;
       transform: translateX(-50%) translateY(140%);
-      background: #334155;
-      color: #fff;
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
       padding: 0.7rem 1.25rem;
       border-radius: 9999px;
       font-weight: 600;
@@ -300,7 +320,7 @@
     
     .hint {
       font-size: 0.7rem;
-      color: #64748b;
+      color: var(--text-muted);
       text-align: center;
       flex-shrink: 0;
     }
@@ -308,22 +328,33 @@
     .label {
       font-size: 0.7rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
   </style>
 </head>
-<body>
+<body class="theme-slate">
   <div id="toast" class="toast">Ready</div>
 
   <div id="home-screen">
     <div class="home-card space-y-4">
       <div class="text-center space-y-1">
-        <h1 class="text-2xl font-bold tracking-tight text-white">
-          Thread → <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Shorts</span>
+        <h1 class="text-2xl font-bold tracking-tight">
+          Thread → <span style="background:var(--accent-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Shorts</span>
         </h1>
-        <p class="text-slate-400 text-xs">Paste thread → slides → add images → record</p>
+        <p style="color:var(--text-muted);" class="text-xs">Paste thread → clean slides → record</p>
+      </div>
+
+      <!-- Theme Selector -->
+      <div class="space-y-1">
+        <label class="label">Visual Theme</label>
+        <select id="theme-selector" onchange="changeTheme(this.value)">
+          <option value="theme-slate">Midnight Slate (Dark)</option>
+          <option value="theme-paper">Warm Paper &amp; Charcoal</option>
+          <option value="theme-emerald">Deep Emerald</option>
+          <option value="theme-neon">Cyber Neon</option>
+        </select>
       </div>
 
       <div class="space-y-1.5">
@@ -335,22 +366,21 @@
             <span id="fetch-spinner" class="hidden" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin 0.65s linear infinite;"></span>
           </button>
         </div>
-        <p class="text-xs text-slate-500">Fetches text when possible. Images: paste with Ctrl+V on the slide.</p>
       </div>
 
       <div class="relative flex items-center gap-3 py-1">
-        <div class="flex-1 h-px bg-slate-600"></div>
-        <span class="text-xs text-slate-500">or paste text</span>
-        <div class="flex-1 h-px bg-slate-600"></div>
+        <div class="flex-1 h-px" style="background:var(--border-color);"></div>
+        <span style="color:var(--text-muted);" class="text-xs">or paste text</span>
+        <div class="flex-1 h-px" style="background:var(--border-color);"></div>
       </div>
 
       <div class="space-y-1.5">
         <label class="label">Thread text</label>
-        <textarea id="thread-input" rows="6" placeholder="1/ Paste your thread text here
+        <textarea id="thread-input" rows="5" placeholder="1/ Paste your thread text here
 
-2/ On any slide: copy image from X and press Ctrl+V
+2/ Usernames and handles are automatically stripped out!
 
-3/ Or use Upload / paste URL on the slide"></textarea>
+3/ Copy any image from X and press Ctrl+V on the slide."></textarea>
       </div>
 
       <div class="flex gap-2 pt-1">
@@ -370,7 +400,7 @@
         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
       </button>
       
-      <div class="flex items-center gap-2 text-sm font-medium text-slate-400">
+      <div style="color:var(--text-muted);" class="flex items-center gap-2 text-sm font-medium">
         <span id="slide-counter">1 / 1</span>
         <span id="rec-indicator" class="hidden items-center gap-1.5 text-red-400 font-semibold text-xs">
           <span class="rec-dot"></span> REC
@@ -419,22 +449,19 @@
       t._tid = setTimeout(() => t.classList.remove('show'), duration);
     }
 
+    function changeTheme(themeClass) {
+      document.body.className = themeClass;
+    }
+
     function cleanText(t) {
       return (t || '')
-        // strip urls
         .replace(/https?:\/\/t\.co\/\S+/g, '')
         .replace(/https?:\/\/\S+/g, '')
-        // strip @handles everywhere
-        .replace(/@\w+/g, '')
-        // strip "Name · @handle" or "Name - handle" style headers
-        .replace(/^[A-Za-z0-9_\s.'-]{1,40}\s*[·•\-|–—]\s*.*$/gm, '')
-        // strip RT / via / from
+        .replace(/@\w+/g, '') // strip usernames/handles
+        .replace(/^[A-Za-z0-9_\s.'-]{1,40}\s*[·•\-|–—]\s*@?\w+.*$/gm, '') // strip "Name · @handle"
         .replace(/^(RT|via|from)\s+/i, '')
-        // strip "Display Name:" at start of line
-        .replace(/^\s*[A-Z][\w.'-]+(?:\s+[A-Z][\w.'-]+)?\s*:\s*/gm, '')
-        // strip leftover "—" or "•" only lines
+        .replace(/^\s*[A-Z][\w.'-]+(?:\s+[A-Z][\w.'-]+)?\s*:\s*/gm, '') // strip "Name:" prefixes
         .replace(/^\s*[·•\-–—]+\s*$/gm, '')
-        // collapse whitespace
         .replace(/\s+/g, ' ')
         .replace(/^\s*[·•\-–—]+\s*/g, '')
         .trim();
@@ -448,7 +475,6 @@
         .replace(/"/g,'&quot;');
     }
 
-    
     function parseUrl(url) {
       const m = url.match(/(?:x|twitter|fxtwitter|vxtwitter)\.com\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/i);
       if (m) return { handle: m[1], id: m[2] };
@@ -503,380 +529,6 @@
 
       try {
         let items = [];
-
-        // FxTwitter
         try {
           const fxUrl = parsed.handle
-            ? `https://api.fxtwitter.com/${parsed.handle}/status/${parsed.id}`
-            : `https://api.fxtwitter.com/status/${parsed.id}`;
-          const res = await fetch(fxUrl);
-          if (res.ok) {
-            const data = await res.json();
-            const tw = data.tweet || data.status;
-            if (tw) {
-              const text = cleanText(tw.text || '');
-              const image = extractImage(tw);
-              if (text || image) items.push({ text: text || '', image });
-            }
-          }
-        } catch (e) { console.warn('fx', e); }
-
-        // x.pcstyle for longer threads
-        if (items.length <= 1) {
-          try {
-            const api = new URL('https://x.pcstyle.dev/api/v1/posts');
-            api.searchParams.set('url', rawUrl);
-            api.searchParams.set('thread', 'full');
-            api.searchParams.set('format', 'json');
-            api.searchParams.set('context', 'thread');
-            api.searchParams.set('replies', 'off');
-            const res2 = await fetch(api.toString());
-            if (res2.ok) {
-              const data2 = await res2.json();
-              if (data2.markdown || typeof data2 === 'string') {
-                const md = data2.markdown || data2;
-                const blocks = md.split(/##\s+(?:Post|Thread|Reply)\s+[·•]\s*\d+/i);
-                const newItems = [];
-                for (const block of blocks) {
-                  const imgMatch = block.match(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/);
-                  let text = cleanText(block
-                    .replace(/!\[.*?\]\([^\)]+\)/g, '')
-                    .replace(/Source:.*$/gim, '')
-                    .replace(/---/g, '')
-                    .replace(/>\s*/g, '')
-                    .replace(/^#+\s*.*$/gm, '')
-                    .replace(/^[A-Za-z0-9_\s]{1,40}\s*[·•]\s*.*$/gm, '')
-                    .replace(/@\w+/g, ''));
-                  if (text.length > 6 || imgMatch) {
-                    newItems.push({ text, image: imgMatch ? imgMatch[1] : null });
-                  }
-                }
-                if (newItems.length > items.length) items = newItems;
-              }
-            }
-          } catch (e) { console.warn('pcstyle', e); }
-        }
-
-        if (items.length === 0) {
-          toast('Could not fetch. Paste the text instead.');
-          return;
-        }
-
-        document.getElementById('thread-input').value = items
-          .map((it, i) => `${i + 1}/ ${it.text}`)
-          .join('\n\n');
-
-        slides = items.map(it => ({ text: it.text, image: it.image || null }));
-        renderSlides();
-        confetti({ particleCount: 35, spread: 45, origin: { y: 0.7 }, colors: ['#3b82f6','#8b5cf6','#f59e0b'] });
-        toast(`${slides.length} slides ready`);
-      } catch (err) {
-        toast('Fetch failed. Paste the text.');
-      } finally {
-        btn.disabled = false;
-        label.classList.remove('hidden');
-        spinner.classList.add('hidden');
-      }
-    }
-
-    function parseThread(raw) {
-      const text = raw.trim();
-      if (!text) return [];
-      const numbered = text.split(/(?:^|\n)\s*(?:\d+[\.\/\)]\s*)/g).map(s => s.trim()).filter(Boolean);
-      if (numbered.length > 1) return numbered.map(t => ({ text: cleanText(t), image: null }));
-      return text.split(/\n\s*\n+/).map(s => s.trim()).filter(Boolean).map(t => ({ text: cleanText(t), image: null }));
-    }
-
-    function buildSlides() {
-      const items = parseThread(document.getElementById('thread-input').value);
-      if (items.length === 0) { toast('Paste thread text first'); return; }
-      slides = items;
-      renderSlides();
-      confetti({ particleCount: 40, spread: 50, origin: { y: 0.75 }, colors: ['#3b82f6','#8b5cf6','#f59e0b'] });
-    }
-
-    function renderSlides() {
-      const stage = document.getElementById('stage');
-      stage.innerHTML = '';
-
-      slides.forEach((item, i) => {
-        const slide = document.createElement('div');
-        slide.className = 'slide' + (i === 0 ? ' active' : '');
-        const hasImage = !!item.image;
-        const hasText = !!(item.text && item.text.trim());
-
-        let inner = '<div class="slide-content-box">';
-
-        if (hasText) {
-          inner += `<div class="tweet-text" contenteditable="true" spellcheck="false" data-idx="${i}">${escapeHtml(item.text)}</div>`;
-        } else {
-          inner += `<div class="tweet-text" contenteditable="true" data-idx="${i}">(tap to add text)</div>`;
-        }
-
-        // Image
-        let imgSrc = item.image || '';
-        if (imgSrc && !imgSrc.startsWith('data:') && (imgSrc.includes('pbs.twimg.com') || imgSrc.includes('twimg.com'))) {
-          imgSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(imgSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
-        }
-        inner += `<div id="img-container-${i}" class="w-full flex flex-col items-center" style="${hasImage ? '' : 'display:none;'}">
-          <img id="slide-img-${i}" class="slide-image" src="${escapeHtml(imgSrc)}" alt="" loading="lazy"
-            onerror="if(this.dataset.tried!=='1'&&this.src.indexOf('weserv')!==-1){this.dataset.tried='1';this.src='${escapeHtml(item.image||'')}';}else{this.style.display='none';}">
-        </div>`;
-
-        // no visible controls – images via Ctrl+V paste only
-
-        inner += '</div>';
-
-        slide.innerHTML = `
-          ${inner}
-          <div class="progress-wrap">
-            <div class="progress-bar"><div class="progress-fill" style="width:${((i+1)/slides.length)*100}%"></div></div>
-            <div class="slide-footer">
-              <span>${i + 1} / ${slides.length}</span>
-              <span>Ctrl+V to paste image</span>
-            </div>
-          </div>`;
-        stage.appendChild(slide);
-      });
-
-      stage.querySelectorAll('.tweet-text[contenteditable]').forEach(el => {
-        el.addEventListener('input', () => {
-          const idx = +el.dataset.idx;
-          if (slides[idx]) slides[idx].text = el.innerText.trim();
-        });
-      });
-
-      current = 0;
-      updateUI();
-      document.getElementById('home-screen').classList.add('hidden');
-      document.getElementById('player-screen').classList.remove('hidden');
-      toast(`${slides.length} slides ready`);
-    }
-
-    // ========== PASTE IMAGE (Ctrl+V / Cmd+V) ==========
-    window.addEventListener('paste', e => {
-      if (document.getElementById('player-screen').classList.contains('hidden')) return;
-      const items = e.clipboardData?.items;
-      if (!items) return;
-
-      for (const item of items) {
-        if (item.type.indexOf('image') === 0) {
-          const blob = item.getAsFile();
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            const base64 = event.target.result;
-            slides[current].image = base64;
-            updateSlideImage(current, base64);
-            toast('Image pasted on slide ' + (current + 1));
-          };
-          reader.readAsDataURL(blob);
-          e.preventDefault();
-          break;
-        }
-      }
-    });
-
-    function updateSlideImage(idx, url) {
-      slides[idx].image = url ? url.trim() : null;
-      const imgElem = document.getElementById(`slide-img-${idx}`);
-      const container = document.getElementById(`img-container-${idx}`);
-      if (!imgElem || !container) return;
-
-      if (url && url.trim()) {
-        let finalSrc = url.trim();
-        // data: URLs (from Ctrl+V paste) work on GitHub Pages as-is
-        // external Twitter images need a proxy to avoid hotlink blocking
-        if (!finalSrc.startsWith('data:') && (finalSrc.includes('pbs.twimg.com') || finalSrc.includes('twimg.com'))) {
-          finalSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(finalSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
-        }
-        imgElem.onerror = function() {
-          // fallback: try original URL once
-          if (this.dataset.tried !== '1' && !url.startsWith('data:')) {
-            this.dataset.tried = '1';
-            this.src = url.trim();
-          } else {
-            this.style.display = 'none';
-          }
-        };
-        imgElem.src = finalSrc;
-        imgElem.style.display = 'block';
-        container.style.display = 'flex';
-      } else {
-        imgElem.src = '';
-        container.style.display = 'none';
-      }
-    }
-
-    function handleFileUpload(idx, event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64 = e.target.result;
-        document.getElementById(`img-url-input-${idx}`).value = '';
-        updateSlideImage(idx, base64);
-        toast('Image uploaded!');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function loadDemo() {
-      document.getElementById('thread-input').value = `1/ Most people treat Twitter threads like bulky blog posts.
-
-2/ The highest-retention format uses vertical short-form: one idea per slide.
-
-3/ Copy any image from X and press Ctrl+V on a slide to attach it.
-
-4/ Then record and export ready-to-post Shorts in under a minute.`;
-      buildSlides();
-    }
-
-    function goTo(index) {
-      if (index < 0 || index >= slides.length) return;
-      document.querySelectorAll('.slide').forEach((s, i) => s.classList.toggle('active', i === index));
-      current = index;
-      updateUI();
-      if (isSpeaking) stopTTS();
-    }
-    function nextSlide() { goTo(current + 1); }
-    function prevSlide() { goTo(current - 1); }
-    function updateUI() {
-      document.getElementById('slide-counter').textContent = `${current + 1} / ${slides.length}`;
-      document.getElementById('prev-btn').disabled = current === 0;
-      document.getElementById('next-btn').disabled = current === slides.length - 1;
-    }
-    function goHome() {
-      stopTTS();
-      if (mediaRecorder?.state === 'recording') stopRecording();
-      document.getElementById('player-screen').classList.add('hidden');
-      document.getElementById('home-screen').classList.remove('hidden');
-    }
-
-    document.addEventListener('keydown', e => {
-      if (document.getElementById('player-screen').classList.contains('hidden')) return;
-      if (document.activeElement?.isContentEditable || document.activeElement?.tagName === 'INPUT') return;
-      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
-      if (e.key === 'ArrowLeft') prevSlide();
-      if (e.key === 'Escape') goHome();
-    });
-
-    let touchStartX = 0;
-    document.getElementById('stage').addEventListener('touchstart', e => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-    document.getElementById('stage').addEventListener('touchend', e => {
-      if (document.activeElement?.isContentEditable) return;
-      const dx = e.changedTouches[0].screenX - touchStartX;
-      if (dx < -60) nextSlide();
-      if (dx > 60) prevSlide();
-    }, { passive: true });
-
-    // TTS
-    function getBestVoice() {
-      const voices = speechSynthesis.getVoices();
-      return voices.find(v => v.lang === 'en-IN' || /india|ravi|neerja/i.test(v.name))
-        || voices.find(v => v.lang.startsWith('en'))
-        || voices[0];
-    }
-    function toggleTTS() {
-      if (isSpeaking) { stopTTS(); return; }
-      speakCurrent();
-    }
-    function speakCurrent() {
-      if (!('speechSynthesis' in window)) { toast('TTS not supported'); return; }
-      stopTTS();
-      const text = slides[current]?.text;
-      if (!text) { toast('No text on this slide'); return; }
-      const utt = new SpeechSynthesisUtterance(text);
-      const voice = getBestVoice();
-      if (voice) utt.voice = voice;
-      utt.rate = 0.93;
-      utt.onstart = () => {
-        isSpeaking = true;
-        document.getElementById('tts-btn').style.boxShadow = '0 0 0 2px #3b82f6';
-      };
-      utt.onend = utt.onerror = () => {
-        isSpeaking = false;
-        document.getElementById('tts-btn').style.boxShadow = '';
-      };
-      speechSynthesis.speak(utt);
-    }
-    function stopTTS() {
-      speechSynthesis.cancel();
-      isSpeaking = false;
-      const btn = document.getElementById('tts-btn');
-      if (btn) btn.style.boxShadow = '';
-    }
-    if ('speechSynthesis' in window) {
-      speechSynthesis.onvoiceschanged = () => {};
-      speechSynthesis.getVoices();
-    }
-
-    // RECORDING
-    async function startRecording() {
-      if (!navigator.mediaDevices || !window.MediaRecorder) {
-        toast('Recording not supported on this browser');
-        return;
-      }
-      try {
-        let displayStream = await navigator.mediaDevices.getDisplayMedia({
-          video: { frameRate: 30 },
-          audio: false,
-          preferCurrentTab: true
-        }).catch(() => null);
-
-        if (!displayStream) {
-          toast('Screen share permission required. Use desktop Chrome/Edge.');
-          return;
-        }
-
-        let audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true }
-        }).catch(() => null);
-
-        const tracks = [...displayStream.getVideoTracks()];
-        if (audioStream) tracks.push(...audioStream.getAudioTracks());
-        stream = new MediaStream(tracks);
-        recordedChunks = [];
-
-        const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-          ? 'video/webm;codecs=vp9,opus'
-          : 'video/webm';
-
-        mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
-        mediaRecorder.ondataavailable = e => { if (e.data.size) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `thread-short-${Date.now()}.webm`;
-          a.click();
-          URL.revokeObjectURL(url);
-          toast('Video downloaded!');
-          confetti({ particleCount: 50, spread: 55, origin: { y: 0.65 }, colors: ['#3b82f6','#8b5cf6'] });
-          stream.getTracks().forEach(t => t.stop());
-          stream = null;
-        };
-        mediaRecorder.start(250);
-        document.getElementById('rec-btn').classList.add('hidden');
-        document.getElementById('stop-btn').classList.remove('hidden');
-        document.getElementById('rec-indicator').classList.remove('hidden');
-        document.getElementById('rec-indicator').classList.add('flex');
-        toast('Recording… advance slides while speaking');
-      } catch (err) {
-        console.error(err);
-        toast('Recording failed. Use desktop Chrome/Edge.');
-      }
-    }
-
-    function stopRecording() {
-      if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
-      document.getElementById('rec-btn').classList.remove('hidden');
-      document.getElementById('stop-btn').classList.add('hidden');
-      document.getElementById('rec-indicator').classList.add('hidden');
-      document.getElementById('rec-indicator').classList.remove('flex');
-    }
-  </script>
-</body>
-</html>
+            ? `
