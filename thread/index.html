@@ -384,7 +384,7 @@
 
     <div class="stage-wrapper" id="stage"></div>
     
-    <p class="hint">Copy image from X → press <b>Ctrl+V</b> (or Cmd+V) on the slide</p>
+    <p class="hint">Copy image from X → press <b>Ctrl+V</b> / Cmd+V on the slide</p>
 
     <div class="bottom-bar">
       <button onclick="prevSlide()" id="prev-btn" class="ctrl-btn" disabled aria-label="Previous">
@@ -614,20 +614,16 @@
         }
 
         // Image
+        let imgSrc = item.image || '';
+        if (imgSrc && !imgSrc.startsWith('data:') && (imgSrc.includes('pbs.twimg.com') || imgSrc.includes('twimg.com'))) {
+          imgSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(imgSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
+        }
         inner += `<div id="img-container-${i}" class="w-full flex flex-col items-center" style="${hasImage ? '' : 'display:none;'}">
-          <img id="slide-img-${i}" class="slide-image" src="${escapeHtml(item.image || '')}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <img id="slide-img-${i}" class="slide-image" src="${escapeHtml(imgSrc)}" alt="" loading="lazy"
+            onerror="if(this.dataset.tried!=='1'&&this.src.indexOf('weserv')!==-1){this.dataset.tried='1';this.src='${escapeHtml(item.image||'')}';}else{this.style.display='none';}">
         </div>`;
 
-        // Controls: URL + Upload
-        inner += `<div class="slide-img-controls">
-          <input type="text" id="img-url-input-${i}" placeholder="Paste image URL…" 
-            value="${item.image && !item.image.startsWith('data:') ? escapeHtml(item.image) : ''}"
-            oninput="updateSlideImage(${i}, this.value)" class="text-xs py-1.5 px-2" />
-          <label class="sub-action-btn flex items-center justify-center shrink-0 cursor-pointer">
-            Upload
-            <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(${i}, event)" />
-          </label>
-        </div>`;
+        // no visible controls – images via Ctrl+V paste only
 
         inner += '</div>';
 
@@ -637,7 +633,7 @@
             <div class="progress-bar"><div class="progress-fill" style="width:${((i+1)/slides.length)*100}%"></div></div>
             <div class="slide-footer">
               <span>${i + 1} / ${slides.length}</span>
-              <span>Ctrl+V = paste image</span>
+              <span>Ctrl+V to paste image</span>
             </div>
           </div>`;
         stage.appendChild(slide);
@@ -670,8 +666,6 @@
           reader.onload = function(event) {
             const base64 = event.target.result;
             slides[current].image = base64;
-            const urlInput = document.getElementById(`img-url-input-${current}`);
-            if (urlInput) urlInput.value = '';
             updateSlideImage(current, base64);
             toast('Image pasted on slide ' + (current + 1));
           };
@@ -690,9 +684,20 @@
 
       if (url && url.trim()) {
         let finalSrc = url.trim();
-        if (finalSrc.includes('pbs.twimg.com') || finalSrc.includes('twimg.com')) {
+        // data: URLs (from Ctrl+V paste) work on GitHub Pages as-is
+        // external Twitter images need a proxy to avoid hotlink blocking
+        if (!finalSrc.startsWith('data:') && (finalSrc.includes('pbs.twimg.com') || finalSrc.includes('twimg.com'))) {
           finalSrc = 'https://images.weserv.nl/?url=' + encodeURIComponent(finalSrc.replace(/^https?:\/\//, '')) + '&w=800&output=webp';
         }
+        imgElem.onerror = function() {
+          // fallback: try original URL once
+          if (this.dataset.tried !== '1' && !url.startsWith('data:')) {
+            this.dataset.tried = '1';
+            this.src = url.trim();
+          } else {
+            this.style.display = 'none';
+          }
+        };
         imgElem.src = finalSrc;
         imgElem.style.display = 'block';
         container.style.display = 'flex';
