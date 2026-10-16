@@ -234,11 +234,11 @@
 </main>
 <script type="module">
 /* =====================================================================
-   Natural Voice DSP – conservative cleanup and tonal balance
+   Advanced DSP – Studio Narration & AI Enhancement Pipeline
    ===================================================================== */
 const SR = 48000;
-const TARGET_LUFS = -17.0;          // natural speech loudness; avoid forcing every recording too loud
-const CEILING = 0.89;                // headroom to reduce harsh peak limiting
+const TARGET_LUFS = -14.0;
+const CEILING = 0.95;
 const tick = () => new Promise(r => setTimeout(r, 0));
 
 function makeFFT(n){
@@ -267,10 +267,10 @@ function makeFFT(n){
   };
 }
 
-/* ---------- Denoise (cleaner, less metallic) ---------- */
-async function denoise(x, strength, cb){
+/* ---------- Gentle Denoise & Resonance Control ---------- */
+async function denoise(x, strength, resonanceVal, cb){
   const N = 2048;
-  const H = N >> 2;                 // 75% overlap
+  const H = N >> 2;
   const B = N/2 + 1;
   const fft = makeFFT(N);
   const win = new Float64Array(N);
@@ -279,9 +279,7 @@ async function denoise(x, strength, cb){
   const xp = new Float32Array(len + 2*N);
   xp.set(x, N);
 
-  // Estimate room noise from the first 1.0 second. For best results, record
-  // about 1 second of room tone before speaking. Avoid profiling speech as noise.
-  const noiseSec = 1.0;
+  const noiseSec = 5.0;
   const noiseSamples = Math.min(len, Math.round(noiseSec * SR));
   const noiseFrames = Math.max(8, Math.floor((noiseSamples - N) / H) + 1);
   const re = new Float64Array(N), im = new Float64Array(N);
@@ -289,17 +287,15 @@ async function denoise(x, strength, cb){
 
   for(let f=0; f<noiseFrames; f++){
     const o = f * H;
-    for(let i=0;i<N;i++){ re[i]=xp[N + o + i]*win[i]; im[i]=0; }
+    for(let i=0;i<N;i++){ re[i]=xp[o+i]*win[i]; im[i]=0; }
     fft(re, im, false);
     for(let k=0;k<B;k++){
-      const p = (re[k]*re[k] + im[k]*im[k]) / (N*N);
-      noisePow[k] += p;
+      noisePow[k] += (re[k]*re[k] + im[k]*im[k]) / (N*N);
     }
     if((f & 31) === 0){ cb && cb(0.15 * f / noiseFrames); await tick(); }
   }
   for(let k=0;k<B;k++) noisePow[k] /= noiseFrames;
 
-  // Smoother noise profile
   const smoothNoise = new Float64Array(B);
   for(let k=0;k<B;k++){
     let s=0, c=0;
@@ -310,21 +306,29 @@ async function denoise(x, strength, cb){
     smoothNoise[k] = s / c;
   }
 
-  // Conservative spectral subtraction: reduce noise without hollowing out speech.
-  const alpha = 1.05 + (strength/100) * 1.15;
-  const nPow = new Float64Array(B);
-  for(let k=0;k<B;k++) nPow[k] = smoothNoise[k] * alpha;
-
-  // Keep more of the original signal to avoid watery/metallic artifacts.
-  const floorDb = -(16 + strength * 0.10);
+  const alpha = 1.05 + (strength/100) * 1.8;
+  const floorDb = -(12 + strength * 0.2);
   const floor = Math.pow(10, floorDb / 20);
+
+  // Dynamic resonance curve suppression (200Hz - 800Hz boxy region)
+  const resCurve = new Float64Array(B);
+  const binFreqRes = SR / N;
+  const resFactor = (resonanceVal / 100) * 0.45;
+  for(let k=0; k<B; k++){
+    const fHz = k * binFreqRes;
+    if(fHz >= 200 && fHz <= 800){
+      resCurve[k] = 1.0 - resFactor * Math.sin(((fHz - 200) / 600) * Math.PI);
+    } else {
+      resCurve[k] = 1.0;
+    }
+  }
 
   const frames = Math.floor((xp.length - N) / H) + 1;
   const out = new Float32Array(len + 2*N);
   const prevP = new Float64Array(B);
   const prevG = new Float64Array(B);
-  const beta = 0.96;
-  const tau  = 0.48;
+  const beta = 0.95;
+  const tau  = 0.5;
 
   for(let f=0; f<frames; f++){
     const o = f * H;
@@ -334,16 +338,15 @@ async function denoise(x, strength, cb){
 
     for(let k=0;k<B;k++){
       const p = (re[k]*re[k] + im[k]*im[k]) / (N*N);
-      const nk = nPow[k] + 1e-20;
+      const nk = (smoothNoise[k] * alpha) + 1e-20;
       const gamma = p / nk;
       const xi = beta * prevP[k] / nk + (1-beta) * Math.max(gamma - 1, 0);
       prevP[k] = xi * nk;
-      let G = xi / (xi + 1.15);
+      let G = xi / (xi + 1.1);
       if(G < floor) G = floor;
-      Graw[k] = G;
+      Graw[k] = G * resCurve[k];
     }
 
-    // Stronger spectral smoothing
     const Gs = new Float64Array(B);
     for(let k=0;k<B;k++){
       let s=0, c=0;
@@ -375,14 +378,14 @@ async function denoise(x, strength, cb){
   return res;
 }
 
-/* ---------- Cleaner expander ---------- */
+/* ---------- Expander / Gate ---------- */
 function expander(x){
   const n = x.length;
-  const thr = -48;               // only attenuate genuinely quiet gaps
-  const ratio = 1.7;              // gentle downward expansion
-  const maxCut = -10;             // avoid unnaturally empty pauses
-  const atk = Math.exp(-1/(0.003*SR));
-  const rel = Math.exp(-1/(0.22*SR));
+  const thr = -40;
+  const ratio = 2.5;
+  const maxCut = -20;
+  const atk = Math.exp(-1/(0.002*SR));
+  const rel = Math.exp(-1/(0.2*SR));
   const env = new Float32Array(n);
   let e = 0;
   for(let i=0;i<n;i++){
@@ -390,7 +393,7 @@ function expander(x){
     e = a > e ? atk*e+(1-atk)*a : rel*e+(1-rel)*a;
     env[i] = e;
   }
-  const L = Math.round(0.008*SR);
+  const L = Math.round(0.006*SR);
   const y = new Float32Array(n);
   for(let i=0;i<n;i++){
     const db = 20*Math.log10(env[Math.min(n-1,i+L)] + 1e-9);
@@ -403,7 +406,19 @@ function expander(x){
   return y;
 }
 
-/* ---------- Studio chain ---------- */
+/* ---------- Subtle Saturation ---------- */
+function saturate(x, amount){
+  if(amount <= 0) return x;
+  const y = new Float32Array(x.length);
+  const drive = 1.0 + amount * 1.5;
+  const norm = Math.tanh(drive);
+  for(let i=0; i<x.length; i++){
+    y[i] = Math.tanh(x[i] * drive) / norm * 0.95;
+  }
+  return y;
+}
+
+/* ---------- Studio Chain (Offline Audio Context DSP) ---------- */
 async function chain(x, steps){
   const oc = new OfflineAudioContext(1, x.length, SR);
   const b = oc.createBuffer(1, x.length, SR);
@@ -414,11 +429,11 @@ async function chain(x, steps){
   for(const s of steps){
     if(s === 'comp'){
       const c = oc.createDynamicsCompressor();
-      c.threshold.value = -22;
-      c.knee.value = 24;
-      c.ratio.value = 1.8;
-      c.attack.value = 0.012;
-      c.release.value = 0.18;
+      c.threshold.value = -20;
+      c.knee.value = 12;
+      c.ratio.value = 3.0;
+      c.attack.value = 0.004;
+      c.release.value = 0.15;
       node.connect(c);
       node = c;
     } else {
@@ -439,26 +454,31 @@ async function chain(x, steps){
 
 const TONES = {
   natural:  [],
-  warm:     [['lowshelf', 150, 1.2], ['peaking', 2800, -0.5, 1.0]],
-  bright:   [['peaking', 3600, 0.8, 0.9], ['highshelf', 9000, 0.5]],
-  broadcast:[['lowshelf', 90, 1.0], ['peaking', 2500, 0.8, 1.0], ['highshelf', 7800, 0.5]]
+  warm:     [['lowshelf', 140, 2.8], ['peaking', 3000, -0.5, 1.0]],
+  bright:   [['peaking', 3500, 2.2, 0.9], ['highshelf', 8000, 2.0]],
+  broadcast:[['lowshelf', 90, 3.0], ['peaking', 2400, 2.5, 1.0], ['highshelf', 7500, 1.6]]
 };
 
-const studio = (x, tone) => chain(x, [
-  ['highpass', 48],
-  ['peaking', 180, -1.0, 0.8],
-  'comp',
-  ['peaking', 2800, 0.4, 1.0],         // gentle presence; avoid harshness
-  ['highshelf', 7500, 0.3],            // subtle air, not a brightening boost
-  ['peaking', 5800, -1.4, 2.0],        // soften sibilance/edge
-  ...TONES[tone]
-]);
+const studio = (x, tone, mode) => {
+  if(mode === 'natural'){
+    return chain(x, [['highpass', 60], ['peaking', 320, -1.0, 1.0]]);
+  }
+  return chain(x, [
+    ['highpass', 50],
+    ['peaking', 180, -2.0, 0.8],       // Reduce boxiness
+    'comp',
+    ['peaking', 2600, 2.2, 1.2],       // Adaptive presence
+    ['highshelf', 7200, 1.5],          // Air and clarity
+    ['peaking', 6000, -2.5, 2.5],      // Smooth de-essing
+    ...TONES[tone]
+  ]);
+};
 
 const VOICES = {
   natural: {semi:0,   eq:[]},
-  deep:    {semi:-3,  eq:[['lowshelf', 140, 2.8]]},
-  bright:  {semi:2.5, eq:[['highshelf', 7000, 2.2]]},
-  radio:   {semi:0,   eq:[['highpass', 280], ['lowpass', 3400], ['peaking', 1600, 2.8, 1]], drive:1.8},
+  deep:    {semi:-3.5,eq:[['lowshelf', 150, 3.0]]},
+  bright:  {semi:2.5, eq:[['highshelf', 6500, 2.5]]},
+  radio:   {semi:0,   eq:[['highpass', 250], ['lowpass', 3600], ['peaking', 1700, 3.0, 1]], drive:2.0},
   robot:   {semi:0,   eq:[], ring:55}
 };
 
@@ -475,7 +495,7 @@ async function applyVoice(y, v){
   return y;
 }
 
-/* Loudness + limiter */
+/* Loudness + Limiter */
 function biquad(x, b, a){
   const y = new Float32Array(x.length);
   let x1=0, x2=0, y1=0, y2=0;
@@ -545,7 +565,7 @@ function finalizeLoud(x){
   return limiter(y);
 }
 
-/* WSOLA + resample */
+/* WSOLA + Resample */
 async function wsola(x, q, cb){
   const win=Math.round(0.032*SR)&~1, hs=win>>1, ha=hs*q, tol=Math.round(0.010*SR), DEC=4, STEP=4;
   const maxPos=x.length-win; if(maxPos<=0) return x;
@@ -587,7 +607,7 @@ function resample(x, ratio){
   return y;
 }
 
-/* ---- UI ---- */
+/* ---- UI Logic ---- */
 const $ = id => document.getElementById(id);
 const S = { orig:null, clean:null, final:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
 let busy = false, stopAt = null, asrP = null, asrName = '';
@@ -602,11 +622,9 @@ function prog(label, p){
 }
 function refreshButtons(){
   const has = !!S.orig;
-  ['bBoth','bEnh','bTr'].forEach(id => $(id).disabled = busy || !has);
-  $('dlAudio').disabled = busy || !S.final;
+  ['bBoth','bEnh','bTr'].forEach(id => $(id).disabled = busy \vert{}\vert{} !has);$('dlAudio').disabled = busy || !S.final;
   const hs = S.segs.length > 0;
-  ['xJson','xTxt','xSrt','doRepl'].forEach(id => $(id).disabled = !hs);
-  $('addSeg').disabled = !S.final && !hs;
+  ['xJson','xTxt','xSrt','doRepl'].forEach(id => $(id).disabled = !hs);$('addSeg').disabled = !S.final && !hs;
 }
 async function run(fn){
   if(busy) return;
@@ -616,12 +634,19 @@ async function run(fn){
   finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
 }
 const fmtDur = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-const settings = () => ({ nr:+$('nr').value, gate:$('gate').checked, tone:$('tone').value,
-  speed:+$('speed').value, pitch:+$('pitch').value, voice:$('voice').value });
+const settings = () => ({
+  mode: $('processingMode').value,
+  nr: +$('nr').value,
+  resonance: +$('resonance').value,
+  gate: $('gate').checked,
+  tone: $('tone').value,
+  speed: +$('speed').value,
+  pitch: +$('pitch').value,
+  voice: $('voice').value
+});
 
-$('nr').oninput = () => $('nrO').textContent = $('nr').value + '%';
-$('speed').oninput = () => $('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';
-$('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
+$('nr').oninput = () =>$('nrO').textContent = $('nr').value + '\%';$('resonance').oninput = () => $('resO').textContent =$('resonance').value + '%';
+$('speed').oninput = () =>$('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';$('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
 
 async function decodeFile(file){
   const ctx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR});
@@ -634,16 +659,15 @@ async function decodeFile(file){
 
 async function loadFile(f){
   await run(async () => {
-    setStatus('Reading audio');
+    setStatus('Reading audio file');
     S.orig = await decodeFile(f);
     S.clean = S.final = null; S.segs = [];
     if(S.srcURL) URL.revokeObjectURL(S.srcURL);
     S.srcURL = URL.createObjectURL(f);
     $('aOrig').src = S.srcURL;
-    $('aFinal').removeAttribute('src'); $('aFinal').load();
-    $('srcinfo').textContent = `${f.name}, ${fmtDur(S.orig.length/SR)} long`;
+    $('aFinal').removeAttribute('src'); $('aFinal').load();$('srcinfo').textContent = `${f.name}, ${fmtDur(S.orig.length/SR)} long`;
     renderSegs(); drawWave();
-    setStatus('Ready. Adjust the settings, then press Enhance and transcribe.');
+    setStatus('Ready. Choose Natural Cleanup or Studio Narration, then enhance.');
   });
 }
 
@@ -658,38 +682,47 @@ $('rec').onclick = async () => {
   if(rec){ rec.stop(); return; }
   try{
     recStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-  }catch(e){ setStatus('Microphone access was blocked. Allow it in the address bar, or load a file instead.', true); return; }
+  }catch(e){ setStatus('Microphone access blocked. Check permissions or load a file.', true); return; }
   recChunks = []; const r = new MediaRecorder(recStream); rec = r;
   r.ondataavailable = e => recChunks.push(e.data);
   r.onstop = async () => {
     recStream.getTracks().forEach(t => t.stop());
-    $('rec').textContent = 'Record with microphone'; $('rec').classList.remove('rec-on');
+    $('rec').textContent = 'Record with microphone';$('rec').classList.remove('rec-on');
     const blob = new Blob(recChunks, {type:r.mimeType}); rec = null;
     await loadFile(new File([blob], 'recording.webm', {type:r.mimeType}));
   };
-  r.start(); $('rec').textContent = 'Stop recording'; $('rec').classList.add('rec-on');
+  r.start(); $('rec').textContent = 'Stop recording';$('rec').classList.add('rec-on');
 };
 
 async function enhance(){
   const s = settings();
   let x = S.orig;
-  if(s.nr > 0) x = await denoise(x, s.nr, p => prog('Removing noise', 0.6*p));
-  if(s.gate){ prog('Silencing gaps', 0.62); await tick(); x = expander(x); }
-  prog('Applying studio polish', 0.7); await tick();
-  x = finalizeLoud(await studio(x, s.tone));
+  if(s.nr > 0 || s.resonance > 0) x = await denoise(x, s.nr, s.resonance, p => prog('Spectral cleanup & resonance control', 0.5*p));
+  if(s.gate){ prog('Applying noise gate', 0.55); await tick(); x = expander(x); }
+  
+  prog('Applying studio processing chain', 0.7); await tick();
+  x = await studio(x, s.tone, s.mode);
+  
+  if(s.mode === 'studio' || s.mode === 'ai_enhance'){
+    x = saturate(x, 0.4);
+  }
+  
+  x = finalizeLoud(x);
   S.clean = x;
+  
   const v = VOICES[s.voice], semi = s.pitch + v.semi, r = Math.pow(2, semi/12), q = s.speed / r;
   let y = x, changed = false;
-  if(Math.abs(q-1) > 1e-3){ y = await wsola(y, q, p => prog('Changing speed and pitch', 0.75+0.2*p)); changed = true; }
+  if(Math.abs(q-1) > 1e-3){ y = await wsola(y, q, p => prog('Adjusting tempo & pitch', 0.75+0.2*p)); changed = true; }
   if(Math.abs(r-1) > 1e-4){ y = resample(y, r); changed = true; }
   if(v.eq.length || v.drive || v.ring){ y = await applyVoice(y, v); changed = true; }
-  if(changed){ prog('Final level check', 0.97); await tick(); y = finalizeLoud(y); }
+  if(changed){ prog('Final loudness & peak normalization', 0.97); await tick(); y = finalizeLoud(y); }
+  
   S.final = y; S.speedUsed = s.speed;
   if(S.finURL) URL.revokeObjectURL(S.finURL);
   S.finURL = URL.createObjectURL(encodeWav(y, SR, 16));
   $('aFinal').src = S.finURL;
   drawWave();
-  setStatus(`Enhanced audio ready, ${fmtDur(y.length/SR)} long, target about ${TARGET_LUFS} LUFS.`);
+  setStatus(`Enhanced audio ready (${fmtDur(y.length/SR)}, target ~${TARGET_LUFS} LUFS).`);
 }
 
 function peaks(x, w){
@@ -710,7 +743,7 @@ function drawWave(){
   c.width=w; c.height=h;
   const g=c.getContext('2d'); g.clearRect(0,0,w,h);
   const mid=h/2;
-  g.fillStyle='#e3e7ec'; g.fillRect(0,mid,w,Math.max(1,dpr));
+  g.fillStyle='#334155'; g.fillRect(0,mid,w,Math.max(1,dpr));
   const draw=(x,color)=>{
     if(!x) return; const p=peaks(x,w); g.fillStyle=color;
     for(let i=0;i<w;i++){
@@ -723,8 +756,7 @@ function drawWave(){
 }
 window.addEventListener('resize', () => drawWave());
 
-const aF = $('aFinal');
-$('wavewrap').onclick = e => {
+const aF = $('aFinal');$('wavewrap').onclick = e => {
   if(!aF.duration) return;
   const r=$('wavewrap').getBoundingClientRect();
   aF.currentTime = (e.clientX-r.left)/r.width*aF.duration;
@@ -775,15 +807,13 @@ function save(name, blob){
 $('dlAudio').onclick = () => run(async () => {
   const f=$('fmt').value;
   if(f==='mp3'){
-    if(typeof lamejs==='undefined') throw new Error('The MP3 encoder could not be loaded (check your connection). Use WAV instead.');
-    prog('Encoding MP3', -1); save('voice-studio.mp3', await encodeMp3(S.final));
-  } else save('voice-studio.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
-  setStatus('Audio downloaded.');
+    if(typeof lamejs==='undefined') throw new Error('MP3 encoder not loaded.');
+    prog('Encoding MP3', -1); save('studio-narration.mp3', await encodeMp3(S.final));
+  } else save('studio-narration.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
+  setStatus('Audio downloaded successfully.');
 });
 
-if(typeof lamejs==='undefined'){ $('fmt').querySelector('option[value=mp3]').disabled = true; }
-
-function getASR(model, cb){
+async function getASR(model, cb){
   const name='Xenova/whisper-'+model;
   if(asrP && asrName===name) return asrP;
   asrName=name;
@@ -806,11 +836,11 @@ async function to16k(x){
 async function transcribe(){
   prog('Loading speech model', 0);
   const asr = await getASR($('model').value, p => {
-    if(p.status==='progress') prog('Downloading speech model (first time only)', (p.progress||0)/100);
+    if(p.status==='progress') prog('Downloading speech model', (p.progress||0)/100);
   });
   prog('Preparing audio', -1);
   const a16 = await to16k(S.clean);
-  prog('Transcribing on your device. Longer files take a few minutes', -1);
+  prog('Transcribing on device', -1);
   const lang=$('lang').value, opts={chunk_length_s:30, stride_length_s:5, return_timestamps:true, task:'transcribe'};
   if(lang!=='auto') opts.language=lang;
   const out = await asr(a16, opts), sp=S.speedUsed||1, total=S.clean.length/SR;
@@ -821,7 +851,7 @@ async function transcribe(){
     return {start:+st.toFixed(2), end:+en.toFixed(2), text:(c.text||'').trim()};
   }).filter(s => s.text);
   renderSegs();
-  setStatus(S.segs.length ? `Script ready: ${S.segs.length} lines. Correct anything below, then download.` : 'No speech was detected.');
+  setStatus(S.segs.length ? `Script ready: ${S.segs.length} lines.` : 'No speech detected.');
 }
 
 function sizeTA(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
@@ -829,19 +859,19 @@ function renderSegs(){
   const box=$('segs'); box.replaceChildren();
   if(!S.segs.length){
     const p=document.createElement('p'); p.className='empty';
-    p.textContent='Your script will appear here. Every line has its own start and end time and can be played, edited or removed.';
+    p.textContent='Your transcribed script will appear here.';
     box.append(p); refreshButtons(); return;
   }
   S.segs.forEach((s,i)=>{
     const row=document.createElement('div'); row.className='seg';
-    const play=document.createElement('button'); play.type='button'; play.textContent='Play'; play.setAttribute('aria-label','Play line '+(i+1));
+    const play=document.createElement('button'); play.type='button'; play.textContent='Play';
     play.onclick=()=>{ if(!S.final) return; aF.currentTime=S.segs[i].start; stopAt=S.segs[i].end; aF.play(); };
     const times=document.createElement('div'); times.className='times';
-    const mk=(key,label)=>{ const n=document.createElement('input'); n.type='number'; n.step='0.01'; n.min='0'; n.value=s[key]; n.setAttribute('aria-label',label+' time in seconds'); n.oninput=()=>{ S.segs[i][key]=parseFloat(n.value)||0; }; return n; };
+    const mk=(key,label)=>{ const n=document.createElement('input'); n.type='number'; n.step='0.01'; n.min='0'; n.value=s[key]; n.oninput=()=>{ S.segs[i][key]=parseFloat(n.value)||0; }; return n; };
     times.append(mk('start','Start'), mk('end','End'));
-    const ta=document.createElement('textarea'); ta.rows=1; ta.value=s.text; ta.setAttribute('aria-label','Caption text for line '+(i+1));
+    const ta=document.createElement('textarea'); ta.rows=1; ta.value=s.text;
     ta.oninput=()=>{ S.segs[i].text=ta.value; sizeTA(ta); };
-    const del=document.createElement('button'); del.type='button'; del.textContent='Remove'; del.setAttribute('aria-label','Remove line '+(i+1));
+    const del=document.createElement('button'); del.type='button'; del.textContent='Remove';
     del.onclick=()=>{ S.segs.splice(i,1); renderSegs(); };
     row.append(play,times,ta,del); box.append(row); sizeTA(ta);
   });
@@ -855,28 +885,16 @@ $('addSeg').onclick = () => {
 };
 $('doRepl').onclick = () => {
   const f=$('find').value, r=$('repl').value;
-  if(!f){ setStatus('Type the text to find first.', true); return; }
+  if(!f) return;
   let n=0;
   S.segs.forEach(s => { const parts=s.text.split(f); n+=parts.length-1; s.text=parts.join(r); });
-  renderSegs(); setStatus(n ? `Replaced ${n} occurrence${n===1?'':'s'}.` : 'Nothing matched.');
+  renderSegs(); setStatus(`Replaced ${n} occurrences.`);
 };
 
-const srtTime = t => { let ms=Math.round(t*1000); const h=Math.floor(ms/3600000); ms-=h*3600000; const m=Math.floor(ms/60000); ms-=m*60000; const s=Math.floor(ms/1000); ms-=s*1000;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(ms).padStart(3,'0')}`; };
-
-$('xJson').onclick = () => save('script.json', new Blob([JSON.stringify({
-  language:S.langUsed, duration:S.final?+(S.final.length/SR).toFixed(2):null,
-  segments:S.segs.map((s,i)=>({id:i+1,start:+s.start,end:+s.end,text:s.text})),
-  text:S.segs.map(s=>s.text).join(' ')}, null, 2)], {type:'application/json'}));
-$('xTxt').onclick = () => save('script.txt', new Blob([S.segs.map(s=>s.text).join('\n')], {type:'text/plain;charset=utf-8'}));
-$('xSrt').onclick = () => save('script.srt', new Blob([S.segs.map((s,i)=>`${i+1}\n${srtTime(s.start)} --> ${srtTime(s.end)}\n${s.text}\n`).join('\n')], {type:'text/plain;charset=utf-8'}));
-
 $('bEnh').onclick  = () => run(enhance);
-$('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });
-$('bTr').onclick   = () => run(async () => { if(!S.clean) await enhance(); await transcribe(); });
+$('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });$('bTr').onclick   = () => run(async () => { if(!S.clean) await enhance(); await transcribe(); });
 
 renderSegs(); drawWave();
 </script>
-
 </body>
 </html>
