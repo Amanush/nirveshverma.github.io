@@ -1,1 +1,714 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Thread → Shorts | High-Retention Slide Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow-x: hidden;
+      min-height: 100dvh;
+    }
+    
+    .stage-wrapper {
+      width: min(100vw, 420px);
+      aspect-ratio: 9/16;
+      max-height: 85dvh;
+      margin: 0 auto;
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 25px 50px -12px rgba(0,0,0,0.8);
+      background: #111;
+    }
+    
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem 1.25rem 1.4rem;
+      opacity: 0;
+      transform: translateY(28px) scale(0.97);
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+    }
+    
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      z-index: 10;
+    }
+    
+    .tweet-text {
+      font-size: clamp(1.2rem, 4.4vw, 1.55rem);
+      line-height: 1.45;
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      padding: 0.2rem 0.15rem 0.4rem 0;
+      outline: none;
+      border-radius: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+      word-break: break-word;
+    }
+    .tweet-text:focus {
+      background: rgba(255,255,255,0.04);
+      box-shadow: inset 0 0 0 1px rgba(29,155,240,0.4);
+    }
+    .tweet-text::-webkit-scrollbar { width: 3px; }
+    .tweet-text::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    
+    .slide-image {
+      width: 100%;
+      max-height: 42%;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-top: 0.75rem;
+      background: #0a0a0a;
+      flex-shrink: 0;
+    }
+    
+    .slide-image.full {
+      max-height: 70%;
+      margin-top: 0;
+    }
+    
+    .progress-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.9rem;
+      flex-shrink: 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1d9bf0, #7856ff);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.55rem;
+      font-size: 0.72rem;
+      color: #8b98a5;
+      flex-shrink: 0;
+    }
+    
+    .ctrl-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(8px);
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.15); }
+    .ctrl-btn:active { transform: scale(0.9); }
+    .ctrl-btn:disabled { opacity: 0.35; pointer-events: none; }
+    
+    .primary-btn {
+      background: linear-gradient(135deg, #1d9bf0, #7856ff);
+      color: white;
+      font-weight: 700;
+      padding: 0.7rem 1.4rem;
+      border-radius: 9999px;
+      transition: all 0.2s;
+    }
+    .primary-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .primary-btn:active { transform: scale(0.97); }
+    .primary-btn:disabled { opacity: 0.6; pointer-events: none; }
+    
+    .danger-btn {
+      background: #ef4444;
+      color: white;
+      font-weight: 700;
+      padding: 0.7rem 1.4rem;
+      border-radius: 9999px;
+    }
+    
+    .rec-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    
+    input[type="url"], textarea {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      color: #e7e9ea;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      width: 100%;
+      padding: 0.85rem 1rem;
+    }
+    input[type="url"]:focus, textarea:focus {
+      outline: none;
+      border-color: #1d9bf0;
+      box-shadow: 0 0 0 2px rgba(29,155,240,0.25);
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1d9bf0;
+      color: white;
+      padding: 0.7rem 1.3rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      z-index: 100;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .hint {
+      font-size: 0.7rem;
+      color: #666;
+      text-align: center;
+      margin-top: 0.3rem;
+    }
+    
+    @media (max-width: 480px) {
+      .stage-wrapper { border-radius: 0; max-height: 78dvh; }
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <div id="toast" class="toast">Ready</div>
+
+  <div id="home-screen" class="min-h-dvh flex flex-col items-center justify-center px-4 py-8">
+    <div class="w-full max-w-lg space-y-6">
+      <div class="text-center space-y-2">
+        <h1 class="text-3xl font-black tracking-tight">
+          Thread → <span class="bg-gradient-to-r from-sky-400 to-violet-500 bg-clip-text text-transparent">Shorts</span>
+        </h1>
+        <p class="text-zinc-400 text-sm">URL or paste → clean text-only slides → editable · images · TTS · record</p>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Thread URL</label>
+        <div class="flex gap-2">
+          <input type="url" id="url-input" placeholder="https://x.com/username/status/1234567890" />
+          <button id="fetch-btn" onclick="fetchFromUrl()" class="primary-btn flex items-center gap-2 shrink-0">
+            <span id="fetch-label">Fetch</span>
+            <span id="fetch-spinner" class="spinner hidden"></span>
+          </button>
+        </div>
+        <p class="text-xs text-zinc-500">Free public endpoints. Full threads may need paste fallback.</p>
+      </div>
+
+      <div class="relative flex items-center gap-3">
+        <div class="flex-1 h-px bg-zinc-800"></div>
+        <span class="text-xs text-zinc-500 font-medium">OR paste text</span>
+        <div class="flex-1 h-px bg-zinc-800"></div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Paste thread text</label>
+        <textarea id="thread-input" rows="7" placeholder="1/ First tweet text
+
+2/ Second tweet
+
+3/ ..."></textarea>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="buildSlides()" class="primary-btn flex-1 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Generate Slides
+        </button>
+        <button onclick="loadDemo()" class="ctrl-btn flex-1 !w-auto !h-auto py-3 px-4 text-sm font-semibold text-zinc-300">
+          Load Demo
+        </button>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-800 text-center text-xs text-zinc-500 space-y-1">
+        <p>Text-only · editable slides · images auto-split · GitHub Pages ready</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="player-screen" class="hidden min-h-dvh flex flex-col items-center justify-center px-3 py-4 gap-4">
+    <div class="w-full max-w-[420px] flex items-center justify-between px-1">
+      <button onclick="goHome()" class="ctrl-btn !w-10 !h-10" title="Home">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+      </button>
+      
+      <div class="flex items-center gap-2 text-sm font-medium text-zinc-400">
+        <span id="slide-counter">1 / 1</span>
+        <span id="rec-indicator" class="hidden items-center gap-1.5 text-red-400 font-semibold">
+          <span class="rec-dot"></span> REC
+        </span>
+      </div>
+      
+      <button onclick="toggleTTS()" id="tts-btn" class="ctrl-btn !w-10 !h-10" title="Read aloud">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+      </button>
+    </div>
+
+    <div class="stage-wrapper" id="stage"></div>
+    <p class="hint">Tap any text to edit · images auto-move to next slide if space is tight</p>
+
+    <div class="w-full max-w-[420px] flex items-center justify-between gap-3 px-1">
+      <button onclick="prevSlide()" id="prev-btn" class="ctrl-btn" disabled>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+
+      <div class="flex gap-2">
+        <button onclick="startRecording()" id="rec-btn" class="primary-btn flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+          Record
+        </button>
+        <button onclick="stopRecording()" id="stop-btn" class="danger-btn hidden text-sm">Stop & Download</button>
+      </div>
+
+      <button onclick="nextSlide()" id="next-btn" class="ctrl-btn">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let slides = [];
+    let current = 0;
+    let isSpeaking = false;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let stream = null;
+
+    function toast(msg, duration = 2600) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function cleanText(t) {
+      return (t || '')
+        .replace(/https?:\/\/t\.co\/\S+/g, '')
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+    }
+
+    function parseUrl(url) {
+      const m = url.match(/(?:x|twitter|fxtwitter|vxtwitter)\.com\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/i);
+      if (m) return { handle: m[1], id: m[2] };
+      const idOnly = url.match(/status\/(\d+)/i) || url.match(/^(\d{10,})$/);
+      if (idOnly) return { handle: null, id: idOnly[1] };
+      return null;
+    }
+
+    async function fetchFromUrl() {
+      const rawUrl = document.getElementById('url-input').value.trim();
+      if (!rawUrl) { toast('Paste a thread URL first'); return; }
+
+      const parsed = parseUrl(rawUrl);
+      if (!parsed) { toast('Could not parse URL'); return; }
+
+      const btn = document.getElementById('fetch-btn');
+      const label = document.getElementById('fetch-label');
+      const spinner = document.getElementById('fetch-spinner');
+      btn.disabled = true;
+      label.textContent = 'Fetching…';
+      spinner.classList.remove('hidden');
+
+      try {
+        let items = [];
+
+        try {
+          const fxUrl = parsed.handle
+            ? `https://api.fxtwitter.com/${parsed.handle}/status/${parsed.id}`
+            : `https://api.fxtwitter.com/status/${parsed.id}`;
+          const res = await fetch(fxUrl);
+          if (res.ok) {
+            const data = await res.json();
+            const tw = data.tweet || data.status;
+            if (tw) {
+              const text = cleanText(tw.text || '');
+              let image = null;
+              if (tw.media?.photos?.[0]?.url) image = tw.media.photos[0].url;
+              else if (tw.media?.images?.[0]) image = tw.media.images[0].url || tw.media.images[0];
+              else if (tw.media?.all?.[0]?.url) image = tw.media.all[0].url;
+              else if (tw.image) image = tw.image;
+              else if (tw.entities?.media?.[0]?.media_url_https) image = tw.entities.media[0].media_url_https;
+              
+              if (text || image) items.push({ text: text || '', image });
+            }
+          }
+        } catch (e) { console.warn('FxTwitter', e); }
+
+        if (items.length <= 1) {
+          try {
+            const api = new URL('https://x.pcstyle.dev/api/v1/posts');
+            api.searchParams.set('url', rawUrl);
+            api.searchParams.set('thread', 'full');
+            api.searchParams.set('format', 'json');
+            api.searchParams.set('context', 'thread');
+            api.searchParams.set('replies', 'off');
+
+            const res2 = await fetch(api.toString());
+            if (res2.ok) {
+              const data2 = await res2.json();
+              if (data2.markdown || typeof data2 === 'string') {
+                const md = data2.markdown || data2;
+                const blocks = md.split(/##\s+(?:Post|Thread|Reply)\s+[·•]\s*\d+/i);
+                const newItems = [];
+                for (const block of blocks) {
+                  const imgMatch = block.match(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/);
+                  const text = cleanText(
+                    block
+                      .replace(/!\[.*?\]\([^\)]+\)/g, '')
+                      .replace(/Source:.*$/gim, '')
+                      .replace(/---/g, '')
+                      .replace(/>\s*/g, '')
+                  );
+                  if (text.length > 8 || imgMatch) {
+                    newItems.push({ text, image: imgMatch ? imgMatch[1] : null });
+                  }
+                }
+                if (newItems.length > items.length) items = newItems;
+              }
+            }
+          } catch (e) { console.warn('x.pcstyle', e); }
+        }
+
+        if (items.length === 0) {
+          toast('Could not fetch. Paste the text instead.');
+          return;
+        }
+
+        document.getElementById('thread-input').value = items
+          .map((it, i) => `${i + 1}/ ${it.text}${it.image ? '\n[image]' : ''}`)
+          .join('\n\n');
+
+        slides = expandToSlides(items);
+        renderSlides();
+        confetti({ particleCount: 50, spread: 55, origin: { y: 0.65 } });
+        toast(`Ready · ${slides.length} slides`);
+      } catch (err) {
+        console.error(err);
+        toast('Fetch failed. Paste the thread text.');
+      } finally {
+        btn.disabled = false;
+        label.textContent = 'Fetch';
+        spinner.classList.add('hidden');
+      }
+    }
+
+    function expandToSlides(items) {
+      const result = [];
+      for (const item of items) {
+        const text = (item.text || '').trim();
+        const image = item.image || null;
+
+        if (!text && image) {
+          result.push({ text: '', image });
+          continue;
+        }
+
+        if (text && image) {
+          if (text.length < 180) {
+            result.push({ text, image });
+          } else {
+            result.push({ text, image: null });
+            result.push({ text: '', image });
+          }
+        } else {
+          result.push({ text, image: null });
+        }
+      }
+      return result.filter(s => s.text || s.image);
+    }
+
+    function parseThread(raw) {
+      const text = raw.trim();
+      if (!text) return [];
+
+      const numbered = text.split(/(?:^|\n)\s*(?:\d+[\.\/\)]\s*)/g)
+        .map(s => s.trim()).filter(Boolean);
+      if (numbered.length > 1) {
+        return numbered.map(t => ({ text: cleanText(t.replace(/\[image\]/gi, '')), image: null }));
+      }
+
+      let parts = text.split(/\n\s*\n+/).map(s => s.trim()).filter(Boolean);
+      if (parts.length > 1) {
+        return parts.map(t => ({ text: cleanText(t), image: null }));
+      }
+
+      parts = text.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      return parts.map(t => ({ text: cleanText(t), image: null }));
+    }
+
+    function buildSlides() {
+      const raw = document.getElementById('thread-input').value;
+      const items = parseThread(raw);
+      if (items.length === 0) {
+        toast('Paste some text or fetch a URL first');
+        return;
+      }
+      slides = expandToSlides(items);
+      renderSlides();
+      confetti({ particleCount: 55, spread: 55, origin: { y: 0.7 } });
+    }
+
+    function renderSlides() {
+      const stage = document.getElementById('stage');
+      stage.innerHTML = '';
+
+      slides.forEach((item, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide' + (i === 0 ? ' active' : '');
+        slide.dataset.index = i;
+
+        const hasImage = !!item.image;
+        const hasText = !!(item.text && item.text.trim());
+
+        let body = '';
+        if (hasText) {
+          body += `<div class="tweet-text" contenteditable="true" spellcheck="false" data-idx="${i}">${escapeHtml(item.text)}</div>`;
+        }
+        if (hasImage) {
+          const fullClass = !hasText ? ' full' : '';
+          body += `<img class="slide-image${fullClass}" src="${escapeHtml(item.image)}" alt="" loading="lazy" onerror="this.style.display='none'">`;
+        }
+        if (!hasText && !hasImage) {
+          body = `<div class="tweet-text" contenteditable="true" data-idx="${i}">(empty slide)</div>`;
+        }
+
+        slide.innerHTML = `
+          ${body}
+          <div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${((i+1)/slides.length)*100}%"></div>
+            </div>
+            <div class="slide-footer">
+              <span>${i + 1} / ${slides.length}</span>
+              <span>tap text to edit</span>
+            </div>
+          </div>
+        `;
+        stage.appendChild(slide);
+      });
+
+      stage.querySelectorAll('.tweet-text[contenteditable]').forEach(el => {
+        el.addEventListener('input', () => {
+          const idx = +el.dataset.idx;
+          if (slides[idx]) slides[idx].text = el.innerText.trim();
+        });
+        el.addEventListener('blur', () => {
+          const idx = +el.dataset.idx;
+          if (slides[idx]) slides[idx].text = el.innerText.trim();
+        });
+      });
+
+      current = 0;
+      updateUI();
+      document.getElementById('home-screen').classList.add('hidden');
+      document.getElementById('player-screen').classList.remove('hidden');
+      toast(`${slides.length} slides ready`);
+    }
+
+    function loadDemo() {
+      document.getElementById('thread-input').value = `1/ Most people treat Twitter threads like blog posts.
+
+2/ The highest-retention format is vertical short-form: one powerful idea per slide.
+
+3/ Clean typography, big text, progress bar, and natural voice-over turn a thread into something people actually finish.
+
+4/ Add a recording button + mic and you can export ready-to-post Reels / Shorts in under a minute.
+
+5/ This entire app is a single HTML file. Host it on GitHub Pages for free.`;
+      buildSlides();
+    }
+
+    function goTo(index) {
+      if (index < 0 || index >= slides.length) return;
+      document.querySelectorAll('.slide').forEach((s, i) => s.classList.toggle('active', i === index));
+      current = index;
+      updateUI();
+      if (isSpeaking) stopTTS();
+    }
+    function nextSlide() { goTo(current + 1); }
+    function prevSlide() { goTo(current - 1); }
+    function updateUI() {
+      document.getElementById('slide-counter').textContent = `${current + 1} / ${slides.length}`;
+      document.getElementById('prev-btn').disabled = current === 0;
+      document.getElementById('next-btn').disabled = current === slides.length - 1;
+    }
+    function goHome() {
+      stopTTS();
+      if (mediaRecorder?.state === 'recording') stopRecording();
+      document.getElementById('player-screen').classList.add('hidden');
+      document.getElementById('home-screen').classList.remove('hidden');
+    }
+
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('player-screen').classList.contains('hidden')) return;
+      if (document.activeElement?.isContentEditable) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'Escape') goHome();
+    });
+
+    let touchStartX = 0;
+    document.getElementById('stage').addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    document.getElementById('stage').addEventListener('touchend', e => {
+      if (document.activeElement?.isContentEditable) return;
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      if (dx < -50) nextSlide();
+      if (dx > 50) prevSlide();
+    }, { passive: true });
+
+    function getBestVoice() {
+      const voices = speechSynthesis.getVoices();
+      return voices.find(v => v.lang === 'en-IN' || /india|ravi|neerja/i.test(v.name))
+        || voices.find(v => v.lang.startsWith('en'))
+        || voices[0];
+    }
+    function toggleTTS() {
+      if (isSpeaking) { stopTTS(); return; }
+      speakCurrent();
+    }
+    function speakCurrent() {
+      if (!('speechSynthesis' in window)) { toast('TTS not supported'); return; }
+      stopTTS();
+      const text = slides[current]?.text;
+      if (!text) { toast('No text on this slide'); return; }
+
+      const utt = new SpeechSynthesisUtterance(text);
+      const voice = getBestVoice();
+      if (voice) utt.voice = voice;
+      utt.rate = 0.92;
+      utt.onstart = () => {
+        isSpeaking = true;
+        document.getElementById('tts-btn').classList.add('ring-2', 'ring-sky-400');
+      };
+      utt.onend = utt.onerror = () => {
+        isSpeaking = false;
+        document.getElementById('tts-btn').classList.remove('ring-2', 'ring-sky-400');
+      };
+      speechSynthesis.speak(utt);
+      toast(voice ? `Speaking · ${voice.name}` : 'Speaking…');
+    }
+    function stopTTS() {
+      speechSynthesis.cancel();
+      isSpeaking = false;
+      document.getElementById('tts-btn').classList.remove('ring-2', 'ring-sky-400');
+    }
+    if ('speechSynthesis' in window) {
+      speechSynthesis.onvoiceschanged = () => {};
+      speechSynthesis.getVoices();
+    }
+
+    async function startRecording() {
+      try {
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: 30, displaySurface: 'browser' },
+          audio: false,
+          preferCurrentTab: true
+        });
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true }
+        });
+        stream = new MediaStream([...displayStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+            ? 'video/webm;codecs=vp9,opus' : 'video/webm'
+        });
+        mediaRecorder.ondataavailable = e => { if (e.data.size) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `thread-short-${Date.now()}.webm`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast('Video downloaded!');
+          confetti({ particleCount: 70, spread: 65, origin: { y: 0.6 } });
+          stream.getTracks().forEach(t => t.stop());
+          stream = null;
+        };
+        mediaRecorder.start(200);
+        document.getElementById('rec-btn').classList.add('hidden');
+        document.getElementById('stop-btn').classList.remove('hidden');
+        document.getElementById('rec-indicator').classList.remove('hidden');
+        document.getElementById('rec-indicator').classList.add('flex');
+        toast('Recording… speak + advance slides');
+      } catch (err) {
+        toast('Permission denied or not supported');
+      }
+    }
+    function stopRecording() {
+      if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+      document.getElementById('rec-btn').classList.remove('hidden');
+      document.getElementById('stop-btn').classList.add('hidden');
+      document.getElementById('rec-indicator').classList.add('hidden');
+      document.getElementById('rec-indicator').classList.remove('flex');
+    }
+
+    document.getElementById('url-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') fetchFromUrl();
+    });
+  </script>
+</body>
+</html>
