@@ -341,7 +341,7 @@ main { overflow: auto; padding: 36px; }
   min-height: 0;
   overflow: hidden;
   font-size: calc(var(--u)*2.1);
-  padding: 2%;
+  padding: 30px;
   display: flex;
   flex-direction: column;
   justify-content: safe center;
