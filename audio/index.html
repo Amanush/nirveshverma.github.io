@@ -23,7 +23,7 @@
 <div class="actions"><button id="rec" type="button">Record with microphone</button><button id="bEnh" class="primary" type="button" disabled>Enhance audio</button><button id="bBoth" type="button" disabled>Enhance + transcribe</button><button id="bTr" type="button" disabled>Transcribe only</button></div>
 <div class="progress" id="prog" hidden><div class="bar" id="bar"></div></div><div class="status" id="status" role="status" aria-live="polite">Load a recording to begin.</div>
 <div class="playergrid"><div class="player"><strong>Original recording</strong><audio id="aOrig" controls preload="metadata"></audio></div><div class="player"><strong>Enhanced result</strong><audio id="aFinal" controls preload="metadata"></audio></div></div>
-<div class="wavewrap" id="wavewrap" title="Click to seek in enhanced audio"><canvas id="wave"></canvas><div class="head" id="head"></div></div><div class="smallrow"><span class="muted">Waveform: original + processed</span><span class="muted">Click waveform to seek</span></div>
+<div class="wavewrap" id="wavewrap" title="Click to seek in enhanced audio"><canvas id="wave"></canvas><div class="head" id="head"></div></div><div class="smallrow"><span class="muted">Waveform comparison · same scale, original above / enhanced below</span><span class="muted">Click waveform to seek</span></div>
 <div class="section"><h2>02 · Download enhanced audio</h2><div class="controls"><div class="field"><label for="fmt">Export format</label><select id="fmt"><option value="wav">WAV · 16-bit</option><option value="wav24">WAV · 24-bit</option><option value="mp3">MP3 · 192 kbps</option></select></div><div class="field"><label>&nbsp;</label><button id="dlAudio" class="primary" type="button" disabled>Download enhanced audio</button></div></div></div>
 </section>
 <aside class="panel">
@@ -366,39 +366,65 @@ function lufs(x){
 }
 
 function limiter(x, ceil=CEILING, lookMs=5){
-  const n = x.length, L = Math.max(1, Math.round(SR*lookMs/1000));
-  const tgt = new Float32Array(n);
+  // Look-ahead peak envelope with a soft knee and smooth release. This avoids
+  // abrupt sample clipping and makes the level control less audibly harsh.
+  const n=x.length;
+  if(!n) return x;
+  const look=Math.max(1,Math.round(SR*lookMs/1000));
+  const idx=new Int32Array(n+1); let head=0, tail=0, added=-1;
+  const gainTarget=new Float32Array(n);
+  const kneeStart=ceil-0.12, kneeWidth=ceil-kneeStart;
   for(let i=0;i<n;i++){
-    const a = Math.abs(x[i]);
-    tgt[i] = a > ceil ? ceil/a : 1;
+    const upto=Math.min(n-1,i+look);
+    while(added<upto){
+      const j=++added, a=Math.abs(x[j]);
+      while(tail>head && Math.abs(x[idx[tail-1]])<=a) tail--;
+      idx[tail++]=j;
+    }
+    while(tail>head && idx[head]<i) head++;
+    const peak=Math.abs(x[idx[head]]);
+    let allowed=peak;
+    if(peak>kneeStart){
+      allowed=kneeStart+kneeWidth*(1-Math.exp(-(peak-kneeStart)/Math.max(1e-6,kneeWidth)));
+      allowed=Math.min(ceil,allowed);
+    }
+    gainTarget[i]=peak>1e-9?Math.min(1,allowed/peak):1;
   }
-  const m = new Float32Array(n), dq = new Int32Array(n+1);
-  let head=0, tail=0;
-  for(let i=n-1;i>=0;i--){
-    while(tail>head && tgt[dq[tail-1]] >= tgt[i]) tail--;
-    dq[tail++] = i;
-    while(dq[head] >= i+L) head++;
-    m[i] = tgt[dq[head]];
-  }
-  const cs = new Float64Array(n+1);
-  for(let i=0;i<n;i++) cs[i+1] = cs[i] + m[i];
-  const y = new Float32Array(n);
+  const y=new Float32Array(n);
+  let gain=1;
+  const release=Math.exp(-1/(SR*0.075)); // 75 ms release keeps phrase dynamics natural
   for(let i=0;i<n;i++){
-    const s = Math.max(0, i-L+1);
-    y[i] = x[i] * (cs[i+1] - cs[s]) / (i+1 - s);
+    const target=gainTarget[i];
+    if(target<gain) gain=target;             // fast look-ahead attack
+    else gain=target+(gain-target)*release; // gradual release
+    y[i]=x[i]*gain;
   }
   return y;
 }
 
+function peakAbs(x){ let p=0; for(let i=0;i<x.length;i++) p=Math.max(p,Math.abs(x[i])); return p; }
+
 function finalizeLoud(x){
-  const l = lufs(x);
-  let y = x;
+  const l=lufs(x);
+  let y=x;
   if(isFinite(l)){
-    const gn = Math.pow(10, Math.min(24, Math.max(-24, TARGET_LUFS - l)) / 20);
-    y = new Float32Array(x.length);
-    for(let i=0;i<x.length;i++) y[i] = x[i] * gn;
+    const db=Math.min(18,Math.max(-18,TARGET_LUFS-l));
+    const gn=Math.pow(10,db/20);
+    y=new Float32Array(x.length);
+    for(let i=0;i<x.length;i++) y[i]=x[i]*gn;
   }
-  return limiter(y);
+  y=limiter(y);
+  // Iterative safety check: mathematically verify the actual sample peak after
+  // processing, correcting only if needed rather than trusting estimated gain.
+  for(let pass=0;pass<3;pass++){
+    const peak=peakAbs(y);
+    if(peak<=CEILING+1e-5 || peak<1e-9) break;
+    const correction=CEILING/peak;
+    const z=new Float32Array(y.length);
+    for(let i=0;i<y.length;i++) z[i]=y[i]*correction;
+    y=z;
+  }
+  return y;
 }
 
 /* WSOLA + resample */
@@ -445,7 +471,7 @@ function resample(x, ratio){
 
 /* ---- UI ---- */
 const $ = id => document.getElementById(id);
-const S = { orig:null, clean:null, final:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
+const S = { orig:null, clean:null, final:null, preview:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
 let busy = false, stopAt = null, asrP = null, asrName = '';
 
 function setStatus(t, err){ $('status').textContent = t; $('status').classList.toggle('err', !!err); }
@@ -493,7 +519,7 @@ async function loadFile(f){
   await run(async () => {
     setStatus('Reading audio');
     S.orig = await decodeFile(f);
-    S.clean = S.final = null; S.segs = [];
+    S.clean = S.final = S.preview = null; S.segs = [];
     if(S.srcURL) URL.revokeObjectURL(S.srcURL);
     S.srcURL = URL.createObjectURL(f);
     $('aOrig').src = S.srcURL;
@@ -530,11 +556,13 @@ $('rec').onclick = async () => {
 async function enhance(){
   const s = settings();
   let x = S.orig;
-  if(s.nr > 0) x = await denoise(x, s.nr, p => prog('Removing steady background noise', 0.52*p));
-  if(s.roomTail){ prog('Reducing lingering room tails (light)', 0.57); await tick(); x = reduceRoomTails(x, s.tailAmt); }
-  if(s.gate){ prog('Silencing gaps gently', 0.62); await tick(); x = expander(x); }
+  S.preview = x; drawWave();
+  if(s.nr > 0) { x = await denoise(x, s.nr, p => prog('Removing steady background noise', 0.52*p)); S.preview=x; drawWave(); }
+  if(s.roomTail){ prog('Reducing lingering room tails (light)', 0.57); await tick(); x = reduceRoomTails(x, s.tailAmt); S.preview=x; drawWave(); }
+  if(s.gate){ prog('Silencing gaps gently', 0.62); await tick(); x = expander(x); S.preview=x; drawWave(); }
   prog('Applying balanced voice polish', 0.7); await tick();
-  x = finalizeLoud(await studio(x, s.tone));
+  x = await studio(x, s.tone); S.preview=x; drawWave();
+  x = finalizeLoud(x); S.preview=x; drawWave();
   S.clean = x;
   const v = VOICES[s.voice], semi = s.pitch + v.semi, r = Math.pow(2, semi/12), q = s.speed / r;
   let y = x, changed = false;
@@ -542,7 +570,7 @@ async function enhance(){
   if(Math.abs(r-1) > 1e-4){ y = resample(y, r); changed = true; }
   if(v.eq.length || v.drive || v.ring){ y = await applyVoice(y, v); changed = true; }
   if(changed){ prog('Final level check', 0.97); await tick(); y = finalizeLoud(y); }
-  S.final = y; S.speedUsed = s.speed;
+  S.final = y; S.preview = y; S.speedUsed = s.speed;
   if(S.finURL) URL.revokeObjectURL(S.finURL);
   S.finURL = URL.createObjectURL(encodeWav(y, SR, 16));
   $('aFinal').src = S.finURL;
@@ -550,34 +578,57 @@ async function enhance(){
   setStatus(`Enhanced audio ready (${fmtDur(y.length/SR)}). Natural voice processing complete; target loudness about ${TARGET_LUFS} LUFS.`);
 }
 
-function peaks(x, w){
-  const out = new Float32Array(w*2), step = x.length / w; let mx = 1e-9;
+function peaks(x, w, sharedPeak){
+  const out=new Float32Array(w*2);
+  if(!x || !x.length) return out;
+  const step=x.length/w;
   for(let i=0;i<w;i++){
-    const s=Math.floor(i*step), e=Math.min(x.length, Math.floor((i+1)*step)+1), st=Math.max(1,(e-s)>>5);
-    let lo=0, hi=0;
-    for(let j=s;j<e;j+=st){ const v=x[j]; if(v<lo) lo=v; if(v>hi) hi=v; }
-    out[2*i]=lo; out[2*i+1]=hi; mx=Math.max(mx,-lo,hi);
+    let a=Math.floor(i*step), b=Math.floor((i+1)*step);
+    let lo=Infinity, hi=-Infinity;
+    if(b<=a){
+      // If the waveform has fewer samples than screen columns, interpolate
+      // between adjacent real samples; never fabricate audio samples.
+      const pos=(i+0.5)*step, j=Math.min(x.length-1,Math.floor(pos));
+      const t=Math.max(0,Math.min(1,pos-j));
+      const v=x[j]*(1-t)+x[Math.min(x.length-1,j+1)]*t;
+      lo=hi=v;
+    }else{
+      b=Math.min(x.length,b);
+      for(let j=a;j<b;j++){ const v=x[j]; if(v<lo)lo=v; if(v>hi)hi=v; }
+    }
+    out[2*i]=lo/(sharedPeak||1); out[2*i+1]=hi/(sharedPeak||1);
   }
-  for(let i=0;i<out.length;i++) out[i]/=mx;
   return out;
 }
 
 function drawWave(){
   const c=$('wave'), dpr=window.devicePixelRatio||1;
-  const w=Math.max(200,Math.floor(c.clientWidth*dpr)), h=Math.floor(190*dpr);
-  c.width=w; c.height=h;
+  const cssW=Math.max(200,c.clientWidth||200), cssH=190;
+  const w=Math.max(200,Math.floor(cssW*dpr)), h=Math.floor(cssH*dpr);
+  if(c.width!==w || c.height!==h){ c.width=w; c.height=h; }
   const g=c.getContext('2d'); g.clearRect(0,0,w,h);
-  const mid=h/2;
-  g.fillStyle='#e3e7ec'; g.fillRect(0,mid,w,Math.max(1,dpr));
-  const draw=(x,color)=>{
-    if(!x) return; const p=peaks(x,w); g.fillStyle=color;
+  const half=h/2, mid1=half/2, mid2=half+half/2;
+  g.fillStyle='#0b1525'; g.fillRect(0,0,w,h);
+  g.strokeStyle='#31435a'; g.lineWidth=Math.max(1,dpr);
+  g.beginPath(); g.moveTo(0,half); g.lineTo(w,half); g.stroke();
+  // Use one common scale so the before/after amplitude comparison is honest.
+  let sharedPeak=Math.max(peakAbs(S.orig||[]),peakAbs(S.preview||S.final||[]),1e-6);
+  sharedPeak=Math.max(sharedPeak,0.12); // preserve visibility for quiet recordings
+  const draw=(x,color,top,mid)=>{
+    if(!x || !x.length) return;
+    const p=peaks(x,w,sharedPeak), amp=half*0.42;
+    g.fillStyle=color;
     for(let i=0;i<w;i++){
-      const a=mid-p[2*i+1]*mid*0.92, b=mid-p[2*i]*mid*0.92;
-      g.fillRect(i,a,1,Math.max(1,b-a));
+      const a=mid-p[2*i+1]*amp, b=mid-p[2*i]*amp;
+      g.fillRect(i,a,Math.max(1,dpr),Math.max(1,b-a));
     }
   };
-  draw(S.orig, getComputedStyle(document.documentElement).getPropertyValue('--orig').trim());
-  draw(S.final, getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+  draw(S.orig,'#7b91ad',0,mid1);
+  draw(S.preview||S.final,'#64d5b1',half,mid2);
+  g.font=`${Math.max(10,11*dpr)}px system-ui`;
+  g.textBaseline='top';
+  g.fillStyle='#d5deea'; g.fillText('ORIGINAL',8*dpr,5*dpr);
+  g.fillStyle='#8df0d2'; g.fillText(S.final?'ENHANCED':(S.preview && S.preview!==S.orig?'PROCESSING PREVIEW':'ENHANCED · WAITING'),8*dpr,half+5*dpr);
 }
 window.addEventListener('resize', () => drawWave());
 
