@@ -15,7 +15,7 @@
 </head>
 <body>
 <main class="wrap">
-<header class="top"><div class="brand"><div class="logo">〽</div><div><div class="eyebrow">Voice processing workspace</div><h1>Voice Studio</h1><p class="sub">Natural cleanup · balanced narration · transcript export</p></div></div><span class="tag">Runs locally in your browser</span></header>
+<header class="top"><div class="brand"><div class="logo">〽</div><div><div class="eyebrow">Voice processing workspace</div><h1>Voice Studio</h1><p class="sub">Noise cleanup · room-tail control · natural narration</p></div></div><span class="tag">Runs locally in your browser</span></header>
 <div class="grid">
 <section class="panel">
 <h2>01 · Load or record audio</h2>
@@ -31,6 +31,8 @@
 <div class="controls">
 <div class="field wide"><div class="rangehead"><label for="nr">Noise reduction</label><strong id="nrO">35%</strong></div><input id="nr" type="range" min="0" max="80" step="5" value="35"><span class="muted">Start low. Higher settings can make speech metallic or watery.</span></div>
 <div class="field wide"><label class="toggle"><input id="gate" type="checkbox"> Gentle silence control</label><span class="muted">Reduces quiet background between phrases; off by default to avoid empty gaps.</span></div>
+<div class="field wide"><label class="toggle"><input id="roomTail" type="checkbox"> Reduce lingering room tails (light)</label><span class="muted">Attenuates reverberation after phrases. It cannot remove reflections that overlap the spoken words; use a light setting to avoid clipped endings.</span>
+<div class="rangehead"><label for="tailAmt">Room-tail reduction</label><strong id="tailO">35%</strong></div><input id="tailAmt" type="range" min="10" max="60" step="5" value="35"></div>
 <div class="field"><label for="tone">Tonal profile</label><select id="tone"><option value="natural">Natural / balanced</option><option value="warm">Warm narration</option><option value="narration" selected>Studio narration</option><option value="bright">Bright (use sparingly)</option><option value="broadcast">Broadcast</option></select></div>
 <div class="field"><label for="voice">Voice effect</label><select id="voice"><option value="natural" selected>Natural voice</option><option value="deep">Slightly deeper</option><option value="bright">Brighter</option><option value="radio">Radio effect</option><option value="robot">Robot effect</option></select></div>
 <div class="field"><div class="rangehead"><label for="speed">Playback speed</label><strong id="speedO">1.00x</strong></div><input id="speed" type="range" min="0.85" max="1.15" step="0.01" value="1"></div>
@@ -38,14 +40,14 @@
 <div class="field"><label for="model">Transcription model</label><select id="model"><option value="tiny">Whisper Tiny · fastest</option><option value="base" selected>Whisper Base · balanced</option><option value="small">Whisper Small · more accurate, slower</option></select></div>
 <div class="field"><label for="lang">Spoken language</label><select id="lang"><option value="auto" selected>Auto detect</option><option value="english">English</option><option value="hindi">Hindi</option></select></div>
 </div>
-<div class="pillnote">Studio narration aims for a smoother, more even voice. It cannot recreate a different microphone, room, or narrator's vocal character; strong room echo needs a different approach.</div>
+<div class="pillnote">Room-tail control only lowers quiet decay between phrases. Echo that overlaps speech cannot be cleanly removed by this lightweight browser DSP; strong reverberation needs an AI dereverb model or a drier recording. For the most natural result, start with Noise reduction at 15–30%, leave silence control off, and enable room-tail reduction only if you hear lingering tails.</div>
 </aside>
 </div>
 <section class="panel section"><div class="checkrow"><div><h2>03 · Transcript and captions</h2><p class="muted">Transcription runs on your device after the speech model downloads. Review timestamps before exporting.</p></div><div class="actions" style="margin-top:0"><button id="xTxt" type="button" disabled>Text (.txt)</button><button id="xSrt" type="button" disabled>Subtitles (.srt)</button><button id="xJson" type="button" disabled>JSON</button></div></div>
 <div class="actions"><button id="addSeg" type="button" disabled>Add caption line</button></div><div class="segments" id="segs"><p class="empty">Your transcript will appear here. Every line can be played, edited or removed.</p></div>
 <div class="section"><h3>Find and replace</h3><div class="controls"><div class="field"><label for="find">Find text</label><input id="find" type="text" placeholder="Text to find"></div><div class="field"><label for="repl">Replace with</label><input id="repl" type="text" placeholder="Replacement text"></div><div class="field"><button id="doRepl" type="button" disabled>Replace all in transcript</button></div></div></div>
 </section>
-<p class="foot">Tip: use a short room-tone pause before speaking, keep the microphone at a steady distance, and compare at the same playback loudness. Loudness alone is not sound quality.</p>
+<p class="foot">Tip: keep the mic 10–15 cm away, slightly off-axis, and record near soft furnishings. This tool can reduce steady noise and some phrase-ending tails, but cannot fully remove room reflections embedded in speech.</p>
 </main>
 <script type="module">
 /* =====================================================================
@@ -220,6 +222,38 @@ function expander(x){
       if(g < maxCut) g = maxCut;
       y[i] = x[i] * Math.pow(10, g/20);
     } else y[i] = x[i];
+  }
+  return y;
+}
+
+/* ---------- Gentle room-tail attenuation ----------
+   Conservative tail control: lowers low-level decay between phrases.
+   It is not a full AI dereverb and cannot remove early reflections overlapping speech. */
+function reduceRoomTails(x, amount){
+  const n=x.length, y=new Float32Array(n);
+  const attack=Math.exp(-1/(0.004*SR));
+  const release=Math.exp(-1/(0.095*SR));
+  const look=Math.round(0.018*SR);
+  const floor=Math.pow(10,-48/20);
+  const maxReductionDb=6 + amount*0.12;
+  const env=new Float32Array(n);
+  let e=0;
+  for(let i=0;i<n;i++){
+    const a=Math.abs(x[i]);
+    e=a>e ? attack*e+(1-attack)*a : release*e+(1-release)*a;
+    env[i]=e;
+  }
+  for(let i=0;i<n;i++){
+    let peak=0;
+    const end=Math.min(n-1,i+look);
+    for(let j=i;j<=end;j+=8) if(env[j]>peak) peak=env[j];
+    const local=Math.max(env[i], peak*0.68, floor);
+    const db=20*Math.log10(local+1e-9);
+    const startDb=-32, endDb=-49;
+    let t=Math.max(0,Math.min(1,(startDb-db)/(startDb-endDb)));
+    t=t*t*(3-2*t);
+    const reductionDb=maxReductionDb*t;
+    y[i]=x[i]*Math.pow(10,-reductionDb/20);
   }
   return y;
 }
@@ -438,10 +472,11 @@ async function run(fn){
   finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
 }
 const fmtDur = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-const settings = () => ({ nr:+$('nr').value, gate:$('gate').checked, tone:$('tone').value,
+const settings = () => ({ nr:+$('nr').value, gate:$('gate').checked, roomTail:$('roomTail').checked, tailAmt:+$('tailAmt').value, tone:$('tone').value,
   speed:+$('speed').value, pitch:+$('pitch').value, voice:$('voice').value });
 
 $('nr').oninput = () => $('nrO').textContent = $('nr').value + '%';
+$('tailAmt').oninput = () => $('tailO').textContent = $('tailAmt').value + '%';
 $('speed').oninput = () => $('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';
 $('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
 
@@ -495,9 +530,10 @@ $('rec').onclick = async () => {
 async function enhance(){
   const s = settings();
   let x = S.orig;
-  if(s.nr > 0) x = await denoise(x, s.nr, p => prog('Removing noise', 0.6*p));
-  if(s.gate){ prog('Silencing gaps', 0.62); await tick(); x = expander(x); }
-  prog('Applying studio polish', 0.7); await tick();
+  if(s.nr > 0) x = await denoise(x, s.nr, p => prog('Removing steady background noise', 0.52*p));
+  if(s.roomTail){ prog('Reducing lingering room tails (light)', 0.57); await tick(); x = reduceRoomTails(x, s.tailAmt); }
+  if(s.gate){ prog('Silencing gaps gently', 0.62); await tick(); x = expander(x); }
+  prog('Applying balanced voice polish', 0.7); await tick();
   x = finalizeLoud(await studio(x, s.tone));
   S.clean = x;
   const v = VOICES[s.voice], semi = s.pitch + v.semi, r = Math.pow(2, semi/12), q = s.speed / r;
