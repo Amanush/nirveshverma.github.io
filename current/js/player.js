@@ -6,7 +6,7 @@
     hinglish: { correct: "Sahi Answer", why: "Ye sahi kyun hai", trick: "Yaad rakhne ki Trick", pyq: "PYQ Reference" } };
   const PK = "gk.panels", VK = "gk.view", HK = "gk.homeKey", CK = "gk.cfg";
   const prefs = { hide: { explain: false, trick: false, pyq: false }, view: { safe: true, guides: false, audio: true } };
-  const cfg = { minScale: .8 };                        // smallest text scale before a long list is split onto another page
+  const cfg = { minScale: .85 };                        // smallest text scale before a long list is split onto another page
   const load = (k, o) => { try { Object.assign(o, JSON.parse(localStorage.getItem(k) || "{}")); } catch (e) {} };
   load(PK, prefs.hide); load(VK, prefs.view); load(CK, cfg);
   const homeKey = () => { try { return localStorage.getItem(HK) || "Home"; } catch (e) { return "Home"; } };
@@ -79,7 +79,7 @@
   const cur = { host: null, topic: null, labels: null, lang: "en" };
   const known = new Map(), fitK = {}; let curSig = "", curPages = [ALL], ro = null, rt = null, lastW = 0, lastH = 0;
 
-  const render = (s, step, i, lang, rg) => { const b = slideBody(s, step, i, lang, rg), f = root.GKImages && root.GKImages.figure(s, i); return f ? el("div", { class: "imgwrap" + (s.type === "title" ? " col" : "") }, b, f) : b; };
+  const render = (s, step, i, lang, rg) => { const b = slideBody(s, step, i, lang, rg), f = root.GKImages && root.GKImages.figure(s, i); const im = root.GKImages && root.GKImages.norm(s.image); return f ? el("div", { class: "imgwrap" + (s.type === "title" ? " col" : "") + (im && im.layout === "big" ? " big" : "") }, b, f) : b; };
   function makeProbe(stage, body) {
     const probe = body.cloneNode(false), r = body.getBoundingClientRect(); probe.removeAttribute("data-slide");      // exact (fractional) size: a 0.4px difference can flip a line wrap
     probe.style.cssText = "position:absolute;visibility:hidden;flex:none;left:" + body.offsetLeft + "px;top:" + body.offsetTop + "px;width:" + r.width + "px;height:" + r.height + "px";
@@ -139,10 +139,9 @@
     /* the nav bar is built first so every measurement below sees the real body height */
     const prevB = el("button", { class: "btn", type: "button", onclick: () => go(-1) }, "←  " + labels.prev), nextB = el("button", { class: "btn primary", type: "button", onclick: () => go(1) }, labels.next + "  →");
     const nav = el("div", { class: "st-nav" }, el("button", { class: "btn", type: "button", onclick: () => { cancelQ(); view.idx = 0; view.page = 0; view.step = 0; again(); } }, labels.home),
-      presenting() ? el("button", { class: "btn", type: "button", title: "Esc", onclick: () => root.GKApp.setPresent(false) }, "✕") : null, el("span", { class: "grow" }), prevB, nextB);
+      presenting() ? el("button", { class: "btn", type: "button", title: "Esc", onclick: () => root.GKApp.setPresent(false) }, "✕") : null, el("button", { class: "btn", type: "button", title: "Pen (D)", onclick: () => root.GKAnnotate && root.GKAnnotate.toggle() }, "🖊"), el("span", { class: "grow" }), prevB, nextB);
     const stage = el("div", { class: "stage a" + view.aspect.replace(":", "x") + (prefs.view.safe && view.aspect === "9:16" ? " safe" : "") },
-      el("div", { class: "st-top" }, el("span", { class: "st-logo" }, "GK Turbo"), el("span", { class: "badge" }, topic.category), el("span", { class: "badge tagx" }, (topic.exams || []).join(" / ")),
-        el("button", { class: "wb-btn", type: "button", title: root.GKWhiteboard ? root.GKWhiteboard.tip() : "", "aria-label": "Whiteboard", onclick: () => root.GKWhiteboard && root.GKWhiteboard.toggle() }, "✎"),
+      el("div", { class: "st-top" }, el("span", { class: "badge" }, topic.category), (topic.exams || []).length ? el("span", { class: "badge tagx" }, topic.exams.join(" / ")) : null,
         el("span", { class: "grow" }), pgc, el("span", { class: "count" }, (view.idx + 1) + " / " + n)),
       body, el("div", { class: "st-bar" }, fill), nav);
     host.replaceChildren(stage);
@@ -168,7 +167,8 @@
     let sx = 0, sy = 0, down = false;   // swipe left / right on touch screens
     stage.addEventListener("pointerdown", e => { if (e.pointerType !== "touch" || e.target.closest("button,input,select,textarea,[contenteditable=true]")) return; sx = e.clientX; sy = e.clientY; down = true; });
     stage.addEventListener("pointercancel", () => { down = false; });
-    stage.addEventListener("pointerup", e => { if (!down) return; down = false; const dx = e.clientX - sx, dy = e.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && !editing()) go(dx < 0 ? 1 : -1); });
+    stage.addEventListener("pointerup", e => { if (!down) return; down = false; const dx = e.clientX - sx, dy = e.clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dy) < 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && !editing()) go(dx < 0 ? 1 : -1);
+      else if (presenting() && !editing() && Math.abs(dx) < 10 && Math.abs(dy) < 10) { const r = stage.getBoundingClientRect(); go(e.clientX - r.left > r.width * .35 ? 1 : -1); } });   // recording mode: tap right = next, tap left = back
     if (root.GKPlayer && root.GKPlayer.onChange) root.GKPlayer.onChange();
   }
 

@@ -56,8 +56,9 @@
     const drop = el("div", { class: "drop", tabindex: "0" }, l.drop), prev = el("div", { class: "prev" }), msg = el("div", { class: "msg", role: "status" });
     const alt = el("input", { type: "text", placeholder: l.alt, value: ex ? ex.alt || "" : "", "aria-label": l.alt }), src = el("input", { type: "text", placeholder: l.source, value: ex ? ex.source || "" : "", "aria-label": l.source });
     const useBtn = el("button", { class: "btn primary", type: "button", disabled: true }, l.use), linkBtn = el("button", { class: "btn", type: "button", hidden: true }, l.linked), cancel = el("button", { class: "btn", type: "button" }, l.cancel);
+    const bigCb = el("input", { type: "checkbox", checked: !ex || ex.layout !== "side" }), bigLbl = el("label", { class: "tg" }, bigCb, "Big picture (best for charts)");
     const d = el("dialog", { class: "dlg imgdlg" }, el("h3", {}, l.title), ex ? el("p", { class: "note" }, l.current + ": " + ex.src) : null,
-      el("div", { class: "row2" }, urlIn, fetchBtn), el("div", { class: "row2" }, fileIn, pasteBtn), drop, prev, msg, alt, src, el("div", { class: "row" }, cancel, linkBtn, useBtn));
+      el("div", { class: "row2" }, urlIn, fetchBtn), el("div", { class: "row2" }, fileIn, pasteBtn), drop, prev, msg, alt, src, bigLbl, el("div", { class: "row" }, cancel, linkBtn, useBtn));
     const close = () => { document.removeEventListener("paste", onPaste); d.close(); d.remove(); };
     const show = u => prev.replaceChildren(el("img", { src: u, alt: "" }));
     async function setBlob(blob, name, url) { const b = await prepare(blob); pending = { blob: b, name: name || "image", url }; show(URL.createObjectURL(b)); msg.textContent = ""; useBtn.disabled = false; linkBtn.hidden = true; }
@@ -80,9 +81,9 @@
       if (!pending || !pending.blob) return; const a = alt.value.trim() || o.fallbackAlt || "", ext = EXT[pending.blob.type] || "png";
       const path = "assets/" + slug(o.topic.id) + "-s" + (o.idx + 1) + "-" + Date.now().toString(36) + "." + ext;
       await GK.Storage.putAsset({ path, blob: pending.blob, type: pending.blob.type, name: pending.name, from: pending.url || "", onDisk: false }); cache.set(path, URL.createObjectURL(pending.blob));
-      o.onPlace({ src: path, alt: a, source: src.value.trim() }); close();
+      o.onPlace({ src: path, alt: a, source: src.value.trim(), layout: bigCb.checked ? "big" : "side" }); close();
     };
-    linkBtn.onclick = () => { if (pending && pending.linked) { o.onPlace({ src: pending.linked, alt: alt.value.trim() || o.fallbackAlt || "", source: src.value.trim() }); close(); } };
+    linkBtn.onclick = () => { if (pending && pending.linked) { o.onPlace({ src: pending.linked, alt: alt.value.trim() || o.fallbackAlt || "", source: src.value.trim(), layout: bigCb.checked ? "big" : "side" }); close(); } };
     cancel.onclick = close; d.addEventListener("cancel", () => close());
     document.body.append(d); d.showModal(); urlIn.focus();
   }

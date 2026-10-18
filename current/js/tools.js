@@ -61,7 +61,7 @@
   const undo = () => { S.strokes.pop(); redraw(); };
   const clear = () => { S.strokes = []; redraw(); };
   function activate(on) {
-    if (on && !built) build(); if (!built) return; S.active = on; cv.style.display = on ? "block" : "none"; bar.hidden = !on; document.body.classList.toggle("annotating", on);
+    if (on && !built) build(); if (!built) return; S.active = on; if (on && S.tool === "erase") S.tool = "pen"; cv.style.display = on ? "block" : "none"; bar.hidden = !on; document.body.classList.toggle("annotating", on);
     document.querySelectorAll(".pen-btn").forEach(x => x.classList.toggle("active", on)); if (on) { size(); paint(); flash(); }
   }
   root.GKAnnotate = { activate, toggle: () => activate(!S.active), setTool, undo, clear, onSlide() { if (S.strokes.length && !S.keep) clear(); },
@@ -93,7 +93,7 @@
   }
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(T)); } catch (e) {} };
   function init() { let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (saved) T = Object.assign({}, PRESETS.sky, sanitize(saved)); else if (matchMedia("(max-width:699px), (max-height:520px)").matches) T.ts = 1.15; apply(); }
-  function set(patch) { T = Object.assign({}, T, sanitize(patch)); if (!("preset" in patch)) T.preset = "custom"; apply(); persist(); }
+  function set(patch) { T = Object.assign({}, T, sanitize(patch)); if (!("preset" in patch) && COLOR_KEYS.some(k => k in patch)) T.preset = "custom"; apply(); persist(); }
   function preset(id) { if (!PRESETS[id]) return; T = Object.assign({ preset: id }, PRESETS[id]); apply(); persist(); }
   function exportJSON() { return JSON.stringify(Object.assign({ schema: "gkturbo.theme/1" }, T), null, 2); }
   function importJSON(text) {
@@ -107,7 +107,7 @@
 /* ===== Settings dialog, forgiving JSON import, wake lock ===== */
 (function (root) {
   const SL = {
-    en: { settings: "Settings", theme: "Theme", colors: "Colours", bg1: "Background (top)", bg2: "Background (bottom)", ink: "Text & outlines", card: "Cards", primary: "Main buttons", accent: "Selected items", accent2: "Highlight", tsize: "Slide text size", tsizeS: "Bigger text means more pages for long lists", minScale: "Smallest text before a new page", minS: "Long lists split onto extra pages instead of shrinking", outline: "Outline thickness", round: "Roundness", shadow: "Shadow depth", rays: "Sunburst background", safe: "Safe margins (9:16)", safeS: "Keeps text away from the Shorts / Reels buttons", audio: "Audio bar", exportT: "Export theme", importT: "Import theme", reset: "Reset theme", done: "Done", bad: "That file is not a valid theme." },
+    en: { settings: "Settings", theme: "Theme", colors: "Colours", bg1: "Background (top)", bg2: "Background (bottom)", ink: "Text & outlines", card: "Cards", primary: "Main buttons", accent: "Selected items", accent2: "Highlight", tsize: "Slide text size", tsizeS: "Bigger text means more pages for long lists", minScale: "Smallest text before a new page", minS: "Long lists split onto extra pages instead of shrinking", outline: "Outline thickness", round: "Roundness", shadow: "Shadow depth", rays: "Sunburst background", language: "Language", timer: "Quiz countdown", safe: "Safe margins (9:16)", safeS: "Keeps text away from the Shorts / Reels buttons", audio: "Audio bar", exportT: "Export theme", importT: "Import theme", reset: "Reset theme", done: "Done", bad: "That file is not a valid theme." },
     hi: { settings: "सेटिंग्स", theme: "थीम", colors: "रंग", tsize: "स्लाइड टेक्स्ट आकार", tsizeS: "बड़ा टेक्स्ट = लंबी सूची के ज़्यादा पेज", minScale: "नया पेज बनने से पहले सबसे छोटा टेक्स्ट", rays: "सनबर्स्ट बैकग्राउंड", safe: "सुरक्षित मार्जिन (9:16)", audio: "ऑडियो बार", exportT: "थीम निर्यात", importT: "थीम आयात", reset: "थीम रीसेट", done: "हो गया" },
     hinglish: { settings: "Settings", theme: "Theme", colors: "Colours", tsize: "Slide text size", tsizeS: "Bada text = lambi list ke zyada pages", minScale: "Naya page banne se pehle sabse chhota text", rays: "Sunburst background", safe: "Safe margins (9:16)", audio: "Audio bar", exportT: "Theme export", importT: "Theme import", reset: "Theme reset", done: "Done" } };
   const t = k => (SL[root.GKApp && root.GKApp.lang] || {})[k] || SL.en[k];
@@ -128,7 +128,8 @@
       row(t("tsize"), t("tsizeS"), rng(80, 160, 5, Math.round(T.ts * 100), v => { GKTheme.set({ ts: v / 100 }); relayout(); }, "%")),
       row(t("minScale"), t("minS"), rng(60, 100, 5, Math.round(P.cfg.minScale * 100), v => P.setCfg("minScale", v / 100), "%")),
       row(t("outline"), "", rng(0, 4, 1, T.ow, v => { GKTheme.set({ ow: v }); relayout(); }, "px")), row(t("round"), "", rng(4, 30, 2, T.r, v => { GKTheme.set({ r: v }); relayout(); }, "px")), row(t("shadow"), "", rng(0, 8, 1, T.sy, v => GKTheme.set({ sy: v }), "px")),
-      row(t("rays"), "", sw(T.rays, v => GKTheme.set({ rays: v }))), row(t("safe"), t("safeS"), sw(P.prefs.view.safe, v => P.setView("safe", v))), row(t("audio"), "", sw(P.prefs.view.audio !== false, v => P.setView("audio", v))),
+      row(t("rays"), "", sw(T.rays, v => GKTheme.set({ rays: v }))), row(t("safe"), t("safeS"), sw(P.prefs.view.safe, v => P.setView("safe", v))), row(t("language"), "", el("select", { onchange: e => GKApp.setLang(e.target.value) }, ...[["en", "English"], ["hi", "हिन्दी"], ["hinglish", "Hinglish"]].map(([v, n]) => { const o = el("option", { value: v }, n); if (v === GKApp.lang) o.selected = true; return o; }))),
+      row(t("timer"), "", rng(3, 30, 1, GKQuiz.settings.seconds, v => { GKQuiz.settings.seconds = v; try { localStorage.setItem("gk.quiz", JSON.stringify(GKQuiz.settings)); } catch (e) {} }, "s")),
       el("div", { class: "row" }, el("button", { class: "btn", type: "button", onclick: () => { const a = el("a", { href: URL.createObjectURL(new Blob([GKTheme.exportJSON()], { type: "application/json" })), download: "gkturbo-theme.json" }); a.click(); } }, t("exportT")),
         el("button", { class: "btn", type: "button", onclick: () => file.click() }, t("importT")), file, el("button", { class: "btn", type: "button", onclick: () => { GKTheme.preset("sky"); relayout(); d.close(); d.remove(); open(); } }, t("reset")),
         el("button", { class: "btn primary", type: "button", onclick: () => { d.close(); d.remove(); } }, t("done"))));
@@ -179,5 +180,17 @@
   let wl = null, want = false;
   async function wake(on) { want = on; try { if (on && navigator.wakeLock) wl = await navigator.wakeLock.request("screen"); else if (wl) { await wl.release(); wl = null; } } catch (e) {} }
   document.addEventListener("visibilitychange", () => { if (want && document.visibilityState === "visible") wake(true); });
-  root.GKSettings = { open }; root.GKTools = { normalizeImport, wake, wakeState: () => !!wl };
+  /* export: local images are embedded, so one JSON file carries everything (import it on any device) */
+  const toURL = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
+  async function exportWithImages(topic) {
+    const t = JSON.parse(JSON.stringify(topic));
+    for (const s of t.slides) { const im = typeof s.image === "string" ? (s.image = { src: s.image, alt: "", source: "" }) : s.image;
+      if (im && /^assets\//.test(im.src)) { try { const a = await GK.Storage.getAsset(im.src); if (a) im.src = await toURL(a.blob); } catch (e) {} } }
+    return JSON.stringify(t, null, 2);
+  }
+  /* paste (Ctrl+V / long-press paste) or drop an image anywhere: it goes onto the current slide and is saved */
+  document.addEventListener("paste", e => { if (document.querySelector("dialog[open]") || (e.target && e.target.closest && e.target.closest("input,textarea,[contenteditable=true]"))) return; const it = [...((e.clipboardData && e.clipboardData.items) || [])].find(x => x.type.startsWith("image/")); if (it) { e.preventDefault(); GKApp.addImageBlob(it.getAsFile(), "pasted"); } });
+  document.addEventListener("drop", e => { const f = e.dataTransfer && [...e.dataTransfer.files].find(x => x.type.startsWith("image/")); if (f) { e.preventDefault(); GKApp.addImageBlob(f, f.name); } });
+  document.body.append(el("button", { class: "pen-fab", type: "button", "aria-label": "Pen", onclick: () => root.GKAnnotate.activate(true) }));
+  root.GKSettings = { open }; root.GKTools = { normalizeImport, wake, exportWithImages, wakeState: () => !!wl };
 })(window);
