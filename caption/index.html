@@ -9,7 +9,7 @@
 <title>Kalam · Caption studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;600;700;800&family=Montserrat:wght@400;600;700;800&family=Anton&family=Hind:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Baloo+2:wght@400;600;700;800&family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=Sora:wght@400;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&family=Unbounded:wght@400;600;700;800&family=Lexend:wght@400;600;700;800&family=Inter:wght@400;600;700;800&family=Poppins:wght@400;600;700;800&family=Montserrat:wght@400;600;700;800&family=Anton&family=Hind:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Baloo+2:wght@400;600;700;800&family=Mukta:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef1fb; --a:#d6ecff; --b:#e6dbff; --c:#d9fbe8;
@@ -146,6 +146,9 @@ input[type=range]{width:100%;accent-color:var(--accent);height:24px;margin:0}
 .chip{border:1px solid var(--line);background:var(--field);border-radius:10px;padding:5px 10px;font-weight:600;font-size:13px;font-family:"Noto Sans Devanagari","Plus Jakarta Sans",system-ui,sans-serif}
 .chip.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
 .note{font-size:12.5px;color:var(--mute);margin:0 0 14px}
+.grads{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.grads button{height:40px;border-radius:12px;border:2px solid var(--solid);box-shadow:0 0 0 1px var(--line);padding:0}
+.grads button[aria-pressed=true]{box-shadow:0 0 0 2.5px var(--accent)}
 progress{width:100%;height:8px;accent-color:var(--accent)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -210,7 +213,7 @@ progress{width:100%;height:8px;accent-color:var(--accent)}
     <!-- SCRIPT -->
     <div class="pane" id="p-script">
       <label class="drop" id="drop">
-        <input type="file" id="fJson" accept=".json,.txt,application/json,text/plain" hidden>
+        <input type="file" id="fJson" accept=".json,.txt,.srt,.vtt,application/json,text/plain" hidden>
         <svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
         <span data-i="drop">Drop a JSON file here, or tap to choose</span>
       </label>
@@ -291,6 +294,7 @@ progress{width:100%;height:8px;accent-color:var(--accent)}
       </div>
       <label class="check"><span class="switch"><input type="checkbox" data-s="byLength"><span></span></span><span data-i="bylen">Time words by length</span></label>
       <label class="check" id="ignoreRow" hidden><span class="switch"><input type="checkbox" data-s="ignoreJsonTimes"><span></span></span><span data-i="ignore">Ignore timings in JSON</span></label>
+      <label class="check" id="fitRow" hidden><span class="switch"><input type="checkbox" data-s="fitAudio"><span></span></span><span data-i="fit">Stretch timings to match the mp3 length</span></label>
       <div class="lab" style="margin-top:6px"><span data-i="times">Caption times</span></div>
       <div class="cols"><span></span><span data-i="cap">Caption</span><span data-i="start">Start</span><span data-i="end">End</span></div>
       <div id="capRows"></div>
@@ -406,8 +410,10 @@ progress{width:100%;height:8px;accent-color:var(--accent)}
           <button type="button" data-v="green" data-i="bg_green">Green screen</button>
         </div>
       </div>
+      <div class="field" data-when="bg:gradient"><label><span data-i="grads">Gradient presets</span></label><div class="grads" id="grads"></div></div>
       <div class="field" data-when="bg:gradient,solid,image"><label><span data-i="color">Color</span></label><div data-c="bgColor"></div></div>
       <div class="field" data-when="bg:gradient"><label><span data-i="color2">Second color</span></label><div data-c="bg2"></div></div>
+      <div data-when="bg:gradient"><label class="check"><span class="switch"><input type="checkbox" data-s="bg3on"><span></span></span><span data-i="use3">Use a third color</span></label><div class="field" data-when="bg3on:true"><label><span data-i="color3">Third color</span></label><div data-c="bg3"></div></div></div>
       <div class="field" data-when="bg:gradient"><label for="bgAngle"><span data-i="angle">Angle</span><output data-out="bgAngle" data-unit="°"></output></label><input type="range" id="bgAngle" min="0" max="360" step="1" data-s="bgAngle"></div>
       <div class="field" data-when="bg:image">
         <label class="btn" for="fBg" style="cursor:pointer"><span data-i="pick_img">Choose image</span></label>
@@ -453,7 +459,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 const L={
 en:{tagline:'Caption studio',install:'Install app',loop:'Loop',hint:'Click a word in the preview to enlarge it. Click again to undo.',
 tab_script:'Script',tab_timing:'Timing',tab_words:'Words',tab_style:'Style',tab_canvas:'Canvas',tab_export:'Export',
-drop:'Drop a JSON file here, or tap to choose',src_l:'JSON or plain text',
+drop:'Drop a JSON or SRT file here, or tap to choose',src_l:'JSON, SRT or plain text',
 src_ph:'["First caption line.", "Second line."]  or  {"segments":[{"start":0,"end":2.5,"text":"Hello"}]}  or just type text',
 samp_en:'English sample',samp_hi:'Hindi sample',lang_l:'Caption language',lang_auto:'Auto',lang_en:'English',lang_hi:'Hindi',
 split_l:'Split style',split_smart:'Smart phrasing (NLP)',split_fixed:'Fixed word count',split_word:'One word at a time',split_lines:'One line per caption',
@@ -471,15 +477,15 @@ size_title:'Video size',w:'Width (px)',h:'Height (px)',bg:'Background',bg_grad:'
 angle:'Angle',pick_img:'Choose image',trans_note:'The checkerboard is only a preview. PNG and WebM exports keep the transparency (WebM alpha depends on the browser).',
 exp_png:'Save current frame (PNG)',exp_rec:'Record video (WebM)',exp_stop:'Stop recording',fps:'Frame rate',
 rec_note:'Recording plays the whole timeline in real time, with your mp3 if loaded. Keep this tab open until it finishes.',
-exp_srt:'Subtitles (SRT text)',exp_json:'Timed captions (JSON)',
-s_stat:'{c} captions · {w} words · {t}',s_timed:'timings from JSON',s_even:'timed evenly',s_empty:'Nothing to show yet. Paste text or load a JSON file.',
+exp_srt:'Subtitles (SRT text)',exp_json:'Timed captions (JSON)',grads:'Gradient presets',color3:'Third color',use3:'Use a third color',fit:'Stretch timings to match the mp3 length',
+s_stat:'{c} captions · {w} words · {t}',s_timed:'timings from file',s_even:'timed evenly',s_empty:'Nothing to show yet. Paste text or load a JSON file.',
 s_bad:'This is not valid JSON, so it is being used as plain text.',s_nolist:'No caption text found in this JSON.',
 nlp_ok:'NLP engine ready',nlp_off:'Built-in rules (NLP library offline)',a_stat:'{n} · {d}',
 saved:'Saved',norec:'This browser cannot record video. Use PNG or SRT export instead.',rec_start:'Recording… keep this tab open',rec_done:'Recording finished',
 audio_err:'Could not read that audio file.',bg_err:'Could not read that image.',file_err:'Could not read that file.',png_err:'Could not export the frame.'},
 hi:{tagline:'कैप्शन स्टूडियो',install:'ऐप इंस्टॉल करें',loop:'लूप',hint:'प्रीव्यू में किसी शब्द पर क्लिक करके बड़ा करें। वापस करने के लिए दोबारा क्लिक करें।',
 tab_script:'स्क्रिप्ट',tab_timing:'समय',tab_words:'शब्द',tab_style:'स्टाइल',tab_canvas:'कैनवास',tab_export:'एक्सपोर्ट',
-drop:'JSON फ़ाइल यहाँ छोड़ें, या चुनने के लिए टैप करें',src_l:'JSON या सादा टेक्स्ट',
+drop:'JSON या SRT फ़ाइल यहाँ छोड़ें, या चुनने के लिए टैप करें',src_l:'JSON, SRT या सादा टेक्स्ट',
 src_ph:'["पहली पंक्ति।", "दूसरी पंक्ति।"]  या  {"segments":[{"start":0,"end":2.5,"text":"नमस्ते"}]}  या सीधे टेक्स्ट लिखें',
 samp_en:'अंग्रेज़ी नमूना',samp_hi:'हिन्दी नमूना',lang_l:'कैप्शन भाषा',lang_auto:'अपने-आप',lang_en:'अंग्रेज़ी',lang_hi:'हिन्दी',
 split_l:'बाँटने का तरीका',split_smart:'स्मार्ट वाक्यांश (NLP)',split_fixed:'तय शब्द संख्या',split_word:'एक बार में एक शब्द',split_lines:'हर पंक्ति एक कैप्शन',
@@ -497,8 +503,8 @@ size_title:'वीडियो आकार',w:'चौड़ाई (px)',h:'ऊ�
 angle:'कोण',pick_img:'चित्र चुनें',trans_note:'चेकरबोर्ड सिर्फ़ प्रीव्यू है। PNG और WebM में पारदर्शिता बनी रहती है (WebM में अल्फ़ा ब्राउज़र पर निर्भर)।',
 exp_png:'मौजूदा फ़्रेम सेव करें (PNG)',exp_rec:'वीडियो रिकॉर्ड करें (WebM)',exp_stop:'रिकॉर्डिंग रोकें',fps:'फ़्रेम रेट',
 rec_note:'रिकॉर्डिंग पूरी टाइमलाइन रियल-टाइम में चलाती है, mp3 हो तो उसके साथ। पूरा होने तक यह टैब खुला रखें।',
-exp_srt:'सबटाइटल (SRT टेक्स्ट)',exp_json:'समयबद्ध कैप्शन (JSON)',
-s_stat:'{c} कैप्शन · {w} शब्द · {t}',s_timed:'JSON से समय',s_even:'बराबर समय',s_empty:'अभी कुछ दिखाने को नहीं है। टेक्स्ट पेस्ट करें या JSON फ़ाइल लोड करें।',
+exp_srt:'सबटाइटल (SRT टेक्स्ट)',exp_json:'समयबद्ध कैप्शन (JSON)',grads:'ग्रेडिएंट प्रीसेट',color3:'तीसरा रंग',use3:'तीसरा रंग इस्तेमाल करें',fit:'समय को mp3 की लंबाई के अनुसार खींचें',
+s_stat:'{c} कैप्शन · {w} शब्द · {t}',s_timed:'फ़ाइल से समय',s_even:'बराबर समय',s_empty:'अभी कुछ दिखाने को नहीं है। टेक्स्ट पेस्ट करें या JSON फ़ाइल लोड करें।',
 s_bad:'यह मान्य JSON नहीं है, इसलिए इसे सादा टेक्स्ट माना गया है।',s_nolist:'इस JSON में कैप्शन का टेक्स्ट नहीं मिला।',
 nlp_ok:'NLP इंजन तैयार',nlp_off:'बिल्ट-इन नियम (NLP लाइब्रेरी ऑफ़लाइन)',a_stat:'{n} · {d}',
 saved:'सेव हो गया',norec:'यह ब्राउज़र वीडियो रिकॉर्ड नहीं कर सकता। PNG या SRT एक्सपोर्ट इस्तेमाल करें।',rec_start:'रिकॉर्डिंग जारी है… यह टैब खुला रखें',rec_done:'रिकॉर्डिंग पूरी हुई',
@@ -517,15 +523,15 @@ function applyI18n(){
 /* ---------- settings ---------- */
 const S={
   lang:'auto',mode:'smart',maxWords:5,
-  timeMode:'wps',duration:20,perCap:2.5,wps:2.6,delay:0.3,gap:0.05,byLength:true,ignoreJsonTimes:false,
+  timeMode:'wps',duration:20,perCap:2.5,wps:2.6,delay:0.3,gap:0.05,byLength:true,ignoreJsonTimes:false,fitAudio:false,
   speed:1,loop:false,
-  font:'Poppins',weight:700,size:84,lineH:1.2,align:'center',posY:72,widthPct:86,
+  font:'Outfit',weight:800,size:84,lineH:1.2,align:'center',posY:72,widthPct:86,
   color:'#ffffff',hlColor:'#ffd60a',bigColor:'#ff453a',wordMode:'highlight',anim:'pop',
   bigScale:1.6,autoEmph:false,
   box:false,boxColor:'#000000',boxOpacity:60,boxRadius:24,
   shadow:true,shadowColor:'#000000',shadowBlur:14,shadowDist:5,
   stroke:0,strokeColor:'#000000',
-  W:1080,H:1920,bg:'gradient',bgColor:'#111827',bg2:'#4338ca',bgAngle:160,fps:30
+  W:1080,H:1920,bg:'gradient',bgColor:'#3a1c71',bg2:'#ffaf7b',bg3:'#d76d77',bg3on:true,bgAngle:160,fps:30
 };
 try{const saved=JSON.parse(store.get('kalam.settings.v1')||'null'); if(saved&&typeof saved==='object') for(const k in saved) if(k in S && typeof saved[k]===typeof S[k]) S[k]=saved[k];}catch(e){}
 let saveT=0; const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(()=>store.set('kalam.settings.v1',JSON.stringify(S)),400);};
@@ -579,11 +585,21 @@ function toUnits(list){
     return {text:text.trim(),start:st,end:en,words:ws&&ws.every(w=>w.start!=null&&w.end!=null)?ws:null};
   }).filter(u=>u&&u.text);
 }
+function parseSrt(t){
+  const out=[],TM=/((?:\d+:)?\d+:\d+(?:[.,]\d+)?)\s*-->\s*((?:\d+:)?\d+:\d+(?:[.,]\d+)?)/;
+  t.replace(/\r/g,'').split(/\n\s*\n/).forEach(b=>{
+    const lines=b.split('\n').map(s=>s.trim()).filter(Boolean), i=lines.findIndex(l=>TM.test(l)); if(i<0)return;
+    const m=TM.exec(lines[i]), st=tparse(m[1]), en=tparse(m[2]);
+    const text=lines.slice(i+1).join(' ').replace(/<[^>]+>/g,'').replace(/\{[^}]+\}/g,'').replace(/\s+/g,' ').trim();
+    if(text&&st!=null&&en!=null&&en>st)out.push({text,start:st,end:en});
+  });
+  return out;
+}
 const plain=t=>t.split(/\n+/).map(s=>s.trim()).filter(Boolean).map(text=>({text}));
 function parseSource(raw){
-  src.raw=raw; src.warn=''; let units=[]; const t=raw.trim();
+  src.raw=raw; src.warn=''; src.isSrt=false; let units=[]; const t=raw.trim();
   if(t){
-    if(/^[\[{]/.test(t)){
+    if(/-->/.test(t)&&/\d:\d/.test(t)&&!/^[\[{]/.test(t)){units=parseSrt(t); src.isSrt=units.length>0; if(!units.length)src.warn='nolist';}else if(/^[\[{]/.test(t)){
       try{
         const o=JSON.parse(t);
         const list=(Array.isArray(o)&&o.length&&o.every(x=>typeof x==='string'))?o:findList(o);
@@ -696,9 +712,10 @@ function buildNow(){
     else if(S.timeMode==='total')spreadW(flat,S.delay,Math.max(S.delay+.5,S.duration));
     else{ const avg=flat.reduce((a,t)=>a+wOf(t),0)/(flat.length||1)||1; let c=S.delay; flat.forEach(t=>{const d=wOf(t)/avg/S.wps; t.start=c;t.end=c+d;c+=d;}); }
   }
+  if(useTimes&&S.fitAudio&&P.audio&&P.adur>0){const mx=Math.max(...flat.map(t=>t.end)); if(mx>0){const k=P.adur/mx; flat.forEach(t=>{t.start*=k;t.end*=k;});}}
   caps.forEach(c=>{const tk=c.tokens; c.start=tk[0].start; c.end=Math.max(c.start+.15,tk[tk.length-1].end-S.gap);});
   autoSet=autoPick(hi);
-  updateDur(); renderLists(); setStatus(); $('#ignoreRow').hidden=!src.hadTimes; dirty=true;
+  updateDur(); renderLists(); setStatus(); $('#ignoreRow').hidden=!src.hadTimes; $('#fitRow').hidden=!src.hadTimes||!P.audio; dirty=true;
 }
 function updateDur(){
   const last=caps.length?Math.max(...caps.map(c=>c.end)):0;
@@ -773,7 +790,7 @@ function paintBg(){
   if(S.bg==='green'){c.fillStyle='#00b140'; c.fillRect(0,0,W,H); return;}
   if(S.bg==='gradient'){
     const a=S.bgAngle*Math.PI/180,dx=Math.sin(a),dy=-Math.cos(a),len=Math.abs(W*dx)+Math.abs(H*dy);
-    const g=c.createLinearGradient(W/2-dx*len/2,H/2-dy*len/2,W/2+dx*len/2,H/2+dy*len/2); g.addColorStop(0,S.bgColor); g.addColorStop(1,S.bg2);
+    const g=c.createLinearGradient(W/2-dx*len/2,H/2-dy*len/2,W/2+dx*len/2,H/2+dy*len/2); g.addColorStop(0,S.bgColor); if(S.bg3on)g.addColorStop(.5,S.bg3); g.addColorStop(1,S.bg2);
     c.fillStyle=g; c.fillRect(0,0,W,H); return;
   }
   c.fillStyle=S.bgColor; c.fillRect(0,0,W,H);
@@ -883,13 +900,13 @@ function updateAudioStat(){
 function clearAudio(){
   if(P.audio){P.audio.pause();} if(P.aurl)URL.revokeObjectURL(P.aurl);
   if(P.actx){try{P.actx.close();}catch(e){}}
-  P.audio=null;P.adur=0;P.aurl=null;P.actx=null;P.asrc=null;P.dest=null; updateAudioStat(); updateDur();
+  P.audio=null;P.adur=0;P.aurl=null;P.actx=null;P.asrc=null;P.dest=null; updateAudioStat(); updateDur(); build();
 }
 function loadAudio(file){
   clearAudio(); const a=new Audio(); a.preload='auto'; P.aurl=URL.createObjectURL(file); a.src=P.aurl; P.aname=file.name; P.audio=a;
   a.addEventListener('loadedmetadata',()=>{
     P.adur=a.duration||0;
-    if(!(src.hadTimes&&!S.ignoreJsonTimes)){S.timeMode='total'; S.duration=+P.adur.toFixed(1); syncInputs(); build();}
+    if(!(src.hadTimes&&!S.ignoreJsonTimes)){S.timeMode='total'; S.duration=+P.adur.toFixed(1); syncInputs();} build();
     updateDur(); updateAudioStat();
   });
   a.addEventListener('error',()=>{toast(T('audio_err')); clearAudio();});
@@ -899,8 +916,10 @@ $('#audioX').addEventListener('click',()=>{pause(); clearAudio();});
 
 /* ---------- files / source ---------- */
 let srcT=0;
-function setSource(text){ $('#src').value=text; parseSource(text); buildNow(); seek(Math.min(P.dur,S.delay+.05)); }
-$('#src').addEventListener('input',()=>{clearTimeout(srcT); srcT=setTimeout(()=>{parseSource($('#src').value); buildNow();},350);});
+let wasSrt=false;
+function afterParse(){ if(src.isSrt&&!wasSrt){S.mode='lines'; syncInputs();} wasSrt=src.isSrt; }
+function setSource(text){ $('#src').value=text; parseSource(text); afterParse(); buildNow(); seek(Math.min(P.dur,S.delay+.05)); }
+$('#src').addEventListener('input',()=>{clearTimeout(srcT); srcT=setTimeout(()=>{parseSource($('#src').value); afterParse(); buildNow();},350);});
 function readFile(f){
   const r=new FileReader(); r.onload=()=>{setSource(String(r.result)); };
   r.onerror=()=>toast(T('file_err')); r.readAsText(f);
@@ -923,7 +942,7 @@ $('#fBg').addEventListener('change',e=>{
 });
 
 /* ---------- controls wiring ---------- */
-const REB=new Set(['mode','maxWords','timeMode','duration','perCap','wps','delay','gap','byLength','ignoreJsonTimes','lang','autoEmph']);
+const REB=new Set(['mode','maxWords','timeMode','duration','perCap','wps','delay','gap','byLength','ignoreJsonTimes','fitAudio','lang','autoEmph']);
 const MINS={duration:1,perCap:.3,wps:.3,delay:0,gap:0};
 function set(k,v){
   if(k==='W'||k==='H')v=clamp(Math.round(v),64,4096);
@@ -941,6 +960,7 @@ function refreshOut(){
   $$('[data-when]').forEach(el=>{const [k,vals]=el.dataset.when.split(':'); el.hidden=!vals.split(',').includes(String(S[k]));});
   $$('.colorf').forEach(e=>e._sync()); $$('.preset').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.w===S.W&&+b.dataset.h===S.H)));
   $('#btnLoop').setAttribute('aria-pressed',String(S.loop));
+  const gk=gKey(S.bgAngle,S.bgColor,S.bg2,S.bg3on?S.bg3:''); $$('#grads button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.k===gk)));
 }
 function syncInputs(){
   $$('[data-s]').forEach(el=>{const v=S[el.dataset.s]; if(el.type==='checkbox')el.checked=!!v; else el.value=v;});
@@ -966,11 +986,15 @@ $$('[data-c]').forEach(el=>{
   el.addEventListener('click',e=>{const b=e.target.closest('.sw'); if(b)set(key,b.dataset.c);});
   inp.addEventListener('input',()=>set(key,inp.value));
 });
-const FONTS=[['Poppins','Poppins · English'],['Montserrat','Montserrat · English'],['Anton','Anton · English'],['Hind','Hind · हिन्दी + English'],['Noto Sans Devanagari','Noto Sans · हिन्दी'],['Baloo 2','Baloo 2 · हिन्दी + English'],['Mukta','Mukta · हिन्दी + English']];
+const FONTS=[['Outfit','Outfit · modern'],['Sora','Sora · modern'],['Bricolage Grotesque','Bricolage Grotesque · bold'],['Space Grotesk','Space Grotesk · tech'],['Unbounded','Unbounded · wide'],['Lexend','Lexend · clean'],['Inter','Inter · neutral'],['Poppins','Poppins · English + हिन्दी'],['Montserrat','Montserrat · English'],['Anton','Anton · English'],['Hind','Hind · हिन्दी + English'],['Noto Sans Devanagari','Noto Sans · हिन्दी'],['Baloo 2','Baloo 2 · हिन्दी + English'],['Mukta','Mukta · हिन्दी + English']];
 $('#font').innerHTML=FONTS.map(f=>`<option value="${f[0]}">${f[1]}</option>`).join('');
 const SIZES=[['9:16','Reels · Shorts · TikTok',1080,1920],['1:1','Square post',1080,1080],['4:5','Instagram post',1080,1350],['16:9','YouTube · 1080p',1920,1080],['16:9','HD · 720p',1280,720],['9:16','Vertical · 720p',720,1280],['4:3','Classic',1440,1080],['21:9','Cinema',2560,1080]];
 $('#presets').innerHTML=SIZES.map(s=>`<button type="button" class="preset" data-w="${s[2]}" data-h="${s[3]}"><i><s style="width:${Math.round(28*Math.min(1,s[2]/s[3]))}px;height:${Math.round(28*Math.min(1,s[3]/s[2]))}px"></s></i><b>${s[0]} · ${s[2]}×${s[3]}</b><span>${s[1]}</span></button>`).join('');
 $('#presets').addEventListener('click',e=>{const b=e.target.closest('.preset'); if(!b)return; S.W=+b.dataset.w; S.H=+b.dataset.h; $('#W').value=S.W; $('#H').value=S.H; applySize(); saveSoon();});
+const GRADS=[['Sunset',160,'#3a1c71','#ffaf7b','#d76d77'],['Aurora',145,'#0f0c29','#00d2ff','#3a47d5'],['Ocean',180,'#0575e6','#00f260',null],['Candy',135,'#f093fb','#f5576c',null],['Midnight',200,'#0f2027','#2c5364','#203a43'],['Mint',160,'#11998e','#38ef7d',null],['Fire',135,'#f12711','#f5af19',null],['Dusk',150,'#2b1055','#7597de','#6a3093'],['Neon',135,'#7f00ff','#e100ff',null],['Peach',160,'#ff9a9e','#fecfef','#fad0c4']];
+const gKey=(a,c1,c2,c3)=>[a,c1,c2,c3||''].join('|').toLowerCase();
+$('#grads').innerHTML=GRADS.map((g,i)=>`<button type="button" aria-label="${g[0]}" title="${g[0]}" data-k="${gKey(g[1],g[2],g[3],g[4])}" data-gi="${i}" style="background:linear-gradient(${g[1]}deg,${g[2]}${g[4]?','+g[4]:''},${g[3]})"></button>`).join('');
+$('#grads').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; const g=GRADS[+b.dataset.gi]; Object.assign(S,{bg:'gradient',bgAngle:g[1],bgColor:g[2],bg2:g[3],bg3on:!!g[4]}); if(g[4])S.bg3=g[4]; dirty=true; syncInputs(); saveSoon();});
 $('#tabs').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b)return;
   $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
