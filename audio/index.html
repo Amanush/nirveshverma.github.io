@@ -1,1 +1,1129 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Voice Studio — Natural Narration</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#2b3b53;--text:#edf3fb;--muted:#9eafc5;--accent:#64d5b1;--orig:#7b91ad;--danger:#ff8d8d;font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#182b43 0,#0b1220 52%);color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#22334b;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:650}button:hover:not(:disabled){filter:brightness(1.13)}button:disabled{opacity:.38;cursor:not-allowed}.primary{background:var(--accent);border-color:var(--accent);color:#09231d}.quiet{background:transparent}.danger{border-color:#76434a;color:#ffd9dc}.wrap{max-width:1150px;margin:auto;padding:28px 18px 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#72e2c1,#2a8f87);display:grid;place-items:center;color:#08251e;font-size:23px;font-weight:900}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:800}.top h1{font-size:clamp(24px,4vw,36px);line-height:1.1;margin:3px 0}.sub{color:var(--muted);margin:5px 0 0}.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:16px}.panel{border:1px solid var(--line);background:linear-gradient(180deg,rgba(23,36,58,.95),rgba(15,25,41,.96));border-radius:18px;padding:18px;min-width:0;box-shadow:0 16px 44px #0002}.panel h2{font-size:17px;margin:0 0 12px}.panel h3{font-size:14px;margin:0 0 8px}.muted{color:var(--muted);font-size:13px}.drop{border:1.5px dashed #46617c;background:#0e1a2b;border-radius:14px;text-align:center;padding:24px 16px;transition:.15s}.drop.over{border-color:var(--accent);background:#122d31}.drop strong{display:block;font-size:16px;margin-bottom:4px}.drop input{max-width:100%;margin-top:10px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{margin-top:12px;color:var(--muted);font-size:13px;min-height:20px;overflow-wrap:anywhere}.status.err{color:var(--danger)}.progress{height:5px;background:#29384d;border-radius:99px;overflow:hidden;margin-top:9px}.progress[hidden]{display:none}.bar{height:100%;width:0;background:var(--accent);transition:width .15s}.bar.indet{width:35%;animation:slide 1s infinite alternate}@keyframes slide{to{transform:translateX(190%)}}.controls{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field label{font-size:12px;color:var(--muted);font-weight:700}.field select,.field input[type=number],.field input[type=text]{width:100%;background:#0b1525;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px}.field input[type=range]{width:100%;accent-color:var(--accent)}.rangehead{display:flex;justify-content:space-between;gap:8px}.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.toggle input{accent-color:var(--accent)}.wide{grid-column:1/-1}.playergrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.player{border:1px solid var(--line);background:#0b1525;border-radius:12px;padding:12px;min-width:0}.player strong{display:block;font-size:13px;margin-bottom:7px}.player audio{width:100%;height:38px}.wavewrap{height:190px;position:relative;cursor:crosshair;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#0b1525;margin-top:12px}.wavewrap canvas{width:100%;height:190px;display:block}.head{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 8px #fff;pointer-events:none;display:none}.smallrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px}.tag{font-size:11px;color:#a5f3dd;border:1px solid #2d6259;padding:3px 8px;border-radius:999px}.help{font-size:12px;color:var(--muted);margin:10px 0 0}.empty{color:var(--muted);font-size:13px}.segments{display:flex;flex-direction:column;gap:8px;margin-top:12px}.seg{display:grid;grid-template-columns:58px 130px minmax(100px,1fr) 66px;gap:8px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px}.seg button{padding:7px 8px;font-size:12px}.times{display:flex;gap:4px}.times input{min-width:0;width:50%;background:#0b1525;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px;font-size:12px}.seg textarea{width:100%;resize:vertical;background:#0b1525;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px;min-height:34px}.section{margin-top:16px}.foot{margin-top:18px;color:var(--muted);font-size:12px;text-align:center}.checkrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.pillnote{background:#132b2d;border:1px solid #24524c;color:#b5f4e1;padding:9px 11px;border-radius:10px;font-size:12px;margin-top:12px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.playergrid{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.wrap{padding:18px 10px 32px}.panel{padding:13px}.controls{grid-template-columns:1fr}.seg{grid-template-columns:52px 1fr 60px}.times{grid-column:2;grid-row:1}.seg textarea{grid-column:1/-1;grid-row:2}.seg button:last-child{grid-column:3;grid-row:1}.top .tag{display:none}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div class="brand"><div class="logo">〽</div><div><div class="eyebrow">Voice processing workspace</div><h1>Voice Studio</h1><p class="sub">Adaptive spectral cleanup · WPE dereverberation · natural narration</p></div></div><span class="tag">Runs locally in your browser</span></header>
+<div class="grid">
+<section class="panel">
+<h2>01 · Load or record audio</h2>
+<div class="drop" id="drop"><strong>Drop an audio file here</strong><span class="muted">MP3, WAV, M4A, WebM and other browser-supported formats</span><br><input id="file" type="file" accept="audio/*"><div class="muted" id="srcinfo">No audio loaded yet</div></div>
+<div class="actions"><button id="rec" type="button">Record with microphone</button><button id="bEnh" class="primary" type="button" disabled>Enhance audio</button><button id="bBoth" type="button" disabled>Enhance + transcribe</button><button id="bTr" type="button" disabled>Transcribe only</button></div>
+<div class="progress" id="prog" hidden><div class="bar" id="bar"></div></div><div class="status" id="status" role="status" aria-live="polite">Load a recording to begin.</div>
+<div class="playergrid"><div class="player"><strong>Original recording</strong><audio id="aOrig" controls preload="metadata"></audio></div><div class="player"><strong>Enhanced result</strong><audio id="aFinal" controls preload="metadata"></audio></div></div>
+<div class="wavewrap" id="wavewrap" title="Click to seek in enhanced audio"><canvas id="wave"></canvas><div class="head" id="head"></div></div><div class="smallrow"><span class="muted">Waveform comparison · same scale, original above / enhanced below</span><span class="muted">Click waveform to seek</span></div>
+<div class="section"><h2>02 · Download enhanced audio</h2><div class="controls"><div class="field"><label for="fmt">Export format</label><select id="fmt"><option value="wav">WAV · 16-bit</option><option value="wav24">WAV · 24-bit</option><option value="mp3">MP3 · 192 kbps</option></select></div><div class="field"><label>&nbsp;</label><button id="dlAudio" class="primary" type="button" disabled>Download enhanced audio</button></div></div></div>
+</section>
+<aside class="panel">
+<h2>Processing controls</h2>
+<div class="pillnote" style="margin:0 0 12px"><label class="toggle" style="color:#b5f4e1;font-weight:800"><input id="referenceMatch" type="checkbox" checked> Match the supplied reference audio</label>
+<div style="margin-top:7px">Reference fingerprint: <b>−19.7 LUFS</b> integrated loudness · <b>5.9 LU</b> loudness range · <b>−1.0 dBFS</b> sample peak · <b>−43.8 dBFS</b> quiet-frame 10th percentile.</div>
+<div class="muted" style="margin-top:5px">Matches acoustic measurements—not spoken words. Noise cleanup adapts to each recording; level is mathematically normalized. Room echo is estimated from the recording itself because a finished reference mix cannot reveal a reliable standalone RT60 value.</div>
+</div>
+<div class="controls">
+<div class="field wide"><div class="rangehead"><label for="nr">Noise reduction</label><strong id="nrO">35%</strong></div><input id="nr" type="range" min="0" max="80" step="5" value="35"><span class="muted">Start low. Higher settings can make speech metallic or watery.</span></div>
+<div class="field wide"><label class="toggle"><input id="gate" type="checkbox"> Gentle silence control</label><span class="muted">Reduces quiet background between phrases; off by default to avoid empty gaps.</span></div>
+<div class="field wide"><label class="toggle"><input id="spectralRoom" type="checkbox"> Spectral room-reflection control (experimental)</label><span class="muted">Analyzes short-time frequency decay and gently reduces lingering spectral energy. It is not AI dereverberation; compare carefully for metallic artifacts.</span>
+<div class="rangehead"><label for="spectralAmt">Spectral room reduction</label><strong id="spectralO">20%</strong></div><input id="spectralAmt" type="range" min="10" max="40" step="5" value="20"></div>
+<div class="field wide"><label class="toggle"><input id="wpeRoom" type="checkbox"> Advanced WPE dereverberation (experimental)</label><span class="muted">A frequency-domain prediction method that targets late room reflections, including some decay overlapping speech. Runs locally; CPU/memory intensive. Long recordings are processed in overlapping chunks. Start at 30–40% and compare carefully.</span>
+<div class="rangehead"><label for="wpeAmt">WPE dereverberation strength</label><strong id="wpeO">35%</strong></div><input id="wpeAmt" type="range" min="10" max="70" step="5" value="35"></div>
+<div class="field wide"><label class="toggle"><input id="roomTail" type="checkbox"> Reduce lingering room tails (light)</label><span class="muted">Attenuates reverberation after phrases. It cannot remove reflections that overlap the spoken words; use a light setting to avoid clipped endings.</span>
+<div class="rangehead"><label for="tailAmt">Room-tail reduction</label><strong id="tailO">35%</strong></div><input id="tailAmt" type="range" min="10" max="60" step="5" value="35"></div>
+<div class="field wide"><label class="toggle"><input id="deesser" type="checkbox" checked> Adaptive de-esser (gentle)</label><span class="muted">Dynamically softens sharp sibilance around the upper speech frequencies. Disable if consonants become dull.</span></div>
+<div class="field wide"><label class="toggle"><input id="multiband" type="checkbox" checked> Gentle multiband dynamics</label><span class="muted">Controls low, mid and high-frequency peaks independently, with slow gain changes to preserve natural phrasing.</span></div>
+<div class="field"><label for="tone">Tonal profile</label><select id="tone"><option value="natural">Natural / balanced</option><option value="warm">Warm narration</option><option value="narration" selected>Studio narration</option><option value="bright">Bright (use sparingly)</option><option value="broadcast">Broadcast</option></select></div>
+<div class="field"><label for="voice">Voice effect</label><select id="voice"><option value="natural" selected>Natural voice</option><option value="deep">Slightly deeper</option><option value="bright">Brighter</option><option value="radio">Radio effect</option><option value="robot">Robot effect</option></select></div>
+<div class="field"><div class="rangehead"><label for="speed">Playback speed</label><strong id="speedO">1.00x</strong></div><input id="speed" type="range" min="0.85" max="1.15" step="0.01" value="1"></div>
+<div class="field"><div class="rangehead"><label for="pitch">Pitch shift</label><strong id="pitchO">0 st</strong></div><input id="pitch" type="range" min="-3" max="3" step="0.5" value="0"></div>
+<div class="field"><label for="model">Transcription model</label><select id="model"><option value="tiny">Whisper Tiny · fastest</option><option value="base" selected>Whisper Base · balanced</option><option value="small">Whisper Small · more accurate, slower</option></select></div>
+<div class="field"><label for="lang">Spoken language</label><select id="lang"><option value="auto" selected>Auto detect</option><option value="english">English</option><option value="hindi">Hindi</option></select></div>
+</div>
+<div class="pillnote">WPE is an experimental classical dereverberation method that can reduce some late reflections overlapping speech; it is not AI and may alter voice quality. Use it instead of the simpler spectral room control, not together. Start at 30–40%, keep noise reduction moderate, and compare the original against the result.</div>
+</aside>
+</div>
+<section class="panel section"><div class="checkrow"><div><h2>03 · Transcript and captions</h2><p class="muted">Transcription runs on your device after the speech model downloads. Review timestamps before exporting.</p></div><div class="actions" style="margin-top:0"><button id="xTxt" type="button" disabled>Text (.txt)</button><button id="xSrt" type="button" disabled>Subtitles (.srt)</button><button id="xJson" type="button" disabled>JSON</button></div></div>
+<div class="actions"><button id="addSeg" type="button" disabled>Add caption line</button></div><div class="segments" id="segs"><p class="empty">Your transcript will appear here. Every line can be played, edited or removed.</p></div>
+<div class="section"><h3>Find and replace</h3><div class="controls"><div class="field"><label for="find">Find text</label><input id="find" type="text" placeholder="Text to find"></div><div class="field"><label for="repl">Replace with</label><input id="repl" type="text" placeholder="Replacement text"></div><div class="field"><button id="doRepl" type="button" disabled>Replace all in transcript</button></div></div></div>
+</section>
+<p class="foot">Tip: keep the mic 10–15 cm away, slightly off-axis, and record near soft furnishings. This tool can reduce steady noise and some room reflections. WPE is experimental and cannot guarantee removal of all reverberation embedded in speech.</p>
+</main>
+<script type="module">
+/* =====================================================================
+   Natural Voice DSP – conservative cleanup and tonal balance
+   ===================================================================== */
+const SR = 48000;
+const TARGET_LUFS = -19.7;          // measured integrated loudness of the supplied reference MP3
+const CEILING = 0.89;
+// Acoustic-only fingerprint measured from the supplied reference narration.
+// It deliberately contains no words, transcript, speaker identity, or semantic features.
+const REFERENCE_PROFILE = Object.freeze({
+  integratedLUFS: -19.7,
+  loudnessRangeLU: 5.9,
+  samplePeakDbFS: -0.98,
+  quietFrameP10DbFS: -43.8,
+  medianFrameDbFS: -26.6,
+  upperFrameP90DbFS: -18.5,
+  centroidHz: 784,
+  profileName: 'Scalping Strategy reference narration'
+});                // headroom to reduce harsh peak limiting
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+function makeFFT(n){
+  const levels = Math.log2(n)|0;
+  const rev = new Uint32Array(n);
+  for(let i=0;i<n;i++){
+    let r=0;
+    for(let b=0;b<levels;b++) r |= ((i>>b)&1)<<(levels-1-b);
+    rev[i]=r;
+  }
+  const cos=new Float64Array(n/2), sin=new Float64Array(n/2);
+  for(let i=0;i<n/2;i++){ cos[i]=Math.cos(2*Math.PI*i/n); sin[i]=Math.sin(2*Math.PI*i/n); }
+  return function fft(re,im,inverse){
+    for(let i=0;i<n;i++){ const j=rev[i]; if(j>i){ let t=re[i];re[i]=re[j];re[j]=t; t=im[i];im[i]=im[j];im[j]=t; } }
+    for(let size=2;size<=n;size<<=1){
+      const half=size>>1, step=n/size;
+      for(let i=0;i<n;i+=size){
+        for(let j=i,k=0;j<i+half;j++,k+=step){
+          const l=j+half, wr=cos[k], wi=inverse?sin[k]:-sin[k];
+          const tr=re[l]*wr-im[l]*wi, ti=re[l]*wi+im[l]*wr;
+          re[l]=re[j]-tr; im[l]=im[j]-ti; re[j]+=tr; im[j]+=ti;
+        }
+      }
+    }
+    if(inverse) for(let i=0;i<n;i++){ re[i]/=n; im[i]/=n; }
+  };
+}
+
+/* ---------- Acoustic-only reference measurements ----------
+   20 ms RMS frames; no speech recognition or content matching is used. */
+function measureAcousticProfile(x){
+  if(!x || !x.length) return null;
+  const frame=Math.max(1,Math.round(SR*0.02)), n=Math.floor(x.length/frame), db=new Float32Array(Math.max(1,n));
+  for(let f=0;f<n;f++){
+    const start=f*frame, end=Math.min(x.length,start+frame); let sum=0;
+    for(let i=start;i<end;i++) sum+=x[i]*x[i];
+    db[f]=10*Math.log10(sum/Math.max(1,end-start)+1e-15);
+  }
+  db.sort();
+  const pct=q=>db[Math.min(db.length-1,Math.max(0,Math.floor((db.length-1)*q)))];
+  let silent=0; for(let i=0;i<db.length;i++) if(db[i] < -45) silent++;
+  return {lufs:lufs(x), peakDb:20*Math.log10(Math.max(peakAbs(x),1e-9)), p10:pct(.10), median:pct(.50), p90:pct(.90), quietPct:100*silent/db.length};
+}
+function clampNum(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function referenceNoiseAdjustedStrength(x, base, m=null){
+  m = m || measureAcousticProfile(x); if(!m) return base;
+  // A quiet-frame level is only a proxy (it can include quiet speech), so adapt conservatively.
+  const excess=Math.max(0,m.p10-REFERENCE_PROFILE.quietFrameP10DbFS-3);
+  return clampNum(base+excess*0.65,base,Math.min(80,base+18));
+}
+
+/* ---------- Denoise (cleaner, less metallic) ---------- */
+async function denoise(x, strength, cb){
+  const N = 2048;
+  const H = N >> 2;                 // 75% overlap
+  const B = N/2 + 1;
+  const fft = makeFFT(N);
+  const win = new Float64Array(N);
+  for(let i=0;i<N;i++) win[i] = 0.5 - 0.5*Math.cos(2*Math.PI*i/N);
+  const len = x.length;
+  const xp = new Float32Array(len + 2*N);
+  xp.set(x, N);
+
+  // Build a robust noise profile from the quieter frames in the first 8 seconds.
+  // This is less likely to mistake the opening sentence for background noise.
+  // For best results, still leave a short room-tone pause before speaking.
+  const profileSamples = Math.min(len, Math.round(8 * SR));
+  const noiseFrames = Math.max(1, Math.floor(Math.max(0, profileSamples - N) / H) + 1);
+  const re = new Float64Array(N), im = new Float64Array(N);
+  const noisePow = new Float64Array(B);
+  const candidates = [];
+  for(let f=0; f<noiseFrames; f++){
+    const o = f * H;
+    let energy = 0;
+    for(let i=0;i<N;i++){ const v=xp[N + o + i]; energy += v*v; }
+    candidates.push({ frame:f, energy:energy/N });
+  }
+  candidates.sort((a,b)=>a.energy-b.energy);
+  // Use the quietest 30% of frames; preserve at least one frame for short clips.
+  const selected = candidates.slice(0, Math.max(1, Math.ceil(candidates.length * 0.30)));
+  for(let j=0; j<selected.length; j++){
+    const o = selected[j].frame * H;
+    for(let i=0;i<N;i++){ re[i]=xp[N + o + i]*win[i]; im[i]=0; }
+    fft(re, im, false);
+    for(let k=0;k<B;k++) noisePow[k] += (re[k]*re[k] + im[k]*im[k]) / (N*N);
+    if((j & 15) === 0){ cb && cb(0.15 * j / selected.length); await tick(); }
+  }
+  for(let k=0;k<B;k++) noisePow[k] /= selected.length;
+
+  // Smoother noise profile
+  const smoothNoise = new Float64Array(B);
+  for(let k=0;k<B;k++){
+    let s=0, c=0;
+    for(let j=-6;j<=6;j++){
+      const kk = k+j;
+      if(kk>=0 && kk<B){ s += noisePow[kk]; c++; }
+    }
+    smoothNoise[k] = s / c;
+  }
+
+  // Conservative spectral subtraction: reduce noise without hollowing out speech.
+  const alpha = 1.05 + (strength/100) * 1.15;
+  const nPow = new Float64Array(B);
+  for(let k=0;k<B;k++) nPow[k] = smoothNoise[k] * alpha;
+
+  // Keep more of the original signal to avoid watery/metallic artifacts.
+  const floorDb = -(16 + strength * 0.10);
+  const floor = Math.pow(10, floorDb / 20);
+
+  const frames = Math.floor((xp.length - N) / H) + 1;
+  const out = new Float32Array(len + 2*N);
+  const prevP = new Float64Array(B);
+  const prevG = new Float64Array(B);
+  const beta = 0.96;
+  const tau  = 0.48;
+
+  for(let f=0; f<frames; f++){
+    const o = f * H;
+    for(let i=0;i<N;i++){ re[i]=xp[o+i]*win[i]; im[i]=0; }
+    fft(re, im, false);
+    const Graw = new Float64Array(B);
+
+    for(let k=0;k<B;k++){
+      const p = (re[k]*re[k] + im[k]*im[k]) / (N*N);
+      const nk = nPow[k] + 1e-20;
+      const gamma = p / nk;
+      const xi = beta * prevP[k] / nk + (1-beta) * Math.max(gamma - 1, 0);
+      prevP[k] = xi * nk;
+      let G = xi / (xi + 1.15);
+      if(G < floor) G = floor;
+      Graw[k] = G;
+    }
+
+    // Stronger spectral smoothing
+    const Gs = new Float64Array(B);
+    for(let k=0;k<B;k++){
+      let s=0, c=0;
+      for(let j=-4;j<=4;j++){
+        const kk = k+j;
+        if(kk>=0 && kk<B){ s += Graw[kk]; c++; }
+      }
+      Gs[k] = s / c;
+    }
+
+    for(let k=0;k<B;k++){
+      const G = tau * prevG[k] + (1-tau) * Gs[k];
+      prevG[k] = G;
+      re[k] *= G;
+      im[k] *= G;
+      if(k > 0 && k < N/2){
+        re[N-k] *= G;
+        im[N-k] *= G;
+      }
+    }
+    fft(re, im, true);
+    const gain = 2/3;
+    for(let i=0;i<N;i++) out[o+i] += re[i] * win[i] * gain;
+    if((f & 511) === 0){ cb && cb(0.15 + 0.85 * f / frames); await tick(); }
+  }
+
+  const res = new Float32Array(len);
+  for(let i=0;i<len;i++) res[i] = out[N + i];
+  return res;
+}
+
+/* ---------- Cleaner expander ---------- */
+function expander(x, thr=-48, ratio=1.7, maxCut=-10){
+  const n = x.length;
+  // A reference-matched call uses a slightly higher threshold but less attenuation.             // avoid unnaturally empty pauses
+  const atk = Math.exp(-1/(0.003*SR));
+  const rel = Math.exp(-1/(0.22*SR));
+  const env = new Float32Array(n);
+  let e = 0;
+  for(let i=0;i<n;i++){
+    const a = Math.abs(x[i]);
+    e = a > e ? atk*e+(1-atk)*a : rel*e+(1-rel)*a;
+    env[i] = e;
+  }
+  const L = Math.round(0.008*SR);
+  const y = new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const db = 20*Math.log10(env[Math.min(n-1,i+L)] + 1e-9);
+    if(db < thr){
+      let g = (db - thr) * (ratio - 1);
+      if(g < maxCut) g = maxCut;
+      y[i] = x[i] * Math.pow(10, g/20);
+    } else y[i] = x[i];
+  }
+  return y;
+}
+
+/* ---------- Gentle room-tail attenuation ----------
+   Conservative tail control: lowers low-level decay between phrases.
+   It is not a full AI dereverb and cannot remove early reflections overlapping speech. */
+function reduceRoomTails(x, amount){
+  const n=x.length, y=new Float32Array(n);
+  const attack=Math.exp(-1/(0.004*SR));
+  const release=Math.exp(-1/(0.095*SR));
+  const look=Math.round(0.018*SR);
+  const floor=Math.pow(10,-48/20);
+  const maxReductionDb=6 + amount*0.12;
+  const env=new Float32Array(n);
+  let e=0;
+  for(let i=0;i<n;i++){
+    const a=Math.abs(x[i]);
+    e=a>e ? attack*e+(1-attack)*a : release*e+(1-release)*a;
+    env[i]=e;
+  }
+  for(let i=0;i<n;i++){
+    let peak=0;
+    const end=Math.min(n-1,i+look);
+    for(let j=i;j<=end;j+=8) if(env[j]>peak) peak=env[j];
+    const local=Math.max(env[i], peak*0.68, floor);
+    const db=20*Math.log10(local+1e-9);
+    const startDb=-32, endDb=-49;
+    let t=Math.max(0,Math.min(1,(startDb-db)/(startDb-endDb)));
+    t=t*t*(3-2*t);
+    const reductionDb=maxReductionDb*t;
+    y[i]=x[i]*Math.pow(10,-reductionDb/20);
+  }
+  return y;
+}
+
+/* ---------- Experimental spectral decay control ----------
+   Frame-wise spectral attenuation aimed at late decays. This is a conservative
+   heuristic, not a trained dereverberation model; speech transients are protected. */
+async function spectralRoomControl(x, amount, cb){
+  const N=2048, H=N>>2, B=N/2+1, len=x.length;
+  if(!len || amount<=0) return x;
+  const fft=makeFFT(N), win=new Float64Array(N);
+  for(let i=0;i<N;i++) win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  const xp=new Float32Array(len+2*N); xp.set(x,N);
+  const out=new Float32Array(xp.length), re=new Float64Array(N), im=new Float64Array(N);
+  const prevPow=new Float64Array(B), decayState=new Float64Array(B), gainPrev=new Float64Array(B);
+  const frames=Math.floor((xp.length-N)/H)+1, amt=amount/100;
+  for(let f=0;f<frames;f++){
+    const o=f*H;
+    for(let i=0;i<N;i++){re[i]=xp[o+i]*win[i];im[i]=0;}
+    fft(re,im,false);
+    const raw=new Float64Array(B);
+    for(let k=0;k<B;k++){
+      const pow=(re[k]*re[k]+im[k]*im[k])/(N*N)+1e-16;
+      const prev=prevPow[k];
+      // A fresh spectral rise is treated as speech onset; a falling envelope is
+      // treated more cautiously as a possible reverberant decay.
+      const rise=pow/(prev+1e-16);
+      const transient=Math.max(0,Math.min(1,(rise-1.02)/0.85));
+      decayState[k]=Math.max(pow,decayState[k]*0.91);
+      const falling=Math.max(0,Math.min(1,(decayState[k]-pow)/(decayState[k]+1e-16)));
+      const floorProtect=pow < 1e-9 ? 0.4 : 1;
+      let g=1-(amt*0.48*falling*(1-transient)*floorProtect);
+      g=Math.max(0.78,Math.min(1,g));
+      raw[k]=g;
+      prevPow[k]=0.65*prev+0.35*pow;
+    }
+    // Smooth frequency gains to avoid isolated-bin musical noise.
+    const sm=new Float64Array(B);
+    for(let k=0;k<B;k++){
+      let sum=0, count=0;
+      for(let j=-2;j<=2;j++){const q=k+j;if(q>=0&&q<B){sum+=raw[q];count++;}}
+      const g=sum/count;
+      sm[k]=0.72*gainPrev[k]+0.28*g;
+      gainPrev[k]=sm[k];
+      re[k]*=sm[k]; im[k]*=sm[k];
+      if(k>0&&k<N/2){re[N-k]*=sm[k];im[N-k]*=sm[k];}
+    }
+    fft(re,im,true);
+    for(let i=0;i<N;i++) out[o+i]+=re[i]*win[i]*(2/3);
+    if((f&255)===0){if(cb)cb(f/frames);await tick();}
+  }
+  const y=new Float32Array(len);
+  for(let i=0;i<len;i++) y[i]=out[N+i];
+  if(cb)cb(1);
+  return y;
+}
+
+/* ---------- WPE late-reverberation reduction ----------
+   Single-channel weighted prediction error (WPE). This is a classical DSP
+   dereverberation method, not an AI model. It estimates delayed spectral
+   components and subtracts a controlled fraction to reduce late reflections.
+   Long recordings are handled by the chunking wrapper below to bound memory. */
+async function wpeDereverbChunk(x, amount, cb){
+  const len=x.length;
+  if(!len || amount<=0) return x;
+  const N=1024, H=512, B=N/2+1, delay=3, taps=5, M=taps;
+  const fft=makeFFT(N), win=new Float64Array(N);
+  for(let i=0;i<N;i++) win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  const xp=new Float32Array(len+2*N); xp.set(x,N);
+  const frames=Math.floor((xp.length-N)/H)+1;
+  const total=frames*B;
+  const yr=new Float32Array(total), yi=new Float32Array(total);
+  const re=new Float64Array(N), im=new Float64Array(N);
+  for(let t=0;t<frames;t++){
+    const off=t*H;
+    for(let i=0;i<N;i++){re[i]=xp[off+i]*win[i];im[i]=0;}
+    fft(re,im,false);
+    const base=t*B;
+    for(let k=0;k<B;k++){yr[base+k]=re[k];yi[base+k]=im[k];}
+    if((t&127)===0){if(cb)cb(0.12*t/frames);await tick();}
+  }
+  const meanPow=new Float64Array(B), lambda=new Float32Array(total), residPow=new Float32Array(total);
+  for(let t=0;t<frames;t++) for(let k=0;k<B;k++){
+    const q=t*B+k; meanPow[k]+=yr[q]*yr[q]+yi[q]*yi[q];
+  }
+  for(let k=0;k<B;k++) meanPow[k]=Math.max(1e-12,meanPow[k]/frames);
+  // Initial variance estimate is smoothed over adjacent frames to prevent
+  // unstable weights at speech onsets and in near-silent frequency bins.
+  for(let t=0;t<frames;t++) for(let k=0;k<B;k++){
+    let v=0,w=0;
+    for(let d=-1;d<=1;d++){const tt=t+d;if(tt>=0&&tt<frames){const q=tt*B+k;v+=(d===0?2:1)*(yr[q]*yr[q]+yi[q]*yi[q]);w+=(d===0?2:1);}}
+    lambda[t*B+k]=Math.max(1e-12,v/w);
+  }
+  const amountMix=Math.max(0,Math.min(0.70,amount/100));
+  const predR=new Float32Array(total), predI=new Float32Array(total);
+  const solve=(ar,ai,br,bi)=>{
+    // Complex Gaussian elimination with partial pivoting, M x M.
+    for(let c=0;c<M;c++){
+      let piv=c,best=ar[c*M+c]*ar[c*M+c]+ai[c*M+c]*ai[c*M+c];
+      for(let r=c+1;r<M;r++){const z=ar[r*M+c]**2+ai[r*M+c]**2;if(z>best){best=z;piv=r;}}
+      if(piv!==c){for(let j=0;j<M;j++){let q=c*M+j;let v=ar[q];ar[q]=ar[piv*M+j];ar[piv*M+j]=v;v=ai[q];ai[q]=ai[piv*M+j];ai[piv*M+j]=v;}let v=br[c];br[c]=br[piv];br[piv]=v;v=bi[c];bi[c]=bi[piv];bi[piv]=v;}
+      const d=c*M+c, den=ar[d]*ar[d]+ai[d]*ai[d];
+      if(den<1e-24) return null;
+      const pr=ar[d]/den, pi=-ai[d]/den;
+      for(let j=c;j<M;j++){const q=c*M+j, rr=ar[q]*pr-ai[q]*pi, ii=ar[q]*pi+ai[q]*pr;ar[q]=rr;ai[q]=ii;}
+      {const rr=br[c]*pr-bi[c]*pi, ii=br[c]*pi+bi[c]*pr;br[c]=rr;bi[c]=ii;}
+      for(let r=0;r<M;r++) if(r!==c){
+        const q=r*M+c, fr=ar[q], fi=ai[q]; if(Math.abs(fr)+Math.abs(fi)<1e-20) continue;
+        for(let j=c;j<M;j++){const z=r*M+j, p=c*M+j, rr=fr*ar[p]-fi*ai[p], ii=fr*ai[p]+fi*ar[p];ar[z]-=rr;ai[z]-=ii;}
+        const rr=fr*br[c]-fi*bi[c], ii=fr*bi[c]+fi*br[c];br[r]-=rr;bi[r]-=ii;
+      }
+    }
+    return [br,bi];
+  };
+  // Two iterations are a conservative compromise between suppression and
+  // speech fidelity. Original mixture spectra remain predictors throughout.
+  for(let iter=0;iter<2;iter++){
+    predR.fill(0); predI.fill(0);
+    for(let k=0;k<B;k++){
+      const ar=new Float64Array(M*M), ai=new Float64Array(M*M), br=new Float64Array(M), bi=new Float64Array(M);
+      let used=0;
+      for(let t=delay+M-1;t<frames;t++){
+        const target=t*B+k, lam=Math.max(lambda[target],meanPow[k]*0.02), weight=Math.min(50,meanPow[k]/lam);
+        const tr=yr[target], ti=yi[target];
+        for(let i=0;i<M;i++){
+          const qi=(t-delay-i)*B+k, xir=yr[qi], xii=yi[qi];
+          br[i]+=weight*(xir*tr+xii*ti);
+          bi[i]+=weight*(xii*tr-xir*ti);
+          for(let j=0;j<M;j++){
+            const qj=(t-delay-j)*B+k, xrj=yr[qj], xij=yi[qj], q=i*M+j;
+            ar[q]+=weight*(xir*xrj+xii*xij);
+            ai[q]+=weight*(xii*xrj-xir*xij);
+          }
+        }
+        used++;
+      }
+      let trace=0;for(let j=0;j<M;j++)trace+=ar[j*M+j];
+      const reg=Math.max(1e-10,trace/Math.max(1,M)*1e-4);
+      for(let j=0;j<M;j++)ar[j*M+j]+=reg;
+      const sol=solve(ar,ai,br,bi);
+      if(!sol) continue;
+      const gr=sol[0], gi=sol[1];
+      for(let t=delay+M-1;t<frames;t++){
+        let pr=0,pi=0;
+        for(let j=0;j<M;j++){
+          const q=(t-delay-j)*B+k;
+          // conj(g) * past spectrum
+          pr+=gr[j]*yr[q]+gi[j]*yi[q];
+          pi+=gr[j]*yi[q]-gi[j]*yr[q];
+        }
+        const q=t*B+k;predR[q]=pr;predI[q]=pi;
+      }
+      if((k&31)===0){if(cb)cb(0.12+0.68*(iter*B+k)/(2*B));await tick();}
+    }
+    // Update the variance weights from the residual, smoothed in time.
+    for(let t=0;t<frames;t++) for(let k=0;k<B;k++){
+      const q=t*B+k;
+      const rr=yr[q]-predR[q], ii=yi[q]-predI[q];residPow[q]=rr*rr+ii*ii;
+    }
+    for(let t=0;t<frames;t++) for(let k=0;k<B;k++){
+      let v=0,w=0;
+      for(let d=-1;d<=1;d++){const tt=t+d;if(tt>=0&&tt<frames){const q=tt*B+k;v+=(d===0?2:1)*residPow[q];w+=(d===0?2:1);}}
+      lambda[t*B+k]=Math.max(1e-12,v/w);
+    }
+  }
+  // Reconstruct with weighted overlap-add and exact window normalization.
+  const out=new Float32Array(xp.length), norm=new Float32Array(xp.length);
+  for(let t=0;t<frames;t++){
+    const base=t*B, off=t*H;
+    for(let k=0;k<B;k++){
+      re[k]=yr[base+k]-amountMix*predR[base+k];
+      im[k]=yi[base+k]-amountMix*predI[base+k];
+    }
+    im[0]=0; im[N/2]=0;
+    for(let k=1;k<N/2;k++){re[N-k]=re[k];im[N-k]=-im[k];}
+    fft(re,im,true);
+    for(let i=0;i<N;i++){const q=off+i;out[q]+=re[i]*win[i];norm[q]+=win[i]*win[i];}
+    if((t&127)===0){if(cb)cb(0.80+0.20*t/frames);await tick();}
+  }
+  const y=new Float32Array(len);
+  for(let i=0;i<len;i++){const q=N+i;y[i]=norm[q]>1e-8?out[q]/norm[q]:x[i];}
+  if(cb)cb(1);
+  return y;
+}
+
+/* Process long recordings in overlapping chunks to avoid unbounded memory use.
+   Four-second cosine fades blend chunk boundaries so the room estimate does not
+   abruptly reset at each cut. */
+async function wpeDereverb(x, amount, cb){
+  const len=x.length;
+  if(!len || amount<=0) return x;
+  const chunkSize=60*SR, overlap=4*SR, step=chunkSize-overlap;
+  if(len<=chunkSize) return wpeDereverbChunk(x,amount,cb);
+  const out=new Float32Array(len), weights=new Float32Array(len);
+  const starts=[];
+  for(let start=0;start<len;start+=step){ starts.push(start); if(start+chunkSize>=len) break; }
+  for(let ci=0;ci<starts.length;ci++){
+    const start=starts[ci], end=Math.min(len,start+chunkSize), part=x.slice(start,end);
+    const y=await wpeDereverbChunk(part,amount,p=>{if(cb)cb((ci+p)/starts.length);});
+    const fadeIn=ci>0?Math.min(overlap,y.length):0;
+    const fadeOut=ci<starts.length-1?Math.min(overlap,y.length):0;
+    for(let i=0;i<y.length;i++){
+      let w=1;
+      if(fadeIn && i<fadeIn) w*=0.5-0.5*Math.cos(Math.PI*i/fadeIn);
+      if(fadeOut && i>=y.length-fadeOut){const q=(y.length-1-i)/fadeOut;w*=0.5-0.5*Math.cos(Math.PI*Math.max(0,q));}
+      out[start+i]+=y[i]*w; weights[start+i]+=w;
+    }
+    await tick();
+  }
+  for(let i=0;i<len;i++) out[i]=weights[i]>1e-8?out[i]/weights[i]:x[i];
+  if(cb)cb(1);
+  return out;
+}
+
+/* ---------- Studio chain ---------- */
+async function chain(x, steps){
+  const oc = new OfflineAudioContext(1, x.length, SR);
+  const b = oc.createBuffer(1, x.length, SR);
+  b.copyToChannel(x, 0);
+  const src = oc.createBufferSource();
+  src.buffer = b;
+  let node = src;
+  for(const s of steps){
+    if(s === 'comp'){
+      const c = oc.createDynamicsCompressor();
+      c.threshold.value = -22;
+      c.knee.value = 24;
+      c.ratio.value = 1.8;
+      c.attack.value = 0.012;
+      c.release.value = 0.18;
+      node.connect(c);
+      node = c;
+    } else {
+      const [t, f, gn=0, q=0.707] = s;
+      const n = oc.createBiquadFilter();
+      n.type = t;
+      n.frequency.value = f;
+      n.gain.value = gn;
+      n.Q.value = q;
+      node.connect(n);
+      node = n;
+    }
+  }
+  node.connect(oc.destination);
+  src.start();
+  return (await oc.startRendering()).getChannelData(0).slice();
+}
+
+const TONES = {
+  natural:  [],
+  warm:     [['lowshelf', 150, 1.2], ['peaking', 2800, -0.5, 1.0]],
+  narration:[['lowshelf', 140, 1.0], ['peaking', 300, -0.6, 0.9], ['peaking', 2200, 0.4, 1.0]],
+  bright:   [['peaking', 3600, 0.8, 0.9], ['highshelf', 9000, 0.5]],
+  broadcast:[['lowshelf', 90, 1.0], ['peaking', 2500, 0.8, 1.0], ['highshelf', 7800, 0.5]]
+};
+
+const studio = (x, tone) => chain(x, [
+  ['highpass', 48],
+  ['peaking', 180, -1.0, 0.8],
+  'comp',
+  ['peaking', 2800, 0.4, 1.0],         // gentle presence; avoid harshness
+  ['highshelf', 7500, 0.3],            // subtle air, not a brightening boost
+  ['peaking', 5800, -1.4, 2.0],        // soften sibilance/edge
+  ...TONES[tone]
+]);
+
+/* ---------- Gentle STFT multiband dynamics ----------
+   Frame-based band gain control avoids splitting/recombining filters. Gains are
+   derived from measured per-band energy, smoothed across frames, and capped. */
+async function multibandDynamics(x, cb){
+  const N=2048, H=N>>2, B=N/2+1, len=x.length;
+  if(!len) return x;
+  const fft=makeFFT(N), win=new Float64Array(N);
+  for(let i=0;i<N;i++) win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
+  const xp=new Float32Array(len+2*N); xp.set(x,N);
+  const re=new Float64Array(N), im=new Float64Array(N);
+  const frames=Math.floor((xp.length-N)/H)+1;
+  const bands=new Uint8Array(B);
+  for(let k=0;k<B;k++){const hz=k*SR/N;bands[k]=hz<250?0:(hz<4000?1:2);}
+  const sums=new Float64Array(3); let count=0;
+  // First pass: measure typical band levels so thresholds adapt to this recording.
+  for(let f=0;f<frames;f++){
+    const o=f*H; for(let i=0;i<N;i++){re[i]=xp[o+i]*win[i];im[i]=0;}
+    fft(re,im,false); const p=new Float64Array(3);
+    for(let k=0;k<B;k++){const v=(re[k]*re[k]+im[k]*im[k])/(N*N);p[bands[k]]+=v*(k===0||k===N/2?1:2);}
+    for(let b=0;b<3;b++) sums[b]+=Math.sqrt(p[b]);
+    count++; if((f&511)===0){if(cb)cb(0.45*f/frames);await tick();}
+  }
+  const avg=Array.from(sums,v=>Math.max(1e-5,v/count));
+  const threshold=avg.map(v=>v*1.8), ratios=[1.5,1.35,1.65];
+  const attack=Math.exp(-H/(SR*0.012)), release=Math.exp(-H/(SR*0.095));
+  const gain=[1,1,1], out=new Float32Array(xp.length);
+  for(let f=0;f<frames;f++){
+    const o=f*H; for(let i=0;i<N;i++){re[i]=xp[o+i]*win[i];im[i]=0;}
+    fft(re,im,false); const pow=new Float64Array(3);
+    for(let k=0;k<B;k++){const v=(re[k]*re[k]+im[k]*im[k])/(N*N);pow[bands[k]]+=v*(k===0||k===N/2?1:2);}
+    for(let b=0;b<3;b++){
+      const level=Math.sqrt(pow[b]); let target=1;
+      if(level>threshold[b]) target=Math.pow(threshold[b]/(level+1e-12),1-1/ratios[b]);
+      target=Math.max(0.72,Math.min(1,target));
+      gain[b]=target<gain[b]?target+(gain[b]-target)*attack:target+(gain[b]-target)*release;
+    }
+    for(let k=0;k<B;k++){const g=gain[bands[k]];re[k]*=g;im[k]*=g;if(k>0&&k<N/2){re[N-k]*=g;im[N-k]*=g;}}
+    fft(re,im,true); for(let i=0;i<N;i++)out[o+i]+=re[i]*win[i]*(2/3);
+    if((f&511)===0){if(cb)cb(0.45+0.55*f/frames);await tick();}
+  }
+  const y=new Float32Array(len);for(let i=0;i<len;i++)y[i]=out[N+i];if(cb)cb(1);return y;
+}
+
+/* ---------- Gentle adaptive de-esser ----------
+   A side-chain envelope controls a small reduction of the sibilance band only
+   when it rises above a threshold relative to the recording's RMS. */
+function deEss(x, amount=0.65){
+  if(!x.length || amount<=0) return x;
+  let sum=0; for(let i=0;i<x.length;i++) sum+=x[i]*x[i];
+  const rms=Math.sqrt(sum/x.length);
+  const threshold=Math.max(0.006, rms*0.24);
+  const f0=6500, Q=0.85, w=2*Math.PI*f0/SR, alpha=Math.sin(w)/(2*Q), c=Math.cos(w), a0=1+alpha;
+  const band=biquad(x,[alpha/a0,0,-alpha/a0],[1,-2*c/a0,(1-alpha)/a0]);
+  const y=new Float32Array(x.length);
+  const atk=Math.exp(-1/(0.0025*SR)), rel=Math.exp(-1/(0.065*SR));
+  let env=0;
+  for(let i=0;i<x.length;i++){
+    const v=Math.abs(band[i]);
+    env=v>env ? atk*env+(1-atk)*v : rel*env+(1-rel)*v;
+    const t=Math.max(0,Math.min(1,(env-threshold)/(threshold*2.6)));
+    const reduction=amount*0.42*t;
+    y[i]=x[i]-band[i]*reduction;
+  }
+  return y;
+}
+
+const VOICES = {
+  natural: {semi:0,   eq:[]},
+  deep:    {semi:-3,  eq:[['lowshelf', 140, 2.8]]},
+  bright:  {semi:2.5, eq:[['highshelf', 7000, 2.2]]},
+  radio:   {semi:0,   eq:[['highpass', 280], ['lowpass', 3400], ['peaking', 1600, 2.8, 1]], drive:1.8},
+  robot:   {semi:0,   eq:[], ring:55}
+};
+
+async function applyVoice(y, v){
+  if(v.eq.length) y = await chain(y, v.eq);
+  if(v.drive){
+    const d = Math.tanh(v.drive);
+    for(let i=0;i<y.length;i++) y[i] = Math.tanh(v.drive * y[i]) / d;
+  }
+  if(v.ring){
+    const w = 2*Math.PI * v.ring / SR;
+    for(let i=0;i<y.length;i++) y[i] *= 0.30 + 0.70 * Math.sin(w*i);
+  }
+  return y;
+}
+
+/* Loudness + limiter */
+function biquad(x, b, a){
+  const y = new Float32Array(x.length);
+  let x1=0, x2=0, y1=0, y2=0;
+  for(let i=0;i<x.length;i++){
+    const v = b[0]*x[i] + b[1]*x1 + b[2]*x2 - a[1]*y1 - a[2]*y2;
+    y[i]=v; x2=x1; x1=x[i]; y2=y1; y1=v;
+  }
+  return y;
+}
+
+function lufs(x){
+  const k = biquad(
+    biquad(x,
+      [1.53512485958697, -2.69169618940638, 1.19839281085285],
+      [1, -1.69065929318241, 0.73248077421585]),
+    [1, -2, 1],
+    [1, -1.99004745483398, 0.99007225036621]
+  );
+  const blk = Math.round(0.4*SR), hop = Math.round(0.1*SR);
+  const cs = new Float64Array(k.length+1);
+  for(let i=0;i<k.length;i++) cs[i+1] = cs[i] + k[i]*k[i];
+  let ms = [];
+  for(let s=0; s+blk<=k.length; s+=hop) ms.push((cs[s+blk]-cs[s])/blk);
+  const L = m => -0.691 + 10*Math.log10(m + 1e-20);
+  let g = ms.filter(m => L(m) > -70);
+  if(!g.length) return -Infinity;
+  let mean = g.reduce((a,b)=>a+b,0)/g.length;
+  const rel = L(mean) - 10;
+  g = g.filter(m => L(m) > rel);
+  if(!g.length) return L(mean);
+  return L(g.reduce((a,b)=>a+b,0)/g.length);
+}
+
+function limiter(x, ceil=CEILING, lookMs=5){
+  // Look-ahead peak envelope with a soft knee and smooth release. This avoids
+  // abrupt sample clipping and makes the level control less audibly harsh.
+  const n=x.length;
+  if(!n) return x;
+  const look=Math.max(1,Math.round(SR*lookMs/1000));
+  const idx=new Int32Array(n+1); let head=0, tail=0, added=-1;
+  const gainTarget=new Float32Array(n);
+  const kneeStart=ceil-0.12, kneeWidth=ceil-kneeStart;
+  for(let i=0;i<n;i++){
+    const upto=Math.min(n-1,i+look);
+    while(added<upto){
+      const j=++added, a=Math.abs(x[j]);
+      while(tail>head && Math.abs(x[idx[tail-1]])<=a) tail--;
+      idx[tail++]=j;
+    }
+    while(tail>head && idx[head]<i) head++;
+    const peak=Math.abs(x[idx[head]]);
+    let allowed=peak;
+    if(peak>kneeStart){
+      allowed=kneeStart+kneeWidth*(1-Math.exp(-(peak-kneeStart)/Math.max(1e-6,kneeWidth)));
+      allowed=Math.min(ceil,allowed);
+    }
+    gainTarget[i]=peak>1e-9?Math.min(1,allowed/peak):1;
+  }
+  const y=new Float32Array(n);
+  let gain=1;
+  const release=Math.exp(-1/(SR*0.075)); // 75 ms release keeps phrase dynamics natural
+  for(let i=0;i<n;i++){
+    const target=gainTarget[i];
+    if(target<gain) gain=target;             // fast look-ahead attack
+    else gain=target+(gain-target)*release; // gradual release
+    y[i]=x[i]*gain;
+  }
+  return y;
+}
+
+function peakAbs(x){ let p=0; for(let i=0;i<x.length;i++) p=Math.max(p,Math.abs(x[i])); return p; }
+
+function finalizeLoud(x){
+  const l=lufs(x);
+  let y=x;
+  if(isFinite(l)){
+    const db=Math.min(18,Math.max(-18,TARGET_LUFS-l));
+    const gn=Math.pow(10,db/20);
+    y=new Float32Array(x.length);
+    for(let i=0;i<x.length;i++) y[i]=x[i]*gn;
+  }
+  y=limiter(y);
+  // Iterative safety check: mathematically verify the actual sample peak after
+  // processing, correcting only if needed rather than trusting estimated gain.
+  for(let pass=0;pass<3;pass++){
+    const peak=peakAbs(y);
+    if(peak<=CEILING+1e-5 || peak<1e-9) break;
+    const correction=CEILING/peak;
+    const z=new Float32Array(y.length);
+    for(let i=0;i<y.length;i++) z[i]=y[i]*correction;
+    y=z;
+  }
+  return y;
+}
+
+/* WSOLA + resample */
+async function wsola(x, q, cb){
+  const win=Math.round(0.032*SR)&~1, hs=win>>1, ha=hs*q, tol=Math.round(0.010*SR), DEC=4, STEP=4;
+  const maxPos=x.length-win; if(maxPos<=0) return x;
+  const w=new Float32Array(win); for(let i=0;i<win;i++) w[i]=0.5-0.5*Math.cos(2*Math.PI*i/win);
+  const w0=w.slice(); for(let i=0;i<hs;i++) w0[i]=1;
+  const nF=Math.max(1,Math.ceil((x.length-win)/ha)+1);
+  const y=new Float32Array(nF*hs+win);
+  let prev=0;
+  for(let k=0;k<nF;k++){
+    let pos=0;
+    if(k>0){
+      const center=Math.round(k*ha), lo=Math.max(0,center-tol), hi=Math.min(maxPos,center+tol);
+      if(lo>hi) pos=Math.min(maxPos,Math.max(0,center));
+      else{
+        const tm=prev+hs;
+        const score=c=>{ let d=0,e=1e-9; for(let j=0;j<hs;j+=DEC){ const a=x[c+j]; d+=a*x[tm+j]; e+=a*a; } return d/Math.sqrt(e); };
+        let best=-Infinity; pos=lo;
+        for(let c=lo;c<=hi;c+=STEP){ const s=score(c); if(s>best){best=s;pos=c;} }
+        const l2=Math.max(lo,pos-STEP), h2=Math.min(hi,pos+STEP);
+        for(let c=l2;c<=h2;c++){ const s=score(c); if(s>best){best=s;pos=c;} }
+      }
+    }
+    const o=k*hs, ww=k===0?w0:w;
+    for(let i=0;i<win;i++) y[o+i]+=x[pos+i]*ww[i];
+    prev=pos;
+    if((k&255)===0){ cb && cb(k/nF); await tick(); }
+  }
+  return y.slice(0, Math.floor(x.length/q));
+}
+
+function resample(x, ratio){
+  const n=Math.floor(x.length/ratio), y=new Float32Array(n), last=x.length-1;
+  const g=k=>x[k<0?0:k>last?last:k];
+  for(let i=0;i<n;i++){
+    const p=i*ratio, i0=Math.floor(p), t=p-i0;
+    const a=g(i0-1), b=g(i0), c=g(i0+1), d=g(i0+2);
+    y[i]=0.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t);
+  }
+  return y;
+}
+
+/* ---- UI ---- */
+const $ = id => document.getElementById(id);
+const S = { orig:null, clean:null, final:null, preview:null, segs:[], speedUsed:1, langUsed:'auto', srcURL:null, finURL:null };
+let busy = false, stopAt = null, asrP = null, asrName = '';
+
+function setStatus(t, err){ $('status').textContent = t; $('status').classList.toggle('err', !!err); }
+function prog(label, p){
+  $('prog').hidden = false;
+  const bar = $('bar');
+  if(p < 0){ bar.classList.add('indet'); setStatus(label); return; }
+  bar.classList.remove('indet'); bar.style.width = Math.round(p*100)+'%';
+  setStatus(`${label} (${Math.round(p*100)}%)`);
+}
+function refreshButtons(){
+  const has = !!S.orig;
+  ['bBoth','bEnh','bTr'].forEach(id => $(id).disabled = busy || !has);
+  $('dlAudio').disabled = busy || !S.final;
+  const hs = S.segs.length > 0;
+  ['xJson','xTxt','xSrt','doRepl'].forEach(id => $(id).disabled = !hs);
+  $('addSeg').disabled = !S.final && !hs;
+}
+async function run(fn){
+  if(busy) return;
+  busy = true; refreshButtons(); setStatus('');
+  try{ await fn(); }
+  catch(e){ console.error(e); setStatus('Something went wrong: ' + (e && e.message || e), true); }
+  finally{ busy = false; $('prog').hidden = true; refreshButtons(); }
+}
+const fmtDur = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const settings = () => ({ referenceMatch:$('referenceMatch').checked, nr:+$('nr').value, gate:$('gate').checked, spectralRoom:$('spectralRoom').checked, spectralAmt:+$('spectralAmt').value, wpeRoom:$('wpeRoom').checked, wpeAmt:+$('wpeAmt').value, deesser:$('deesser').checked, multiband:$('multiband').checked, roomTail:$('roomTail').checked, tailAmt:+$('tailAmt').value, tone:$('tone').value,
+  speed:+$('speed').value, pitch:+$('pitch').value, voice:$('voice').value });
+
+$('nr').oninput = () => $('nrO').textContent = $('nr').value + '%';
+$('tailAmt').oninput = () => $('tailO').textContent = $('tailAmt').value + '%';
+$('spectralAmt').oninput = () => $('spectralO').textContent = $('spectralAmt').value + '%';
+$('wpeAmt').oninput = () => $('wpeO').textContent = $('wpeAmt').value + '%';
+$('speed').oninput = () => $('speedO').textContent = (+$('speed').value).toFixed(2) + 'x';
+$('pitch').oninput = () => { const v=+$('pitch').value; $('pitchO').textContent = (v>0?'+':'') + v + ' st'; };
+
+async function decodeFile(file){
+  const ctx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR});
+  const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+  ctx.close();
+  const n=buf.length, ch=buf.numberOfChannels, out=new Float32Array(n);
+  for(let c=0;c<ch;c++){ const d=buf.getChannelData(c); for(let i=0;i<n;i++) out[i]+=d[i]/ch; }
+  return out;
+}
+
+async function loadFile(f){
+  await run(async () => {
+    setStatus('Reading audio');
+    S.orig = await decodeFile(f);
+    S.clean = S.final = S.preview = null; S.segs = [];
+    if(S.srcURL) URL.revokeObjectURL(S.srcURL);
+    S.srcURL = URL.createObjectURL(f);
+    $('aOrig').src = S.srcURL;
+    $('aFinal').removeAttribute('src'); $('aFinal').load();
+    $('srcinfo').textContent = `${f.name}, ${fmtDur(S.orig.length/SR)} long`;
+    renderSegs(); drawWave();
+    setStatus('Ready. Adjust the settings, then press Enhance and transcribe.');
+  });
+}
+
+$('file').onchange = e => { if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
+const drop = $('drop');
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
+
+let rec=null, recStream=null, recChunks=[];
+$('rec').onclick = async () => {
+  if(rec){ rec.stop(); return; }
+  try{
+    recStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  }catch(e){ setStatus('Microphone access was blocked. Allow it in the address bar, or load a file instead.', true); return; }
+  recChunks = []; const r = new MediaRecorder(recStream); rec = r;
+  r.ondataavailable = e => recChunks.push(e.data);
+  r.onstop = async () => {
+    recStream.getTracks().forEach(t => t.stop());
+    $('rec').textContent = 'Record with microphone'; $('rec').classList.remove('rec-on');
+    const blob = new Blob(recChunks, {type:r.mimeType}); rec = null;
+    await loadFile(new File([blob], 'recording.webm', {type:r.mimeType}));
+  };
+  r.start(); $('rec').textContent = 'Stop recording'; $('rec').classList.add('rec-on');
+};
+
+async function enhance(){
+  const s = settings();
+  let x = S.orig;
+  const inputProfile = s.referenceMatch ? measureAcousticProfile(x) : null;
+  S.preview = x; drawWave();
+  const effectiveNR = s.referenceMatch ? referenceNoiseAdjustedStrength(x, s.nr, inputProfile) : s.nr;
+  if(s.nr > 0) { x = await denoise(x, effectiveNR, p => prog(s.referenceMatch ? `Reference-adaptive noise reduction (${Math.round(effectiveNR)}%)` : 'Removing steady background noise', 0.45*p)); S.preview=x; drawWave(); }
+  if(s.wpeRoom){ prog('Estimating late room reflections with WPE', 0.48); x = await wpeDereverb(x, s.wpeAmt, p => prog('Reducing late reverberation (WPE)', 0.48+0.10*p)); S.preview=x; drawWave(); }
+  else if(s.spectralRoom){ prog('Analyzing spectral decay', 0.50); x = await spectralRoomControl(x, s.spectralAmt, p => prog('Reducing spectral room decay', 0.50+0.07*p)); S.preview=x; drawWave(); }
+  else if(s.referenceMatch){
+    if(x.length <= 120*SR){ prog('Reference match: estimating late room reflections', 0.48); x = await wpeDereverb(x, 30, p => prog('Adaptive WPE dereverberation', 0.48+0.10*p)); }
+    else { prog('Reference match: gentle long-clip room control', 0.48); x = await spectralRoomControl(x, 15, p => prog('Reducing spectral room decay', 0.48+0.10*p)); }
+    S.preview=x; drawWave();
+  }
+  if(s.roomTail){ prog('Reducing lingering room tails (light)', 0.59); await tick(); x = reduceRoomTails(x, s.tailAmt); S.preview=x; drawWave(); }
+  if(s.referenceMatch){ prog('Matching reference pause/noise profile', 0.62); await tick(); x = expander(x, -44, 1.35, -7); S.preview=x; drawWave(); }
+  else if(s.gate){ prog('Silencing gaps gently', 0.62); await tick(); x = expander(x); S.preview=x; drawWave(); }
+  prog('Applying balanced voice polish', 0.7); await tick();
+  x = await studio(x, s.tone); S.preview=x; drawWave();
+  if(s.multiband){ prog('Balancing low, mid and high dynamics', 0.74); x = await multibandDynamics(x, p => prog('Balancing frequency-band dynamics', 0.74+0.04*p)); S.preview=x; drawWave(); }
+  if(s.deesser){ prog('Softening sharp sibilance', 0.79); await tick(); x = deEss(x, 0.65); S.preview=x; drawWave(); }
+  x = finalizeLoud(x); S.preview=x; drawWave();
+  S.clean = x;
+  const v = VOICES[s.voice], semi = s.pitch + v.semi, r = Math.pow(2, semi/12), q = s.speed / r;
+  let y = x, changed = false;
+  if(Math.abs(q-1) > 1e-3){ y = await wsola(y, q, p => prog('Changing speed and pitch', 0.75+0.2*p)); changed = true; }
+  if(Math.abs(r-1) > 1e-4){ y = resample(y, r); changed = true; }
+  if(v.eq.length || v.drive || v.ring){ y = await applyVoice(y, v); changed = true; }
+  if(changed){ prog('Final level check', 0.97); await tick(); y = finalizeLoud(y); }
+  S.final = y; S.preview = y; S.speedUsed = s.speed;
+  if(S.finURL) URL.revokeObjectURL(S.finURL);
+  S.finURL = URL.createObjectURL(encodeWav(y, SR, 16));
+  $('aFinal').src = S.finURL;
+  drawWave();
+  const outProfile = s.referenceMatch ? measureAcousticProfile(y) : null;
+  const outLufs=outProfile ? outProfile.lufs : lufs(y), inLufs=inputProfile ? inputProfile.lufs : lufs(S.orig||[]), outPeak=peakAbs(y), inPeak=peakAbs(S.orig||[]);
+  const peakDb=v=>20*Math.log10(Math.max(v,1e-9));
+  const profileNote = s.referenceMatch && inputProfile && outProfile ? ` Reference comparison: target −19.7 LUFS / −1.0 dBFS peak; input ${inputProfile.lufs.toFixed(1)} LUFS, ${inputProfile.peakDb.toFixed(1)} dBFS peak, quiet-frame P10 ${inputProfile.p10.toFixed(1)} dBFS → output ${outProfile.lufs.toFixed(1)} LUFS, ${outProfile.peakDb.toFixed(1)} dBFS peak, quiet-frame P10 ${outProfile.p10.toFixed(1)} dBFS. These are measurable acoustic proxies; they do not prove that all room echo is removed.` : '';
+  setStatus(`Enhanced audio ready (${fmtDur(y.length/SR)}). Measured loudness: original ${isFinite(inLufs)?inLufs.toFixed(1)+' LUFS':'too quiet'} → enhanced ${isFinite(outLufs)?outLufs.toFixed(1)+' LUFS':'too quiet'} · peak original ${peakDb(inPeak).toFixed(1)} dBFS → enhanced ${peakDb(outPeak).toFixed(1)} dBFS.${profileNote}`);
+}
+
+function peaks(x, w, sharedPeak){
+  const out=new Float32Array(w*2);
+  if(!x || !x.length) return out;
+  const step=x.length/w;
+  for(let i=0;i<w;i++){
+    let a=Math.floor(i*step), b=Math.floor((i+1)*step);
+    let lo=Infinity, hi=-Infinity;
+    if(b<=a){
+      // If the waveform has fewer samples than screen columns, interpolate
+      // between adjacent real samples; never fabricate audio samples.
+      const pos=(i+0.5)*step, j=Math.min(x.length-1,Math.floor(pos));
+      const t=Math.max(0,Math.min(1,pos-j));
+      const v=x[j]*(1-t)+x[Math.min(x.length-1,j+1)]*t;
+      lo=hi=v;
+    }else{
+      b=Math.min(x.length,b);
+      for(let j=a;j<b;j++){ const v=x[j]; if(v<lo)lo=v; if(v>hi)hi=v; }
+    }
+    out[2*i]=lo/(sharedPeak||1); out[2*i+1]=hi/(sharedPeak||1);
+  }
+  return out;
+}
+
+function drawWave(){
+  const c=$('wave'), dpr=window.devicePixelRatio||1;
+  const cssW=Math.max(200,c.clientWidth||200), cssH=190;
+  const w=Math.max(200,Math.floor(cssW*dpr)), h=Math.floor(cssH*dpr);
+  if(c.width!==w || c.height!==h){ c.width=w; c.height=h; }
+  const g=c.getContext('2d'); g.clearRect(0,0,w,h);
+  const half=h/2, mid1=half/2, mid2=half+half/2;
+  g.fillStyle='#0b1525'; g.fillRect(0,0,w,h);
+  g.strokeStyle='#31435a'; g.lineWidth=Math.max(1,dpr);
+  g.beginPath(); g.moveTo(0,half); g.lineTo(w,half); g.stroke();
+  // Use one common scale so the before/after amplitude comparison is honest.
+  let sharedPeak=Math.max(peakAbs(S.orig||[]),peakAbs(S.preview||S.final||[]),1e-6);
+  sharedPeak=Math.max(sharedPeak,0.12); // preserve visibility for quiet recordings
+  const draw=(x,color,top,mid)=>{
+    if(!x || !x.length) return;
+    const p=peaks(x,w,sharedPeak), amp=half*0.42;
+    g.fillStyle=color;
+    for(let i=0;i<w;i++){
+      const a=mid-p[2*i+1]*amp, b=mid-p[2*i]*amp;
+      g.fillRect(i,a,Math.max(1,dpr),Math.max(1,b-a));
+    }
+  };
+  draw(S.orig,'#7b91ad',0,mid1);
+  draw(S.preview||S.final,'#64d5b1',half,mid2);
+  g.font=`${Math.max(10,11*dpr)}px system-ui`;
+  g.textBaseline='top';
+  g.fillStyle='#d5deea'; g.fillText('ORIGINAL',8*dpr,5*dpr);
+  g.fillStyle='#8df0d2'; g.fillText(S.final?'ENHANCED':(S.preview && S.preview!==S.orig?'PROCESSING PREVIEW':'ENHANCED · WAITING'),8*dpr,half+5*dpr);
+}
+window.addEventListener('resize', () => drawWave());
+
+const aF = $('aFinal');
+$('wavewrap').onclick = e => {
+  if(!aF.duration) return;
+  const r=$('wavewrap').getBoundingClientRect();
+  aF.currentTime = (e.clientX-r.left)/r.width*aF.duration;
+};
+function movePlayhead(){
+  const h=$('head');
+  if(aF.duration){ h.style.display='block'; h.style.left=(aF.currentTime/aF.duration*100)+'%'; }
+  if(!aF.paused) requestAnimationFrame(movePlayhead);
+}
+aF.addEventListener('play', movePlayhead);
+aF.addEventListener('seeked', movePlayhead);
+aF.addEventListener('timeupdate', () => { if(stopAt!=null && aF.currentTime>=stopAt){ aF.pause(); stopAt=null; } });
+aF.addEventListener('pause', () => { stopAt = null; });
+
+function encodeWav(x, sr, bits){
+  const bps=bits/8, dl=x.length*bps, buf=new ArrayBuffer(44+dl), v=new DataView(buf);
+  const ws=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  ws(0,'RIFF'); v.setUint32(4,36+dl,true); ws(8,'WAVE'); ws(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*bps,true); v.setUint16(32,bps,true); v.setUint16(34,bits,true);
+  ws(36,'data'); v.setUint32(40,dl,true);
+  let o=44;
+  for(let i=0;i<x.length;i++){
+    const s=Math.max(-1,Math.min(1,x[i]));
+    if(bits===16){ v.setInt16(o, Math.round(s<0?s*32768:s*32767), true); o+=2; }
+    else{ const n=Math.round(s<0?s*8388608:s*8388607); v.setUint8(o,n&255); v.setUint8(o+1,(n>>8)&255); v.setUint8(o+2,(n>>16)&255); o+=3; }
+  }
+  return new Blob([buf],{type:'audio/wav'});
+}
+
+async function encodeMp3(x){
+  const enc=new lamejs.Mp3Encoder(1,SR,192), parts=[], BL=1152;
+  for(let i=0,c=0;i<x.length;i+=BL,c++){
+    const n=Math.min(BL,x.length-i), b=new Int16Array(n);
+    for(let j=0;j<n;j++){ const s=Math.max(-1,Math.min(1,x[i+j])); b[j]=s<0?s*32768:s*32767; }
+    const d=enc.encodeBuffer(b); if(d.length) parts.push(new Uint8Array(d));
+    if((c&255)===0) await tick();
+  }
+  const f=enc.flush(); if(f.length) parts.push(new Uint8Array(f));
+  return new Blob(parts,{type:'audio/mpeg'});
+}
+
+function save(name, blob){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+
+$('dlAudio').onclick = () => run(async () => {
+  const f=$('fmt').value;
+  if(f==='mp3'){
+    if(typeof lamejs==='undefined') throw new Error('The MP3 encoder could not be loaded (check your connection). Use WAV instead.');
+    prog('Encoding MP3', -1); save('voice-studio.mp3', await encodeMp3(S.final));
+  } else save('voice-studio.wav', encodeWav(S.final, SR, f==='wav24'?24:16));
+  setStatus('Audio downloaded.');
+});
+
+if(typeof lamejs==='undefined'){ $('fmt').querySelector('option[value=mp3]').disabled = true; }
+
+function getASR(model, cb){
+  const name='Xenova/whisper-'+model;
+  if(asrP && asrName===name) return asrP;
+  asrName=name;
+  asrP=(async()=>{
+    const {pipeline, env}=await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    env.allowLocalModels=false;
+    return pipeline('automatic-speech-recognition', name, {progress_callback:cb});
+  })();
+  asrP.catch(()=>{ asrP=null; asrName=''; });
+  return asrP;
+}
+
+async function to16k(x){
+  const oc=new OfflineAudioContext(1, Math.ceil(x.length*16000/SR), 16000);
+  const b=oc.createBuffer(1, x.length, SR); b.copyToChannel(x,0);
+  const s=oc.createBufferSource(); s.buffer=b; s.connect(oc.destination); s.start();
+  return (await oc.startRendering()).getChannelData(0);
+}
+
+async function transcribe(){
+  prog('Loading speech model', 0);
+  const asr = await getASR($('model').value, p => {
+    if(p.status==='progress') prog('Downloading speech model (first time only)', (p.progress||0)/100);
+  });
+  prog('Preparing audio', -1);
+  const a16 = await to16k(S.clean);
+  prog('Transcribing on your device. Longer files take a few minutes', -1);
+  const lang=$('lang').value, opts={chunk_length_s:30, stride_length_s:5, return_timestamps:true, task:'transcribe'};
+  if(lang!=='auto') opts.language=(lang==='hindi'?'hi':'en');
+  const out = await asr(a16, opts), sp=S.speedUsed||1, total=S.clean.length/SR;
+  S.langUsed = lang==='auto' ? 'auto' : (lang==='hindi' ? 'hi' : 'en');
+  const chunks = out.chunks && out.chunks.length ? out.chunks : [{timestamp:[0,total], text:out.text||''}];
+  S.segs = chunks.map(c => {
+    const st=(c.timestamp[0]??0)/sp, en=(c.timestamp[1]==null?total:c.timestamp[1])/sp;
+    return {start:+st.toFixed(2), end:+en.toFixed(2), text:(c.text||'').trim()};
+  }).filter(s => s.text);
+  renderSegs();
+  setStatus(S.segs.length ? `Script ready: ${S.segs.length} lines. Correct anything below, then download.` : 'No speech was detected.');
+}
+
+function sizeTA(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
+function renderSegs(){
+  const box=$('segs'); box.replaceChildren();
+  if(!S.segs.length){
+    const p=document.createElement('p'); p.className='empty';
+    p.textContent='Your script will appear here. Every line has its own start and end time and can be played, edited or removed.';
+    box.append(p); refreshButtons(); return;
+  }
+  S.segs.forEach((s,i)=>{
+    const row=document.createElement('div'); row.className='seg';
+    const play=document.createElement('button'); play.type='button'; play.textContent='Play'; play.setAttribute('aria-label','Play line '+(i+1));
+    play.onclick=()=>{ if(!S.final) return; aF.currentTime=S.segs[i].start; stopAt=S.segs[i].end; aF.play(); };
+    const times=document.createElement('div'); times.className='times';
+    const mk=(key,label)=>{ const n=document.createElement('input'); n.type='number'; n.step='0.01'; n.min='0'; n.value=s[key]; n.setAttribute('aria-label',label+' time in seconds'); n.oninput=()=>{ S.segs[i][key]=parseFloat(n.value)||0; }; return n; };
+    times.append(mk('start','Start'), mk('end','End'));
+    const ta=document.createElement('textarea'); ta.rows=1; ta.value=s.text; ta.setAttribute('aria-label','Caption text for line '+(i+1));
+    ta.oninput=()=>{ S.segs[i].text=ta.value; sizeTA(ta); };
+    const del=document.createElement('button'); del.type='button'; del.textContent='Remove'; del.setAttribute('aria-label','Remove line '+(i+1));
+    del.onclick=()=>{ S.segs.splice(i,1); renderSegs(); };
+    row.append(play,times,ta,del); box.append(row); sizeTA(ta);
+  });
+  refreshButtons();
+}
+
+$('addSeg').onclick = () => {
+  const last=S.segs[S.segs.length-1], st=last?last.end:0;
+  S.segs.push({start:st, end:+(st+2).toFixed(2), text:''}); renderSegs();
+  const t=$('segs').querySelectorAll('textarea'); t[t.length-1].focus();
+};
+$('doRepl').onclick = () => {
+  const f=$('find').value, r=$('repl').value;
+  if(!f){ setStatus('Type the text to find first.', true); return; }
+  let n=0;
+  S.segs.forEach(s => { const parts=s.text.split(f); n+=parts.length-1; s.text=parts.join(r); });
+  renderSegs(); setStatus(n ? `Replaced ${n} occurrence${n===1?'':'s'}.` : 'Nothing matched.');
+};
+
+const srtTime = t => { let ms=Math.round(t*1000); const h=Math.floor(ms/3600000); ms-=h*3600000; const m=Math.floor(ms/60000); ms-=m*60000; const s=Math.floor(ms/1000); ms-=s*1000;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(ms).padStart(3,'0')}`; };
+
+$('xJson').onclick = () => save('script.json', new Blob([JSON.stringify({
+  language:S.langUsed, duration:S.final?+(S.final.length/SR).toFixed(2):null,
+  segments:S.segs.map((s,i)=>({id:i+1,start:+s.start,end:+s.end,text:s.text})),
+  text:S.segs.map(s=>s.text).join(' ')}, null, 2)], {type:'application/json'}));
+$('xTxt').onclick = () => save('script.txt', new Blob([S.segs.map(s=>s.text).join('\n')], {type:'text/plain;charset=utf-8'}));
+$('xSrt').onclick = () => save('script.srt', new Blob([S.segs.map((s,i)=>`${i+1}\n${srtTime(s.start)} --> ${srtTime(s.end)}\n${s.text}\n`).join('\n')], {type:'text/plain;charset=utf-8'}));
+
+$('bEnh').onclick  = () => run(enhance);
+$('bBoth').onclick = () => run(async () => { await enhance(); await transcribe(); });
+$('bTr').onclick   = () => run(async () => { if(!S.clean) await enhance(); await transcribe(); });
+
+renderSegs(); drawWave();
+</script>
+
+</body>
+</html>
