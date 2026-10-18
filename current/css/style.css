@@ -203,3 +203,15 @@ body.annotating .bnav{z-index:41}
 .empty .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .only-compact{display:none}
 @media(max-width:699px),(max-height:520px){.only-compact{display:inline-flex}.bnav button .ic{font-size:18px}}
+
+/* ---------- simplified: no placeholders, big picture layout, pen button in presentation mode ---------- */
+.fig.missing{display:none}
+.imgwrap.big{flex-direction:column;align-items:stretch;gap:calc(var(--u)*1.2)}.imgwrap.big>:first-child{flex:none}
+.imgwrap.big .fig{flex:none;width:100%;max-height:58cqh;align-self:stretch}.a9x16 .imgwrap.big{flex-direction:column}.a9x16 .imgwrap.big .fig{max-height:46cqh}
+.qctl .tg{display:none}
+.pen-fab{display:none}
+body.present:not(.annotating) .pen-fab{display:block;position:fixed;z-index:46;right:10px;bottom:max(10px,env(safe-area-inset-bottom));width:46px;height:46px;border-radius:50%;border:var(--ow) solid var(--ink);background:var(--accent2);opacity:.4;padding:0}
+body.present:not(.annotating) .pen-fab::after{content:"🖊";font-size:20px}
+/* no accidental text selection / selection handles on slides, tab bar or overlays (they would show up in recordings); editing re-enables it */
+.stage,.bnav,.backdrop,.an-bar,.pen-fab{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.stage.editmode,.stage.editmode [data-path]{-webkit-user-select:text;user-select:text}
